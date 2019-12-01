@@ -19,6 +19,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
 
+find_package(OpenGL)
 
 # subdirectories
 add_subdirectory( src/engine )
@@ -29,7 +30,7 @@ if (NOT WIN32)
     string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 endif (NOT WIN32)
 add_executable(RendLargent src/main.cpp)
-target_link_libraries(RendLargent game engine ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} OpenGL::OpenGL)
+target_link_libraries(RendLargent game engine ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} OpenGL::GL OpenGL::GLU)
 
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
