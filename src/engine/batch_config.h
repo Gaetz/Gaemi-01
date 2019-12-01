@@ -1,3 +1,8 @@
+#ifndef BATCH_CONFIG_H
+#define BATCH_CONFIG_H
+
+#include "maths.h"
+
 struct BatchConfig
 {
     /**
@@ -44,3 +49,5 @@ struct BatchConfig
 
     bool operator!=(const BatchConfig &other) const { return !(*this == other); }
 };
+
+#endif
