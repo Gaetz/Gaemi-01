@@ -21,8 +21,8 @@ extern "C" { int AmdPowerXpressRequestHighPerformance = 1; }
 int main(int argc, char *argv[])
 {
 	const std::string title = "Tetris";
-	const int SCREEN_WIDTH = 450;
-	const int SCREEN_HEIGHT = 680;
+	const int SCREEN_WIDTH = 1280;
+	const int SCREEN_HEIGHT = 720;
 	
     // Init logging
     LOG_CONFIG.reporting_level = Debug;

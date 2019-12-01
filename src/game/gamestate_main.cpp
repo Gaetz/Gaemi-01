@@ -4,10 +4,14 @@
 #include <cstdlib>
 #include <ctime>
 
+/*
 GameStateMain::GameStateMain(
 		std::shared_ptr<SpriteRenderer> _sRenderer, 
 		std::shared_ptr<GeometryRenderer> _gRenderer
 	) : sRenderer(std::move(_sRenderer)), gRenderer(std::move(_gRenderer))
+{
+}*/
+GameStateMain::GameStateMain()
 {
 }
 
@@ -25,6 +29,7 @@ void GameStateMain::load()
 {
 	std::srand((int)std::time(nullptr));
 
+	/*
 	screenHeight = game->windowHeight;
 	moveLeftKey = SDL_SCANCODE_LEFT;
 	moveRightKey = SDL_SCANCODE_RIGHT;
@@ -48,12 +53,15 @@ void GameStateMain::load()
 	nextPiece.rotation = getRand(0, 3);
 	nextPiece.x = BOARD_WIDTH / 2 + pieces->getXInitialPosition(nextPiece.kind, nextPiece.rotation);
 	nextPiece.y = 20;
+	*/
 }
 
 void GameStateMain::clean()
 {
+	/*
 	delete board;
 	delete pieces;
+	*/
 }
 
 void GameStateMain::pause()
@@ -66,6 +74,7 @@ void GameStateMain::resume()
 
 void GameStateMain::handleEvent(const InputState &inputState)
 {
+	/*
 	// Right move
 	if (inputState.keyboardState.isJustPressed(SDL_Scancode(moveRightKey)))
 	{
@@ -100,10 +109,12 @@ void GameStateMain::handleEvent(const InputState &inputState)
 		if (board->isPossibleMovement(currentPiece.x, currentPiece.y - 1, currentPiece.kind, (currentPiece.rotation + 1) % 4))
 			currentPiece.rotation = (currentPiece.rotation + 1) % 4;
 	}
+	*/
 }
 
 void GameStateMain::update(unsigned int dt)
 {
+	/*
 	counter += dt;
 	if (counter >= SPEED)
 	{
@@ -124,15 +135,35 @@ void GameStateMain::update(unsigned int dt)
 		}
 		counter = counter % SPEED;
 	}
+	*/
 }
 
 void GameStateMain::draw()
 {
+	//glBegin(GL_QUADS);
+	//glEnd();
+	/*
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glBegin(GL_QUADS);
+	glVertex2f(-0.5f, -0.5f);
+	glVertex2f(0.5f, -0.5f);
+	glVertex2f(0.5f, 0.5f);
+	glVertex2f(-0.5f, 0.5f);
+	glEnd();
+	*/
+	/*
 	drawBoard();
 	drawPiece(currentPiece);
 	drawPiece(nextPiece);
+	*/
 }
 
+int GameStateMain::getRand(int a, int b)
+{
+	return std::rand() % (b - a + 1) + a;
+}
+
+/*
 void GameStateMain::createNewPiece()
 {
 	// The new piece
@@ -146,10 +177,6 @@ void GameStateMain::createNewPiece()
 	nextPiece.rotation = getRand(0, 3);
 }
 
-int GameStateMain::getRand(int a, int b)
-{
-	return std::rand() % (b - a + 1) + a;
-}
 
 void GameStateMain::drawPiece(Piece piece)
 {
@@ -194,3 +221,4 @@ void GameStateMain::drawBoard()
 		}
 	}
 }
+*/

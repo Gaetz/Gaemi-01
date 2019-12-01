@@ -12,6 +12,7 @@ public:
         const std::array<GLfloat, 18> & vertexBuffer,
         const std::array<GLfloat, 12> & texBuffer
     );
+    //VertexArray(unsigned int maxNumVertices);
     virtual ~VertexArray();
 
     void setActive();
@@ -20,6 +21,7 @@ private:
     GLuint id;
     GLuint vertexBufferId;
     GLuint texBufferId;
+    GLuint vbo;
 };
 
 #endif

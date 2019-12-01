@@ -12,10 +12,11 @@
 class GameStateMain : public GameState
 {
 public:
-	GameStateMain(
+	/*GameStateMain(
 		std::shared_ptr<SpriteRenderer>, 
 		std::shared_ptr<GeometryRenderer>
-	);
+	);*/
+	GameStateMain();
 	virtual ~GameStateMain();
 
 	void load();
@@ -32,8 +33,11 @@ public:
 	Piece currentPiece;
 
 private:
+	Game *game;
+
 	int getRand(int a, int b);
 
+/*
 	int moveLeftKey;
 	int moveRightKey;
 	int rotateKey;
@@ -42,7 +46,6 @@ private:
 	std::shared_ptr<SpriteRenderer> sRenderer;
 	std::shared_ptr<GeometryRenderer> gRenderer;
 
-	Game *game;
 	Pieces *pieces;
 	Board *board;
 	unsigned int counter;
@@ -52,8 +55,7 @@ private:
 
 	void drawPiece(Piece piece);
 	void drawBoard();
-
-	GameStateMain();
+*/
 };
 
 #endif

@@ -84,6 +84,8 @@ bool WindowSdl::init(int xPos, int yPos, int width, int height, bool isFullscree
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, GL_TRUE);
         }
 
+        // Window color
+        glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
         return true;
     }
     else
@@ -169,8 +171,7 @@ void WindowSdl::updateFpsCounter(long dt)
 
 void WindowSdl::clear()
 {
-    glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void WindowSdl::swapBuffer()

@@ -1,5 +1,17 @@
 #include "vertex_array.h"
+#include "batch_sprite_vertex.h"
+
 #include <GL/glew.h>
+
+/*VertexArray::VertexArray(unsigned int maxNumVertices)
+: id(0), vbo(0)
+{
+    glGenVertexArrays(1, &id);
+    glBindVertexArray(id);
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, maxNumVertices * sizeof(SpriteVertex), nullptr, GL_STREAM_DRAW);
+}*/
 
 VertexArray::VertexArray(
     const std::array<GLfloat, 18> & vertexBuffer,
@@ -7,6 +19,7 @@ VertexArray::VertexArray(
 )
 : id(0), vertexBufferId(0), texBufferId(0)
 {
+    
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(GLfloat), &vertexBuffer, GL_STATIC_DRAW);

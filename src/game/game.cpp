@@ -26,6 +26,8 @@ void Game::init(int screenWidth, int screenHeight)
 
 void Game::load()
 {
+	ResourceManager::loadShader("assets/shaders/sprite.vert", "assets/shaders/sprite.frag", "", "sprite");	
+	/*
 	// Load shaders
 	ResourceManager::loadShader("assets/shaders/sprite.vert", "assets/shaders/sprite.frag", "", "sprite");
 	ResourceManager::loadShader("assets/shaders/rect.vert", "assets/shaders/rect.frag", "", "rect");
@@ -43,9 +45,10 @@ void Game::load()
 	// Set render-specific controls
 	sRenderer = std::make_shared<SpriteRenderer>(ResourceManager::getShader("sprite"));
 	gRenderer = std::make_shared<GeometryRenderer>(ResourceManager::getShader("rect"));
+	*/
 
 	// Game state
-	changeState(std::make_unique<GameStateMain>(sRenderer, gRenderer));
+	changeState(std::make_unique<GameStateMain>());
 }
 
 void Game::handleInputs()
