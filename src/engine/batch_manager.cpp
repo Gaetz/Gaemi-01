@@ -2,19 +2,19 @@
 #include "batch.h"
 #include "log.h"
 #include <queue>
-static BatchManager *s_pBatchManager = nullptr;
+static BatchManager *batchManager = nullptr;
 
 // ----------------------------------------------------------------------------
 // BatchManager()
-BatchManager::BatchManager(unsigned uNumBatches, unsigned numVerticesPerBatch)
-    : m_uNumBatches(uNumBatches),
-      m_maxNumVerticesPerBatch(numVerticesPerBatch)
+BatchManager::BatchManager(unsigned numBatches, unsigned numVerticesPerBatch)
+    : numBatches(numBatches),
+      maxNumVerticesPerBatch(numVerticesPerBatch)
 {
 
     // Test Input Parameters
-    if (uNumBatches < 10)
+    if (numBatches < 10)
     {
-        LOG(Error) << __FUNCTION__ << " uNumBatches{" << uNumBatches << "} is too small.  Choose a number >= 10 ";
+        LOG(Error) << __FUNCTION__ << " uNumBatches{" << numBatches << "} is too small.  Choose a number >= 10 ";
         throw;
     }
 
@@ -27,48 +27,45 @@ BatchManager::BatchManager(unsigned uNumBatches, unsigned numVerticesPerBatch)
     }
 
     // Create Desired Number Of Batches
-    m_vBatches.reserve(uNumBatches);
-    for (unsigned u = 0; u < uNumBatches; ++u)
+    batches.reserve(numBatches);
+    for (unsigned u = 0; u < numBatches; ++u)
     {
-        m_vBatches.push_back(std::shared_ptr<Batch>(new Batch(numVerticesPerBatch)));
+        batches.push_back(std::shared_ptr<Batch>(new Batch(numVerticesPerBatch)));
     }
 
-    s_pBatchManager = this;
-} // BatchManager
+    batchManager = this;
+}
 
-// ----------------------------------------------------------------------------
-// ~BatchManager()
+
 BatchManager::~BatchManager()
 {
-    s_pBatchManager = nullptr;
+    batchManager = nullptr;
 
-    m_vBatches.clear();
-} // ~BatchManager
+    batches.clear();
+}
 
-// ----------------------------------------------------------------------------
-// get()
+
 BatchManager *const BatchManager::get()
 {
-    if (nullptr == s_pBatchManager)
+    if (nullptr == batchManager)
     {
         LOG(Error) << __FUNCTION__ + std::string(" failed, BatchManager has not been constructed yet");
         throw;
     }
-    return s_pBatchManager;
-} // get
+    return batchManager;
+}
 
-// ----------------------------------------------------------------------------
-// render()
+
 void BatchManager::render(const std::vector<SpriteVertex> &vVertices, const BatchConfig &config, const std::string &strId)
 {
 
     Batch *pEmptyBatch = nullptr;
-    Batch *pFullestBatch = m_vBatches[0].get();
+    Batch *pFullestBatch = batches[0].get();
 
     // Determine Which Batch To Put The Vertices Into
-    for (unsigned u = 0; u < m_uNumBatches; ++u)
+    for (unsigned u = 0; u < numBatches; ++u)
     {
-        Batch *pBatch = m_vBatches[u].get();
+        Batch *pBatch = batches[u].get();
 
         if (pBatch->isBatchConfig(config))
         {
@@ -115,51 +112,45 @@ void BatchManager::render(const std::vector<SpriteVertex> &vVertices, const Batc
     LOG(Info) << "Forced fullest batch to empty to make room for vertices";
 
     pFullestBatch->add(vVertices, config);
-} // render
+}
 
-// ----------------------------------------------------------------------------
-// emptyAll()
+
 void BatchManager::emptyAll()
 {
-    emptyBatch(true, m_vBatches[0].get());
+    emptyBatch(true, batches[0].get());
 
     LOG(Info) << "Forced all batches to empty";
-} // emptyAll
+} 
 
-// ----------------------------------------------------------------------------
-// CompareBatch
+
 struct CompareBatch : public std::binary_function<Batch *, Batch *, bool>
 {
     bool operator()(const Batch *pBatchA, const Batch *pBatchB) const
     {
         return (pBatchA->getPriority() > pBatchB->getPriority());
-    } // operator()
-};    // CompareFunctor
+    }
+}; 
 
-// ----------------------------------------------------------------------------
-// emptyBatch()
-// Empties The Batches According To Priority. If emptyAll() Is False Then
-// Only Empty The Batches That Are Lower Priority Than The One Specified
-// AND Also Empty The One That Is Passed In
+
 void BatchManager::emptyBatch(bool emptyAll, Batch *pBatchToEmpty)
 {
     // Sort Bathes By Priority
     std::priority_queue<Batch *, std::vector<Batch *>, CompareBatch> queue;
 
-    for (unsigned u = 0; u < m_uNumBatches; ++u)
+    for (unsigned u = 0; u < numBatches; ++u)
     {
         // Add All Non-Empty Batches To Queue Which Will Be Sorted By Order
         // From Lowest To Highest Priority
-        if (!m_vBatches[u]->isEmpty())
+        if (!batches[u]->isEmpty())
         {
             if (emptyAll)
             {
-                queue.push(m_vBatches[u].get());
+                queue.push(batches[u].get());
             }
-            else if (m_vBatches[u]->getPriority() < pBatchToEmpty->getPriority())
+            else if (batches[u]->getPriority() < pBatchToEmpty->getPriority())
             {
                 // Only Add Batches That Are Lower In Priority
-                queue.push(m_vBatches[u].get());
+                queue.push(batches[u].get());
             }
         }
     }

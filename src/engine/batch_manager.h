@@ -13,23 +13,30 @@ class BatchManager
 {
 
 public:
-    BatchManager(unsigned uNumBatches, unsigned numVerticesPerBatch);
+    BatchManager(unsigned numBatches, unsigned numVerticesPerBatch);
     virtual ~BatchManager();
 
     static BatchManager *const get();
 
-    void render(const vector<SpriteVertex>& vVertices, const BatchConfig &config, const std::string &strId);
+    void render(const vector<SpriteVertex>& vertices, const BatchConfig &config, const std::string &strId);
     void emptyAll();
 
 private:
-    std::vector<std::shared_ptr<Batch>> m_vBatches;
+    std::vector<std::shared_ptr<Batch>> batches;
+    unsigned numBatches;
+    unsigned maxNumVerticesPerBatch;
 
-    unsigned m_uNumBatches;
-    unsigned m_maxNumVerticesPerBatch;
+
+    /**
+     *  Empties The Batches According To Priority. If emptyAll() Is False Then
+     * Only Empty The Batches That Are Lower Priority Than The One Specified
+     * AND Also Empty The One That Is Passed In
+     * */
+    void emptyBatch(bool emptyAll, Batch *pBatchToEmpty);
+
 
     BatchManager(const BatchManager &c);            // Not Implemented
     BatchManager &operator=(const BatchManager &c); // Not Implemented
 
-    void emptyBatch(bool emptyAll, Batch *pBatchToEmpty);
     //void  renderBatch( const std::vector<GuiVertex>& vVertices, const BatchConfig& config );
 };
