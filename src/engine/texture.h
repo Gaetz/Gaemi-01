@@ -45,8 +45,8 @@ public:
 	// Texture configuration
 	GLuint wrapS;	 // Wrapping mode on S axis
 	GLuint wrapT;	 // Wrapping mode on T axis
-	GLuint filterMin; // Filtering mode if texture pixels < screen pixels
-	GLuint filterMax; // Filtering mode if texture pixels > screen pixels
+	GLfloat filterMin; // Filtering mode if texture pixels < screen pixels
+	GLfloat filterMax; // Filtering mode if texture pixels > screen pixels
 
 	// Constructor (sets default texture modes)
 	Texture2D();

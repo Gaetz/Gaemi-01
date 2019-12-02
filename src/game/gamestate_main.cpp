@@ -140,22 +140,9 @@ void GameStateMain::update(unsigned int dt)
 
 void GameStateMain::draw()
 {
-	//glBegin(GL_QUADS);
-	//glEnd();
-	/*
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_QUADS);
-	glVertex2f(-0.5f, -0.5f);
-	glVertex2f(0.5f, -0.5f);
-	glVertex2f(0.5f, 0.5f);
-	glVertex2f(-0.5f, 0.5f);
-	glEnd();
-	*/
-	/*
-	drawBoard();
-	drawPiece(currentPiece);
-	drawPiece(nextPiece);
-	*/
+	spritebatch.begin();
+	
+	spritebatch.end();
 }
 
 int GameStateMain::getRand(int a, int b)

@@ -2,9 +2,7 @@
 #define GAMESTATE_MAIN_H
 
 #include "../engine/gamestate.h"
-#include "piece.h"
-#include "pieces.h"
-#include "board.h"
+#include "../engine/spritebatch.h"
 
 #define SPEED 500
 
@@ -28,12 +26,11 @@ public:
 	void draw();
 	void setGame(Game *);
 
-	void createNewPiece();
 
-	Piece currentPiece;
 
 private:
 	Game *game;
+	Spritebatch spritebatch;
 
 	int getRand(int a, int b);
 
