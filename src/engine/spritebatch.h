@@ -3,7 +3,7 @@
 
 #include "math_core.h"
 #include "color.h"
-#include "vertex2D.h"
+#include "vertex2d.h"
 
 #include <GL/glew.h>
 #include <vector>

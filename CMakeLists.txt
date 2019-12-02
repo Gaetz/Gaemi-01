@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.15)
 project(RendLargent VERSION 0.1.0)
+
 set(OpenGL_GL_PREFERENCE "GLVND")
+set(CMAKE_CXX_STANDARD 17)
 
 include(CTest)
 enable_testing()
@@ -10,6 +12,7 @@ if (WIN32)
     set(SDL2_DIR ${CMAKE_SOURCE_DIR}/external/SDL2-2.0.10)
     set(GLEW_DIR ${CMAKE_SOURCE_DIR}/external/glew-2.1.0)
 endif (WIN32)
+
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 

@@ -1,4 +1,4 @@
-#include "Spritebatch.h"
+#include "spritebatch.h"
 
 #include <algorithm>
 
