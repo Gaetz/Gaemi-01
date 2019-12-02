@@ -1,3 +1,6 @@
+#ifndef SPRITEBATCH_H
+#define SPRITEBATCH_H
+
 #include "math_core.h"
 #include "color.h"
 #include "vertex2D.h"
@@ -100,3 +103,5 @@ private:
     vector<Glyph> glyphs; ///< These are the actual glyphs
 	vector<BatchRender> renderBatches;
 };
+
+#endif

@@ -12,11 +12,11 @@ public:
     Sprite();
     ~Sprite();
 
-    void draw(const Spritebatch& spritebatch);
+    void draw(Spritebatch& spritebatch);
 private:
     Vector2 position;
     float angle;
     std::string textureName;
-}
+};
 
 #endif

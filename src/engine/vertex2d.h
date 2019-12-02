@@ -1,3 +1,6 @@
+#ifndef VERTEX2D_H
+#define VERTEX2D_H
+
 #include "color.h"
 
 struct Position
@@ -35,3 +38,5 @@ struct Vertex2D
         uv.v = v;
     }
 };
+
+#endif

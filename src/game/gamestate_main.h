@@ -3,6 +3,7 @@
 
 #include "../engine/gamestate.h"
 #include "../engine/spritebatch.h"
+#include "../engine/sprite.h"
 
 #define SPEED 500
 
@@ -31,6 +32,8 @@ public:
 private:
 	Game *game;
 	Spritebatch spritebatch;
+
+    Sprite sprite;
 
 	int getRand(int a, int b);
 

@@ -28,6 +28,7 @@ void GameStateMain::setGame(Game *_game)
 void GameStateMain::load()
 {
 	std::srand((int)std::time(nullptr));
+    ResourceManager::loadTexture("./assets/textures/tile.png", "tile");
 
 	/*
 	screenHeight = game->windowHeight;
@@ -141,7 +142,7 @@ void GameStateMain::update(unsigned int dt)
 void GameStateMain::draw()
 {
 	spritebatch.begin();
-	
+	sprite.draw(spritebatch);
 	spritebatch.end();
 }
 
