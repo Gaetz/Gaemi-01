@@ -3,7 +3,7 @@
 #include "../engine/gamestate.h"
 #include "gamestate_main.h"
 
-#include "../engine/maths.h"
+#include "../engine/math_core.h"
 
 Game::Game() : isRunning(false),
 			   windowWidth(0),

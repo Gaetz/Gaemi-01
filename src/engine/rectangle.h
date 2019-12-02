@@ -1,4 +1,4 @@
-#include "maths.h"
+#include "math_core.h"
 
 struct Rectangle
 {

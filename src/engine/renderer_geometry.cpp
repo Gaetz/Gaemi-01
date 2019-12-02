@@ -1,5 +1,5 @@
 #include "renderer_geometry.h"
-#include "maths.h"
+#include "math_core.h"
 
 static std::array<GLfloat, 18> vertexBuffer = {
     -0.5f, -0.5f, 0.0f,

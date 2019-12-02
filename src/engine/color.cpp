@@ -16,12 +16,21 @@ Color::Color(uint32_t i)
 
 Color::~Color() {}
 
+void Color::setColor(uint8_t p_r, uint8_t p_g, uint8_t p_b, uint8_t p_a) 
+{
+    r = p_r;
+    g = p_g;
+    b = p_b;
+    a = p_a;
+}
+
+
 Color Color::lerp(Color value1, Color value2, float amount)
 {
-    uint8_t r = Math::clamp<uint8_t>(Math::lerp(value1.r, value2.r, amount), 0, 255);   
-    uint8_t g = Math::clamp<uint8_t>(Math::lerp(value1.g, value2.g, amount), 0, 255); 
-    uint8_t b = Math::clamp<uint8_t>(Math::lerp(value1.b, value2.b, amount), 0, 255); 
-    uint8_t a = Math::clamp<uint8_t>(Math::lerp(value1.a, value2.a, amount), 0, 255); 
+    uint8_t r = Math::clamp<uint8_t>(static_cast<uint8_t>(Math::lerp(value1.r, value2.r, amount)), 0, 255);   
+    uint8_t g = Math::clamp<uint8_t>(static_cast<uint8_t>(Math::lerp(value1.g, value2.g, amount)), 0, 255); 
+    uint8_t b = Math::clamp<uint8_t>(static_cast<uint8_t>(Math::lerp(value1.b, value2.b, amount)), 0, 255); 
+    uint8_t a = Math::clamp<uint8_t>(static_cast<uint8_t>(Math::lerp(value1.a, value2.a, amount)), 0, 255); 
     
     return Color(r, g, b, a);
 }

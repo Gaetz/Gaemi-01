@@ -6,7 +6,7 @@
 // See LICENSE in root directory for full details.
 // ----------------------------------------------------------------
 
-#include "maths.h"
+#include "math_core.h"
 
 const Vector2 Vector2::zero(0.0f, 0.0f);
 const Vector2 Vector2::unitX(1.0f, 0.0f);

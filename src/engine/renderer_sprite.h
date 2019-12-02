@@ -6,7 +6,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "vertex_array.h"
-#include "maths.h"
+#include "math_core.h"
 #include "color.h"
 
 // A renderer class able to draw OpenGL sprites.
