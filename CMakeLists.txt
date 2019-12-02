@@ -36,6 +36,16 @@ add_executable(RendLargent src/main.cpp)
 target_link_libraries(RendLargent game engine ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} OpenGL::GL OpenGL::GLU)
 
 
+if (WIN32)
+file(COPY external/SDL2-2.0.10/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY external/SDL2_mixer-2.0.2/lib/x64/SDL2_mixer.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY external/SDL2_ttf-2.0.15/lib/x64/SDL2_ttf.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY external/SDL2_ttf-2.0.15/lib/x64/zlib1.dll DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY external/glew-2.1.0/bin/Release/x64/glew32.dll DESTINATION ${CMAKE_BINARY_DIR})
+endif (WIN32)
+
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
