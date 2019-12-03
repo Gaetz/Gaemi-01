@@ -4,7 +4,8 @@
 WindowSdl::WindowSdl(const std::string &title) : title(title),
                                                  previousSeconds(0),
                                                  currentSeconds(0),
-                                                 frameCount(0)
+                                                 frameCount(0),
+                                                 context(nullptr)
 {
 }
 
@@ -22,13 +23,12 @@ bool WindowSdl::init(int xPos, int yPos, int width, int height, bool isFullscree
         flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL;
     }
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
-    {
+    if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
         LOG(Info) << "Subsystems initialised";
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -37,7 +37,7 @@ bool WindowSdl::init(int xPos, int yPos, int width, int height, bool isFullscree
 
         // WindowSdl
         window = std::unique_ptr<SDL_Window, SdlWindowDestroyer>(
-            SDL_CreateWindow(title.c_str(), xPos, yPos, width, height, flags));
+                SDL_CreateWindow(title.c_str(), xPos, yPos, width, height, flags));
         if (window)
         {
             LOG(Info) << "WindowSdl initialised";
@@ -76,10 +76,9 @@ bool WindowSdl::init(int xPos, int yPos, int width, int height, bool isFullscree
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        if (glDebugMessageControlARB != NULL)
-        {
+        if (glDebugMessageControlARB != nullptr) {
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-            glDebugMessageCallback((GLDEBUGPROCARB)debugGlErrorCallback, NULL);
+            glDebugMessageCallback((GLDEBUGPROCARB) debugGlErrorCallback, nullptr);
             GLuint unusedIds = 0;
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, GL_TRUE);
         }

@@ -18,17 +18,16 @@ extern "C" { int AmdPowerXpressRequestHighPerformance = 1; }
 
 int main(int argc, char *argv[])
 {
-	const std::string title = "Tetris";
+	const std::string title = "Rend l'argent";
 	const int SCREEN_WIDTH = 1280;
 	const int SCREEN_HEIGHT = 720;
-	
-    // Init logging
-    LOG_CONFIG.reporting_level = Debug;
-    LOG_CONFIG.restart = true;
-    if (LOG_CONFIG.restart)
-    {
-        Log::restart();
-    }
+
+	// Init logging
+	LOG_CONFIG.reporting_level = Debug;
+	LOG_CONFIG.restart = true;
+	if (LOG_CONFIG.restart) {
+		Log::restart();
+	}
 
 	// Delta time
 	int dt;

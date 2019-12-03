@@ -86,7 +86,7 @@ void Spritebatch::begin(GlyphSortType sortType /* GlyphSortType::TEXTURE */)
     sortType = sortType;
     renderBatches.clear();
 
-    // Makes _glpyhs.size() == 0, however it does not free internal memory.
+    // Makes glyphs.size() == 0, however it does not free internal memory.
     // So when we later call emplace_back it doesn't need to internally call new.
     glyphs.clear();
 }
@@ -214,7 +214,7 @@ void Spritebatch::createVertexArray()
     // Bind the VAO. All subsequent opengl calls will modify it's state.
     glBindVertexArray(vao);
 
-    //G enerate the VBO if it isn't already generated
+    // Generate the VBO if it isn't already generated
     if (vbo == 0)
     {
         glGenBuffers(1, &vbo);

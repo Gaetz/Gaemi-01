@@ -27,34 +27,35 @@ void GameStateMain::setGame(Game *_game)
 
 void GameStateMain::load()
 {
-	std::srand((int)std::time(nullptr));
+    std::srand((int) std::time(nullptr));
+    spritebatch.init();
     ResourceManager::loadTexture("./assets/textures/tile.png", "tile");
 
-	/*
-	screenHeight = game->windowHeight;
-	moveLeftKey = SDL_SCANCODE_LEFT;
-	moveRightKey = SDL_SCANCODE_RIGHT;
-	rotateKey = SDL_SCANCODE_UP;
-	fallKey = SDL_SCANCODE_DOWN;
+    /*
+    screenHeight = game->windowHeight;
+    moveLeftKey = SDL_SCANCODE_LEFT;
+    moveRightKey = SDL_SCANCODE_RIGHT;
+    rotateKey = SDL_SCANCODE_UP;
+    fallKey = SDL_SCANCODE_DOWN;
 
-	ResourceManager::loadTexture("./assets/textures/tile.png", "tile");
-	ResourceManager::loadTexture("./assets/textures/tile_fall.png", "tile_fall");
-	pieces = new Pieces();
-	board = new Board(pieces, game->windowHeight);
-	board->initBoard();
-	counter = 0;
+    ResourceManager::loadTexture("./assets/textures/tile.png", "tile");
+    ResourceManager::loadTexture("./assets/textures/tile_fall.png", "tile_fall");
+    pieces = new Pieces();
+    board = new Board(pieces, game->windowHeight);
+    board->initBoard();
+    counter = 0;
 
-	// First piece
-	currentPiece.kind = getRand(0, 6);
-	currentPiece.rotation = getRand(0, 3);
-	currentPiece.x = BOARD_WIDTH / 2 + pieces->getXInitialPosition(currentPiece.kind, currentPiece.rotation);
-	currentPiece.y = pieces->getYInitialPosition(currentPiece.kind, currentPiece.rotation);
-	//  Next piece
-	nextPiece.kind = getRand(0, 6);
-	nextPiece.rotation = getRand(0, 3);
-	nextPiece.x = BOARD_WIDTH / 2 + pieces->getXInitialPosition(nextPiece.kind, nextPiece.rotation);
-	nextPiece.y = 20;
-	*/
+    // First piece
+    currentPiece.kind = getRand(0, 6);
+    currentPiece.rotation = getRand(0, 3);
+    currentPiece.x = BOARD_WIDTH / 2 + pieces->getXInitialPosition(currentPiece.kind, currentPiece.rotation);
+    currentPiece.y = pieces->getYInitialPosition(currentPiece.kind, currentPiece.rotation);
+    //  Next piece
+    nextPiece.kind = getRand(0, 6);
+    nextPiece.rotation = getRand(0, 3);
+    nextPiece.x = BOARD_WIDTH / 2 + pieces->getXInitialPosition(nextPiece.kind, nextPiece.rotation);
+    nextPiece.y = 20;
+    */
 }
 
 void GameStateMain::clean()
@@ -139,11 +140,11 @@ void GameStateMain::update(unsigned int dt)
 	*/
 }
 
-void GameStateMain::draw()
-{
-	spritebatch.begin();
-	sprite.draw(spritebatch);
-	spritebatch.end();
+void GameStateMain::draw() {
+    spritebatch.begin(GlyphSortType::TEXTURE);
+    sprite.draw(spritebatch);
+    spritebatch.end();
+    spritebatch.render();
 }
 
 int GameStateMain::getRand(int a, int b)

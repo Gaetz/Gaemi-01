@@ -9,7 +9,7 @@ Sprite::~Sprite()
 
 void Sprite::draw(Spritebatch& spritebatch)
 {
-    Vector4 rect = Vector4(position.x, position.y, 1.f, 1.f);
+    Vector4 rect = Vector4(position.x, position.y, 0.1, 0.1f);
     Vector4 uvRect = Vector4(0.f, 0.f, 1.f, 1.f);
     Color color = Color::white;
     GLuint id =  ResourceManager::getTexture(textureName).id;
