@@ -15,7 +15,7 @@ public:
 		std::shared_ptr<SpriteRenderer>, 
 		std::shared_ptr<GeometryRenderer>
 	);*/
-	GameStateMain();
+	GameStateMain(std::shared_ptr<SpriteRenderer>);
 	virtual ~GameStateMain();
 
 	void load();
@@ -32,6 +32,7 @@ public:
 private:
 	Game *game;
 	Spritebatch spritebatch;
+    std::shared_ptr<SpriteRenderer> sRenderer;
 
     Sprite sprite;
 

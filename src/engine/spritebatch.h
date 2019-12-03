@@ -23,8 +23,8 @@ class Glyph
 {
 public:
     Glyph(){};
-    Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const Color &color);
-    Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const Color &color, float angle);
+    Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const ColorRGBA8 &color);
+    Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const ColorRGBA8 &color, float angle);
 
     GLuint texture;
     float depth;
@@ -70,11 +70,11 @@ public:
     void end();
 
     // Adds a glyph to the spritebatch
-    void draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const Color& color);
+    void draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const ColorRGBA8& color);
     // Adds a glyph to the spritebatch with rotation
-    void draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const Color& color, float angle);
+    void draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const ColorRGBA8& color, float angle);
     // Adds a glyph to the spritebatch with rotation
-    void draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const Color& color, const Vector2& dir);
+    void draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const ColorRGBA8& color, const Vector2& dir);
 
     // Renders the entire Spritebatch to the screen
     void render();

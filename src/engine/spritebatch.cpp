@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-Glyph::Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const Color &color)
+Glyph::Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const ColorRGBA8 &color)
     : texture(Texture),
       depth(Depth)
 {
@@ -24,7 +24,7 @@ Glyph::Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, flo
     topRight.setUV(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
 }
 
-Glyph::Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const Color &color, float angle)
+Glyph::Glyph(const Vector4 &destRect, const Vector4 &uvRect, GLuint Texture, float Depth, const ColorRGBA8 &color, float angle)
     : texture(Texture),
       depth(Depth)
 {
@@ -104,17 +104,17 @@ void Spritebatch::end()
     createRenderBatches();
 }
 
-void Spritebatch::draw(const Vector4 &destRect, const Vector4 &uvRect, GLuint texture, float depth, const Color &color)
+void Spritebatch::draw(const Vector4 &destRect, const Vector4 &uvRect, GLuint texture, float depth, const ColorRGBA8 &color)
 {
     glyphs.emplace_back(destRect, uvRect, texture, depth, color);
 }
 
-void Spritebatch::draw(const Vector4 &destRect, const Vector4 &uvRect, GLuint texture, float depth, const Color &color, float angle)
+void Spritebatch::draw(const Vector4 &destRect, const Vector4 &uvRect, GLuint texture, float depth, const ColorRGBA8 &color, float angle)
 {
     glyphs.emplace_back(destRect, uvRect, texture, depth, color, angle);
 }
 
-void Spritebatch::draw(const Vector4 &destRect, const Vector4 &uvRect, GLuint texture, float depth, const Color &color, const Vector2 &dir)
+void Spritebatch::draw(const Vector4 &destRect, const Vector4 &uvRect, GLuint texture, float depth, const ColorRGBA8 &color, const Vector2 &dir)
 {
     const Vector2 right(1.0f, 0.0f);
     float angle = acos(Vector2::dot(right, dir));

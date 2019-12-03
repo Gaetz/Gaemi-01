@@ -47,7 +47,8 @@ private:
 	std::shared_ptr<SpriteRenderer> sRenderer;
 	std::shared_ptr<GeometryRenderer> gRenderer;
 	*/
-	std::unique_ptr<InputManager> inputManager;
+    std::shared_ptr<SpriteRenderer> sRenderer;
+    std::unique_ptr<InputManager> inputManager;
 	std::vector<std::unique_ptr<GameState>> gameStates;
 };
 

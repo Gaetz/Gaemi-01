@@ -11,7 +11,7 @@ GameStateMain::GameStateMain(
 	) : sRenderer(std::move(_sRenderer)), gRenderer(std::move(_gRenderer))
 {
 }*/
-GameStateMain::GameStateMain()
+GameStateMain::GameStateMain(std::shared_ptr<SpriteRenderer> _sRenderer): sRenderer(std::move(_sRenderer))
 {
 }
 
@@ -29,7 +29,7 @@ void GameStateMain::load()
 {
     std::srand((int) std::time(nullptr));
     spritebatch.init();
-    ResourceManager::loadTexture("./assets/textures/tile.png", "tile");
+    ResourceManager::loadTexture("./assets/textures/wall.png", "wall");
 
     /*
     screenHeight = game->windowHeight;
@@ -141,6 +141,13 @@ void GameStateMain::update(unsigned int dt)
 }
 
 void GameStateMain::draw() {
+    sRenderer->drawSprite(
+            ResourceManager::getTexture("wall"),
+            Vector2(0, 0),
+            Vector2(25, 25),
+            0.0f,
+            Color(1.0f, 1.0f, 1.0f));
+
     spritebatch.begin(GlyphSortType::TEXTURE);
     sprite.draw(spritebatch);
     spritebatch.end();

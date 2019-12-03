@@ -2,11 +2,23 @@
 #define VERTEX2D_H
 
 #include "color.h"
+#include <GL/glew.h>
 
 struct Position
 {
     float x;
     float y;
+};
+
+struct ColorRGBA8
+{
+    ColorRGBA8() : r(0), g(0), b(0), a(0) {}
+    ColorRGBA8(GLubyte r, GLubyte g, GLubyte b, GLubyte a) : r(r), g(g), b(b), a(a) {}
+
+    GLubyte r;
+    GLubyte g;
+    GLubyte b;
+    GLubyte a;
 };
 
 struct UV
@@ -18,7 +30,7 @@ struct UV
 struct Vertex2D
 {
     Position position;
-    Color color;
+    ColorRGBA8 color;
     UV uv;
 
     void setPosition(float x, float y)
@@ -27,9 +39,12 @@ struct Vertex2D
         position.y = y;
     }
 
-    void setColor(uint8_t r,uint8_t g,uint8_t b,uint8_t a)
+    void setColor(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
     {
-        color.setColor(r, g, b, a);
+        color.r = r;
+        color.g = g;
+        color.b = b;
+        color.a = a;
     }
 
     void setUV(float u, float v)
