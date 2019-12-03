@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Delta time
-	int dt;
+	unsigned int dt;
 
 	// Main game elements loading
 	auto window(IWindow::create(title));

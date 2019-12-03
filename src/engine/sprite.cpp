@@ -14,5 +14,4 @@ void Sprite::draw(Spritebatch& spritebatch)
     Color color = Color::white;
     GLuint id =  ResourceManager::getTexture(textureName).id;
     spritebatch.draw(rect, uvRect, id, 0.0f, color);
-    // draw(const Vector4& destRect, const Vector4& uvRect, GLuint texture, float depth, const Color& color);
 }
