@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/RendLargent.dir/src/main.cpp.o -o RendLargent  src/game/libgame.a src/engine/libengine.a /usr/lib/x86_64-linux-gnu/libGLEW.so -L/usr/local/lib -Wl,-rpath,/usr/local/lib -Wl,--enable-new-dtags -lSDL2 /usr/lib/x86_64-linux-gnu/libGLU.so /usr/lib/x86_64-linux-gnu/libGLX.so /usr/lib/x86_64-linux-gnu/libOpenGL.so 

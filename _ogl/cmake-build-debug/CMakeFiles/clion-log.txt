@@ -1,0 +1,6 @@
+/home/gaetz/Software/clion-2021.1.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/gaetz/Rufflerim/Gaemi-01
+-- Found GLEW: /usr/include (found version "2.1.0") 
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so   
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug

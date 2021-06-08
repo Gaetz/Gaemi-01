@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="RendLargent"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\local\;CMake Files\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\usr\local\lib\cmake\;CMake Files\..\..\..\..\usr\local\lib\cmake\SDL2\;CMake Files\src\;CMake Files\src\engine\;CMake Files\src\game\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="RendLargent">
+				<Option output="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/RendLargent" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include/SDL2"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/game"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/engine"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 RendLargent"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="RendLargent/fast">
+				<Option output="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/RendLargent" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include/SDL2"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/game"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/engine"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 RendLargent/fast"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Nightly">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 Nightly"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="package">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 package"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Continuous">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 Continuous"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="package_source">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 package_source"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 test"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Experimental">
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 Experimental"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="engine">
+				<Option output="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/libengine.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include/SDL2"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/engine"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 engine"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="engine/fast">
+				<Option output="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/libengine.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include/SDL2"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/engine"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 engine/fast"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/engine/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="game">
+				<Option output="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/libgame.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include/SDL2"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/game"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 game"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="game/fast">
+				<Option output="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/libgame.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/include/SDL2"/>
+					<Add directory="/home/gaetz/Rufflerim/Gaemi-01/src/game"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 game/fast"/>
+					<CompileFile command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j20 -f &quot;/home/gaetz/Rufflerim/Gaemi-01/cmake-build-debug/src/game/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/batch.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/batch.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/batch_manager.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/batch_manager.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/color.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/color.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/input_keyboard_state.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/input_keyboard_state.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/input_manager.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/input_manager.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/log.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/log.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/math_core.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/math_core.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/renderer_geometry.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/renderer_geometry.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/renderer_sprite.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/renderer_sprite.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/resource_manager.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/resource_manager.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/shader.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/shader.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/sprite.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/sprite.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/spritebatch.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/spritebatch.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/texture.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/texture.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/timer.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/timer.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/vertex_array.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/vertex_array.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/window_sdl.cpp">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/window_sdl.h">
+			<Option target="engine"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/game/game.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/game/gamestate_main.cpp">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/game/gamestate_main.h">
+			<Option target="game"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/main.cpp">
+			<Option target="RendLargent"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/../../../../usr/local/lib/cmake/SDL2/sdl2-config-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\SDL2\"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/../../../../usr/local/lib/cmake/SDL2/sdl2-config.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\local\lib\cmake\SDL2\"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/engine/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\engine\"/>
+		</Unit>
+		<Unit filename="/home/gaetz/Rufflerim/Gaemi-01/src/game/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\game\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
