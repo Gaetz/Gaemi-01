@@ -14,3 +14,4 @@ build/
 release/
 .vscode/ipch
 /cmake-build-debug/
+bin/

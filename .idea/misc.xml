@@ -10,6 +10,7 @@
     </libraryRoots>
     <excludeRoots>
       <file path="$PROJECT_DIR$/_VsCode" />
+      <file path="$PROJECT_DIR$/_ogl" />
     </excludeRoots>
   </component>
   <component name="JavaScriptSettings">
