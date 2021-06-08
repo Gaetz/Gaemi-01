@@ -4,12 +4,10 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <time.h>
-#include <stdio.h>
 #include <fstream>
 #include <sstream>
 
-#define GL_LOG_FILE "gl.log"
+#define GAME_FILE "game.log"
 
 enum LogLevel
 {

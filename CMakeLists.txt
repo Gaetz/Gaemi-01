@@ -1,30 +1,42 @@
 cmake_minimum_required (VERSION 3.8)
-project(Gaemi-01 VERSION 0.1.0)
+project(GAEMI-01 VERSION 0.1.0)
 
-
+## Vulkan
 find_package(Vulkan REQUIRED)
+find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
 
+## SDL2
+if (WIN32)
+  set(SDL2_DIR ${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14)
+endif (WIN32)
+
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+
+## Libs
 add_subdirectory( externals )
 add_subdirectory( src/engine )
 add_subdirectory( src/game )
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
+if (NOT WIN32)
+  string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
+endif (NOT WIN32)
+
+## Executable
+
 add_executable(Gaemi src/Main.cpp)
-target_link_libraries(Gaemi game engine)
+target_link_libraries(Gaemi game engine ${SDL2_LIBRARIES})
 
 
-
-find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
-
-## find all the shader files under the shaders folder
+## Find all the shader files under the shaders folder
 file(GLOB_RECURSE GLSL_SOURCE_FILES
     "${PROJECT_SOURCE_DIR}/shaders/*.frag"
     "${PROJECT_SOURCE_DIR}/shaders/*.vert"
-    "${PROJECT_SOURCE_DIR}/shaders/*.comp"
-    )
+    "${PROJECT_SOURCE_DIR}/shaders/*.comp")
 
-## iterate each shader
+## Iterate each shader
 foreach(GLSL ${GLSL_SOURCE_FILES})
   message(STATUS "BUILDING SHADER")
   get_filename_component(FILE_NAME ${GLSL} NAME)
@@ -41,4 +53,4 @@ endforeach(GLSL)
 add_custom_target(
     Shaders 
     DEPENDS ${SPIRV_BINARY_FILES}
-    )
+)
