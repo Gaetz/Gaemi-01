@@ -5,8 +5,6 @@ LogConfig LOG_CONFIG = {};
 
 int main(int argc, char* argv[])
 {
-    Engine engine;
-
     // Init logging
     LOG_CONFIG.reporting_level = Debug;
     LOG_CONFIG.restart = true;
@@ -14,6 +12,8 @@ int main(int argc, char* argv[])
         Log::restart();
     }
 
+    // Engine
+    Engine engine;
     engine.init();
     engine.run();
     engine.cleanup();

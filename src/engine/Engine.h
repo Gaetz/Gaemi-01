@@ -5,10 +5,9 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-
 #include "Types.h"
 #include "Window.h"
-#include "Timer.h"
+#include "Game.h"
 
 class Engine
 {
@@ -30,6 +29,9 @@ public:
 
     // Run main loop
     void run();
+
+private:
+    Game game;
 };
 
 #endif //ENGINE_H

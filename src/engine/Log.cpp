@@ -4,7 +4,7 @@
 
 Log::Log()
 {
-    file.open(GAME_FILE, std::fstream::app);
+    file.open(GAME_LOG_FILE, std::fstream::app);
 }
 
 Log::~Log()
@@ -20,7 +20,7 @@ std::ofstream Log::file;
 
 void Log::restart()
 {
-    file.open(GAME_FILE, std::fstream::trunc);
+    file.open(GAME_LOG_FILE, std::fstream::trunc);
     file.close();
 }
 

@@ -2,8 +2,41 @@
 // Created by gaetz on 08/06/2021.
 //
 
-int test()
+#include <SDL_events.h>
+#include "../engine/Game.h"
+
+Game::Game() : isRunning(true) {}
+
+Game::~Game()
 {
-    int i = 42;
-    return i;
+}
+
+
+void Game::load()
+{
+
+}
+
+void Game::handleInputs()
+{
+    SDL_Event e;
+    while (SDL_PollEvent(&e) != 0)
+    {
+        // Close the window when user clicks the X button or alt-f4
+        if (e.type == SDL_QUIT) isRunning = false;
+    }
+}
+
+void Game::update(unsigned int dt)
+{
+
+}
+
+void Game::draw()
+{
+
+}
+void Game::cleanup()
+{
+
 }

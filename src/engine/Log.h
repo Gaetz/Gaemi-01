@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 
-#define GAME_FILE "game.log"
+#define GAME_LOG_FILE "game.log"
 
 enum LogLevel
 {
@@ -27,7 +27,7 @@ extern LogConfig LOG_CONFIG;
 
 // General purpose logging class
 // Logs in standard output and in a file, configured
-// with the GL_LOG_FILE macro.
+// with the GAME_LOG_FILE macro.
 // Usage : LOG(MessageLevel) << "Message"
 class Log
 {
