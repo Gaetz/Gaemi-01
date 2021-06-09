@@ -1,7 +1,7 @@
 #include "engine/Engine.h"
 #include "engine/Log.h"
 
-LogConfig LOG_CONFIG = {};
+LogConfig LOG_CONFIG {};
 
 int main(int argc, char* argv[])
 {

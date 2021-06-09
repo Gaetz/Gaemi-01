@@ -2,7 +2,8 @@
 // Created by gaetz on 08/06/2021.
 //
 
-#include <SDL_events.h>
+
+#include <SDL2/SDL_events.h>
 #include "../engine/Game.h"
 
 Game::Game() : isRunning(true) {}

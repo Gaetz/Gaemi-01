@@ -4,6 +4,7 @@
 #include "Types.h"
 #include "VkInit.h"
 #include "Timer.h"
+#include <SDL2/SDL.h>
 
 
 void Engine::init() {
