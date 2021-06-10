@@ -3,7 +3,13 @@
 //
 
 
-#include <SDL2/SDL_events.h>
+
+
+#ifdef __linux__
+    #include <SDL2/SDL_events.h>
+#elif _WIN32
+	#include <SDL_events.h>
+#endif
 #include "../engine/Game.h"
 
 Game::Game() : isRunning(true) {}

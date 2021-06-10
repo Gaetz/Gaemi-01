@@ -1,5 +1,10 @@
 #include "Engine.h"
-#include <SDL2/SDL.h>
+
+#ifdef __linux__
+    #include <SDL2/SDL.h>
+#elif _WIN32
+	#include <SDL.h>
+#endif
 
 #include "Types.h"
 #include "VkInit.h"
@@ -23,7 +28,7 @@
 void Engine::init() {
     SDL_Init(SDL_INIT_VIDEO);
     initVulkan();
-    initSwapchain();
+    //initSwapchain();
     isInitialized = window.init(windowExtent.width, windowExtent.height, false);
 }
 
@@ -77,11 +82,13 @@ void Engine::initVulkan() {
 
 #else
     auto instanceResult = builder.set_app_name("Gaemi")
-            .request_validation_layers(false)
+            .request_validation_layers(true)
             .require_api_version(1, 1, 0)
+            .use_default_debug_messenger()
             .build();
     vkb::Instance vkbInstance = instanceResult.value();
     instance = vkbInstance.instance;
+    debugMessenger = vkbInstance.debug_messenger;
 
 #endif
 

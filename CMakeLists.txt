@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.8)
-project(GAEMI-01 VERSION 0.1.0)
+project(Gaemi VERSION 0.1.0)
 
 ## Vulkan
 find_package(Vulkan REQUIRED)
@@ -8,19 +8,6 @@ find_package(Vulkan REQUIRED)
 if (CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DDEBUG)
 endif()
-
-
-## SDL2
-#if (WIN32)
-#  set(SDL2_DIR ${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14)
-#endif (WIN32)
-
-#find_package(SDL2 REQUIRED)
-#include_directories(${SDL2_INCLUDE_DIRS})
-
-#if (NOT WIN32)
-#  string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
-#endif (NOT WIN32)
 
 
 
@@ -56,6 +43,6 @@ foreach(GLSL ${GLSL_SOURCE_FILES})
 endforeach(GLSL)
 
 add_custom_target(
-    Shaders 
+    Shaders
     DEPENDS ${SPIRV_BINARY_FILES}
 )

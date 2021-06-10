@@ -8,7 +8,7 @@ add_library(stb_image INTERFACE)
 
 add_library(tinyobjloader STATIC)
 
-target_sources(vkbootstrap PRIVATE 
+target_sources(vkbootstrap PRIVATE
     vkbootstrap/VkBootstrap.h
     vkbootstrap/VkBootstrap.cpp
     )
@@ -20,48 +20,35 @@ target_link_libraries(vkbootstrap PUBLIC Vulkan::Vulkan $<$<BOOL:UNIX>:${CMAKE_D
 target_include_directories(vma INTERFACE vma)
 target_include_directories(glm INTERFACE glm)
 
-target_sources(tinyobjloader PRIVATE 
+target_sources(tinyobjloader PRIVATE
     tinyobjloader/tiny_obj_loader.h
     tinyobjloader/tiny_obj_loader.cc
     )
 
 target_include_directories(tinyobjloader PUBLIC tinyobjloader)
 
-
-add_library(SDL2 INTERFACE)
-set(SDL2_DIR "SDL_PATH" CACHE FILEPATH "${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14")
-
 ## SDL2
-if (WIN32)
-  set(SDL2_DIR ${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14)
-endif (WIN32)
-
+add_library(SDL2 INTERFACE)
+set(SDL2_DIR "${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14")
+set(SDL_PATH "${SDL2_DIR}")
 find_package(SDL2 REQUIRED)
 
 if (WIN32)
-  #include_directories(${SDL2_INCLUDE_DIRS})
-  target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include ${SDL2_image_DIR}/include)
+  target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include)
+  target_link_directories(SDL2 INTERFACE ${SDL2_DIR}/lib/x64)
 elseif (UNIX)
-  #include_directories(${SDL2_INCLUDE_DIRS}/SDL2)
-  target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include ${SDL2_image_DIR}/include)
-  string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
+  target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include/SDL2 ${SDL2_image_DIR}/include/SDL2)
+  target_link_directories(SDL2 INTERFACE ${SDL2_DIR}/lib ${SDL2_image_DIR}/lib)
 endif ()
-
-#if (WIN32)
-#target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include ${SDL2_image_DIR}/include)
-#target_link_directories(SDL2 INTERFACE ${SDL2_DIR}/lib/x64 ${SDL2_image_DIR}/lib/x64)
-#elseif (UNIX)
-#target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include/SDL2 ${SDL2_image_DIR}/include/SDL2)
-#target_link_directories(SDL2 INTERFACE ${SDL2_DIR}/lib ${SDL2_image_DIR}/lib)
-#endif()
 
 target_link_libraries(SDL2 INTERFACE ${SDL2_LIBRARIES})
 
+## imgui
 add_library(imgui STATIC)
 
 target_include_directories(imgui PUBLIC imgui)
 
-target_sources(imgui PRIVATE 
+target_sources(imgui PRIVATE
     imgui/imgui.h
     imgui/imgui.cpp
 
