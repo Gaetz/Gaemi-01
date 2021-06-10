@@ -11,6 +11,7 @@ if (CMAKE_BUILD_TYPE MATCHES "")
     # Build type is not set eg. command was "cmake .."
     message(STATUS "  Build type was unspecified, set to Debug")
     set(CMAKE_BUILD_TYPE Debug)
+    add_definitions(-D_DEBUG)
 else ()
     message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
 endif ()
@@ -22,7 +23,7 @@ else ()
 endif ()
 
 #if (CMAKE_BUILD_TYPE MATCHES Debug)
-#  add_definitions(-DDEBUG)
+#
 #endif()
 
 

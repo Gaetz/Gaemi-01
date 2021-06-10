@@ -29,14 +29,15 @@ target_include_directories(tinyobjloader PUBLIC tinyobjloader)
 
 ## SDL2
 add_library(SDL2 INTERFACE)
-set(SDL2_DIR "${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14")
-set(SDL_PATH "${SDL2_DIR}")
-find_package(SDL2 REQUIRED)
 
 if (WIN32)
+  set(SDL2_DIR "${CMAKE_SOURCE_DIR}/externals/SDL2-2.0.14")
+  set(SDL_PATH "${SDL2_DIR}")
+  find_package(SDL2 REQUIRED)
   target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include)
   target_link_directories(SDL2 INTERFACE ${SDL2_DIR}/lib/x64)
 elseif (UNIX)
+  find_package(SDL2 REQUIRED)
   target_include_directories(SDL2 INTERFACE ${SDL2_DIR}/include/SDL2 ${SDL2_image_DIR}/include/SDL2)
   target_link_directories(SDL2 INTERFACE ${SDL2_DIR}/lib ${SDL2_image_DIR}/lib)
 endif ()
