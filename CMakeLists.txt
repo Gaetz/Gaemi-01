@@ -1,14 +1,29 @@
 cmake_minimum_required (VERSION 3.8)
 project(Gaemi VERSION 0.1.0)
 
+
 ## Vulkan
 find_package(Vulkan REQUIRED)
 
-## Debug
+
+## Debug fix for VsCode
+if (CMAKE_BUILD_TYPE MATCHES "")
+    # Build type is not set eg. command was "cmake .."
+    message(STATUS "  Build type was unspecified, set to Debug")
+    set(CMAKE_BUILD_TYPE Debug)
+else ()
+    message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
+endif ()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "_DEBUG")
+else ()
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
+endif ()
+
 if (CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DDEBUG)
 endif()
-
 
 
 ## Libs
