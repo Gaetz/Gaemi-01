@@ -11,7 +11,7 @@
 #include "Timer.h"
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 
-#if defined(DEBUG) || defined(_DEBUG)
+#ifdef _DEBUG
 #define VK_CHECK(x)                                                 \
 	do                                                              \
 	{                                                               \
@@ -27,9 +27,10 @@
 
 void Engine::init() {
     SDL_Init(SDL_INIT_VIDEO);
+    window.init(windowExtent.width, windowExtent.height, false);
     initVulkan();
-    //initSwapchain();
-    isInitialized = window.init(windowExtent.width, windowExtent.height, false);
+    initSwapchain();
+    isInitialized = true;
 }
 
 void Engine::cleanup() {
@@ -69,7 +70,7 @@ void Engine::initVulkan() {
     // -- INSTANCE --
     vkb::InstanceBuilder builder;
 
-#if defined(DEBUG) || defined(_DEBUG)
+#ifdef _DEBUG
     // Make vulkan instance with basic debug features
     auto instanceResult = builder.set_app_name("Gaemi")
             .request_validation_layers(true)
@@ -136,7 +137,7 @@ void Engine::vulkanCleanup() {
 
     vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
-#if defined(DEBUG) || defined(_DEBUG)
+#ifdef _DEBUG
     vkb::destroy_debug_utils_messenger(instance, debugMessenger);
 #endif
     vkDestroyInstance(instance, nullptr);

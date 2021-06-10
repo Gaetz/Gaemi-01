@@ -21,9 +21,9 @@ else ()
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
 endif ()
 
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-  add_definitions(-DDEBUG)
-endif()
+#if (CMAKE_BUILD_TYPE MATCHES Debug)
+#  add_definitions(-DDEBUG)
+#endif()
 
 
 ## Libs
