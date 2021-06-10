@@ -11,7 +11,7 @@
 #include "Timer.h"
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 #define VK_CHECK(x)                                                 \
 	do                                                              \
 	{                                                               \
@@ -69,7 +69,7 @@ void Engine::initVulkan() {
     // -- INSTANCE --
     vkb::InstanceBuilder builder;
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
     // Make vulkan instance with basic debug features
     auto instanceResult = builder.set_app_name("Gaemi")
             .request_validation_layers(true)
@@ -82,13 +82,11 @@ void Engine::initVulkan() {
 
 #else
     auto instanceResult = builder.set_app_name("Gaemi")
-            .request_validation_layers(true)
+            .request_validation_layers(false)
             .require_api_version(1, 1, 0)
-            .use_default_debug_messenger()
             .build();
     vkb::Instance vkbInstance = instanceResult.value();
     instance = vkbInstance.instance;
-    debugMessenger = vkbInstance.debug_messenger;
 
 #endif
 
@@ -138,7 +136,7 @@ void Engine::vulkanCleanup() {
 
     vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
     vkb::destroy_debug_utils_messenger(instance, debugMessenger);
 #endif
     vkDestroyInstance(instance, nullptr);
