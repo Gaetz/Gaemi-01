@@ -35,7 +35,7 @@ public:
     bool init(int width, int height, bool isFullscreen);
     void updateFpsCounter(long dt);
     void cleanup();
-
+    SDL_Window* get() { return window.get(); }
 
 private:
     unique_ptr<SDL_Window, SdlWindowDestroyer> window;

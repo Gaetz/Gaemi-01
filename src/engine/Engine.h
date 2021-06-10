@@ -5,6 +5,9 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include <vector>
+using std::vector;
+
 #include "Types.h"
 #include "Window.h"
 #include "Game.h"
@@ -17,6 +20,17 @@ public:
     int frameNumber {0};
     VkExtent2D windowExtent{ 1280 , 720 };
     Window window {"Gaemi-01"};
+
+    VkInstance instance;
+    VkDebugUtilsMessengerEXT debugMessenger;
+    VkPhysicalDevice chosenGPU;
+    VkDevice device;
+    VkSurfaceKHR surface;
+    VkSwapchainKHR swapchain;
+    VkFormat swapchainImageFormat;
+    vector<VkImage> swapchainImages;
+    vector<VkImageView> swapchainImageViews;
+
 
     // Initializes everything in the engine
     void init();
@@ -32,6 +46,14 @@ public:
 
 private:
     Game game;
+
+    // Setup vulkan
+    void initVulkan();
+
+    // Setup vulkan's swapchain
+    void initSwapchain();
+
+    void vulkanCleanup();
 };
 
 #endif //ENGINE_H

@@ -4,6 +4,10 @@ project(GAEMI-01 VERSION 0.1.0)
 ## Vulkan
 find_package(Vulkan REQUIRED)
 
+## Debug
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+  add_definitions(-DDEBUG)
+endif()
 
 
 ## SDL2
@@ -17,6 +21,7 @@ find_package(Vulkan REQUIRED)
 #if (NOT WIN32)
 #  string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 #endif (NOT WIN32)
+
 
 
 ## Libs
