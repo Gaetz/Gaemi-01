@@ -21,16 +21,34 @@ public:
     VkExtent2D windowExtent{ 1280 , 720 };
     Window window {"Gaemi-01"};
 
+    // Instance and devices
+
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkPhysicalDevice chosenGPU;
     VkDevice device;
+
+    // Swapchain
+
     VkSurfaceKHR surface;
     VkSwapchainKHR swapchain;
     VkFormat swapchainImageFormat;
     vector<VkImage> swapchainImages;
     vector<VkImageView> swapchainImageViews;
 
+    // Queues and commands
+
+    VkQueue graphicsQueue;
+    uint32_t graphicsQueueFamily;
+    VkCommandPool commandPool;
+    VkCommandBuffer mainCommandBuffer;
+
+    // Render pass and synchronisation
+
+    VkRenderPass renderPass;
+    vector<VkFramebuffer> framebuffers;
+    VkSemaphore presentSemaphore, renderSemaphore;
+    VkFence renderFence;
 
     // Initializes everything in the engine
     void init();
@@ -48,11 +66,15 @@ private:
     Game game;
 
     // Setup vulkan
+
     void initVulkan();
-
-    // Setup vulkan's swapchain
     void initSwapchain();
+    void initCommands();
+    void initDefaultRenderpass();
+    void initFramebuffers();
+    void initSyncStructures();
 
+    // Clean
     void vulkanCleanup();
 };
 
