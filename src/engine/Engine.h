@@ -50,6 +50,11 @@ public:
     VkSemaphore presentSemaphore, renderSemaphore;
     VkFence renderFence;
 
+    // Pipeline
+
+    VkPipeline trianglePipeline;
+    VkPipelineLayout trianglePipelineLayout;
+
     // Initializes everything in the engine
     void init();
 
@@ -73,9 +78,14 @@ private:
     void initDefaultRenderpass();
     void initFramebuffers();
     void initSyncStructures();
+    void initPipelines();
+
+    // Shaders
+
+    bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
 
     // Clean
-    void vulkanCleanup();
+    void cleanupVulkan();
 };
 
 #endif //ENGINE_H

@@ -22,10 +22,6 @@ else ()
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
 endif ()
 
-#if (CMAKE_BUILD_TYPE MATCHES Debug)
-#
-#endif()
-
 
 ## Libs
 add_subdirectory( externals )
