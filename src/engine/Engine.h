@@ -6,6 +6,7 @@
 #define ENGINE_H
 
 #include <vector>
+#include <DeletionQueue.h>
 #include "vk/Types.h"
 #include "Window.h"
 #include "Game.h"
@@ -14,6 +15,7 @@
 using std::vector;
 using engine::input::InputSystem;
 using game::Game;
+using engine::vk::DeletionQueue;
 
 namespace engine {
 
@@ -61,6 +63,7 @@ public:
     VkPipeline trianglePipeline;
     VkPipeline redTrianglePipeline;
     VkPipelineLayout trianglePipelineLayout;
+    DeletionQueue mainDeletionQueue;
 
     // Getters and setters
 

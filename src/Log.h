@@ -50,7 +50,7 @@ private:
 
 
 #define LOG(level)                                              \
-    if (static_cast<int>(level) > LOG_CONFIG.reportingLevel)   \
+    if (static_cast<int>(level) > LOG_CONFIG.reportingLevel)    \
         ;                                                       \
     else                                                        \
         Log().get(level)

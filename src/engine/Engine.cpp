@@ -14,7 +14,7 @@
 #include "vk/VkInit.h"
 #include "Timer.h"
 #include "../Log.h"
-#include "vk/VkPipelineBuilder.h"
+#include "vk/PipelineBuilder.h"
 
 #ifdef _DEBUG
 #define VK_CHECK(x)                                                             \
@@ -27,10 +27,13 @@
             abort();                                                            \
         }                                                                       \
     } while (0)
+#else
+#define VK_CHECK(x) \
+        x
 #endif
 
 using engine::Engine;
-using engine::vk::VkPipelineBuilder;
+using engine::vk::PipelineBuilder;
 using engine::input::InputState;
 
 Engine::Engine() :
@@ -235,17 +238,12 @@ void Engine::initVulkan() {
 }
 
 void Engine::cleanupVulkan() {
-    vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroySwapchainKHR(device, swapchain, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
+    // Make sure the GPU has stopped before clearing
+    vkWaitForFences(device, 1, &renderFence, true, 1000000000);
+    mainDeletionQueue.flush();
 
-    for (int i = 0; i < swapchainImages.size(); ++i) {
-        vkDestroyFramebuffer(device, framebuffers[i], nullptr);
-        vkDestroyImageView(device, swapchainImageViews[i], nullptr);
-    }
-
-    vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
+    vkDestroyDevice(device, nullptr);
 #ifdef _DEBUG
     vkb::destroy_debug_utils_messenger(instance, debugMessenger);
 #endif
@@ -265,6 +263,11 @@ void Engine::initSwapchain() {
     swapchainImages = vkbSwapchain.get_images().value();
     swapchainImageViews = vkbSwapchain.get_image_views().value();
     swapchainImageFormat = vkbSwapchain.image_format;
+
+    // Cleanup callback
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
+    });
 }
 
 void Engine::initCommands() {
@@ -276,6 +279,10 @@ void Engine::initCommands() {
     // Command buffer
     auto cmdAllocInfo = vk::commandBufferAllocateInfo(commandPool, 1);
     VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &mainCommandBuffer));
+    // Cleanup callback
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyCommandPool(device, commandPool, nullptr);
+    });
 }
 
 void Engine::initDefaultRenderpass() {
@@ -321,6 +328,11 @@ void Engine::initDefaultRenderpass() {
     vkRenderPassCreateInfo.pSubpasses = &subpass;
 
     VK_CHECK(vkCreateRenderPass(device, &vkRenderPassCreateInfo, nullptr, &renderPass));
+
+    // Cleanup callback
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyRenderPass(device, renderPass, nullptr);
+    });
 }
 
 void Engine::initFramebuffers() {
@@ -343,6 +355,11 @@ void Engine::initFramebuffers() {
     for (size_t i = 0; i < swapchainImageCount; ++i) {
         framebufferCreateInfo.pAttachments = &swapchainImageViews[i];
         VK_CHECK(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &framebuffers[i]));
+        // Cleanup callback
+        mainDeletionQueue.pushFunction([=]() {
+            vkDestroyFramebuffer(device, framebuffers[i], nullptr);
+            vkDestroyImageView(device, swapchainImageViews[i], nullptr);
+        });
     }
 }
 
@@ -354,6 +371,10 @@ void Engine::initSyncStructures() {
     // wait on it before using it on a GPU command (for the first frame)
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence));
+    // Cleanup callback
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyFence(device, renderFence, nullptr);
+    });
 
     // For the semaphores we don't need any flags
     VkSemaphoreCreateInfo semaphoreCreateInfo = {};
@@ -362,6 +383,11 @@ void Engine::initSyncStructures() {
     semaphoreCreateInfo.flags = 0;
     VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore));
     VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore));
+    // Cleanup callbacks
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroySemaphore(device, presentSemaphore, nullptr);
+        vkDestroySemaphore(device, renderSemaphore, nullptr);
+    });
 }
 
 bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule) {
@@ -434,7 +460,7 @@ void Engine::initPipelines() {
     VK_CHECK(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &trianglePipelineLayout));
 
     // -- BUILD PIPELINE --
-    VkPipelineBuilder pipelineBuilder;
+    PipelineBuilder pipelineBuilder;
 
     //	Build both the vertex and fragment stages. This lets the pipeline know the shader modules per stage.
     pipelineBuilder.shaderStages.push_back(
@@ -483,6 +509,19 @@ void Engine::initPipelines() {
     pipelineBuilder.shaderStages.push_back(
             vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, redTriangleFragShader));
     redTrianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
+
+    // Cleanup
+    vkDestroyShaderModule(device, triangleFragShader, nullptr);
+    vkDestroyShaderModule(device, triangleVertexShader, nullptr);
+    vkDestroyShaderModule(device, redTriangleVertexShader, nullptr);
+    vkDestroyShaderModule(device, redTriangleFragShader, nullptr);
+
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyPipeline(device, trianglePipeline, nullptr);
+        vkDestroyPipeline(device, redTrianglePipeline, nullptr);
+        vkDestroyPipelineLayout(device, trianglePipelineLayout, nullptr);
+    });
+
 }
 
 void engine::Engine::processInputs() {

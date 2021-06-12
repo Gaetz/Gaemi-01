@@ -2,8 +2,8 @@
 // Created by gaetz on 12/06/2021.
 //
 
-#ifndef VKPIPELINEBUILDER_H
-#define VKPIPELINEBUILDER_H
+#ifndef VK_PIPELINEBUILDER_H
+#define VK_PIPELINEBUILDER_H
 
 #include "vulkan/vulkan.h"
 
@@ -13,7 +13,7 @@ using std::vector;
 
 namespace engine::vk {
 
-    class VkPipelineBuilder {
+    class PipelineBuilder {
     public:
         vector<VkPipelineShaderStageCreateInfo> shaderStages;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo;
@@ -30,4 +30,4 @@ namespace engine::vk {
     };
 
 }
-#endif //VKPIPELINEBUILDER_H
+#endif //VK_PIPELINEBUILDER_H

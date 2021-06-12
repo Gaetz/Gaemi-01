@@ -2,12 +2,12 @@
 // Created by gaetz on 12/06/2021.
 //
 
-#include "VkPipelineBuilder.h"
+#include "PipelineBuilder.h"
 #include "../../Log.h"
 
-using engine::vk::VkPipelineBuilder;
+using engine::vk::PipelineBuilder;
 
-VkPipeline VkPipelineBuilder::buildPipeline(VkDevice device, VkRenderPass pass) {
+VkPipeline PipelineBuilder::buildPipeline(VkDevice device, VkRenderPass pass) {
     // Make viewport state from our stored viewport and scissor.
     VkPipelineViewportStateCreateInfo viewportState {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -52,9 +52,7 @@ VkPipeline VkPipelineBuilder::buildPipeline(VkDevice device, VkRenderPass pass) 
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) != VK_SUCCESS) {
         LOG(LogLevel::Error) << "Failed to create pipeline";
         return VK_NULL_HANDLE;
-    }
-    else
-    {
+    } else {
         return newPipeline;
     }
 }
