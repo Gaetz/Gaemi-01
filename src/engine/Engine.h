@@ -6,20 +6,26 @@
 #define ENGINE_H
 
 #include <vector>
-using std::vector;
-
-#include "Types.h"
+#include "vk/Types.h"
 #include "Window.h"
 #include "Game.h"
+#include "../engine/input/InputSystem.h"
 
-class Engine
-{
+using std::vector;
+using engine::input::InputSystem;
+using game::Game;
+
+namespace engine {
+
+class Engine {
 public:
 
-    bool isInitialized{ false };
-    int frameNumber {0};
-    VkExtent2D windowExtent{ 1280 , 720 };
-    Window window {"Gaemi-01"};
+    Engine();
+
+    bool isInitialized;
+    int frameNumber;
+    VkExtent2D windowExtent;
+    Window window;
 
     // Instance and devices
 
@@ -53,13 +59,21 @@ public:
     // Pipeline
 
     VkPipeline trianglePipeline;
+    VkPipeline redTrianglePipeline;
     VkPipelineLayout trianglePipelineLayout;
+
+    // Getters and setters
+
+    InputSystem& getInputSystem() { return inputSystem; }
 
     // Initializes everything in the engine
     void init();
 
     // Shuts down the engine
     void cleanup();
+
+    // Process engine inputs
+    void processInputs();
 
     // Draw loop
     void draw();
@@ -69,15 +83,23 @@ public:
 
 private:
     Game game;
+    InputSystem inputSystem;
+    int selectedShader;
 
     // Setup vulkan
 
     void initVulkan();
+
     void initSwapchain();
+
     void initCommands();
+
     void initDefaultRenderpass();
+
     void initFramebuffers();
+
     void initSyncStructures();
+
     void initPipelines();
 
     // Shaders
@@ -88,4 +110,5 @@ private:
     void cleanupVulkan();
 };
 
+}
 #endif //ENGINE_H

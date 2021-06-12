@@ -9,17 +9,15 @@
 
 #define GAME_LOG_FILE "game.log"
 
-enum LogLevel
-{
-    Error,
-    Warning,
-    Info,
-    Debug
+enum class LogLevel {
+    Error = 0,
+    Warning = 1,
+    Info = 2,
+    Debug = 3
 };
 
-struct LogConfig
-{
-    LogLevel reporting_level = Info;
+struct LogConfig {
+    int reportingLevel = static_cast<int>(LogLevel::Info);
     bool restart = false;
 };
 
@@ -29,12 +27,14 @@ extern LogConfig LOG_CONFIG;
 // Logs in standard output and in a file, configured
 // with the GAME_LOG_FILE macro.
 // Usage : LOG(MessageLevel) << "Message"
-class Log
-{
+class Log {
 public:
     Log();
+
     virtual ~Log();
-    std::ostringstream &get(LogLevel level = Info);
+
+    std::ostringstream& get(LogLevel level = LogLevel::Info);
+
     static void restart();
 
 private:
@@ -43,14 +43,16 @@ private:
 
     std::string getLabel(LogLevel type);
 
-    Log(const Log &);
-    Log &operator=(const Log &);
+    Log(const Log&);
+
+    Log& operator=(const Log&);
 };
 
-#define LOG(level)                          \
-    if (level > LOG_CONFIG.reporting_level) \
-        ;                                   \
-    else                                    \
+
+#define LOG(level)                                              \
+    if (static_cast<int>(level) > LOG_CONFIG.reportingLevel)   \
+        ;                                                       \
+    else                                                        \
         Log().get(level)
 
 #endif

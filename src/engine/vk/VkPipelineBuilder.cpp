@@ -3,7 +3,9 @@
 //
 
 #include "VkPipelineBuilder.h"
-#include "Log.h"
+#include "../../Log.h"
+
+using engine::vk::VkPipelineBuilder;
 
 VkPipeline VkPipelineBuilder::buildPipeline(VkDevice device, VkRenderPass pass) {
     // Make viewport state from our stored viewport and scissor.
@@ -48,7 +50,7 @@ VkPipeline VkPipelineBuilder::buildPipeline(VkDevice device, VkRenderPass pass) 
     // It's easy to error out on create graphics pipeline, so we handle it a bit better than the common VK_CHECK case
     VkPipeline newPipeline;
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) != VK_SUCCESS) {
-        LOG(Error) << "Failed to create pipeline";
+        LOG(LogLevel::Error) << "Failed to create pipeline";
         return VK_NULL_HANDLE;
     }
     else

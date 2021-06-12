@@ -2,38 +2,42 @@
 #define TIMER_H
 
 #ifdef __linux__
-	#include <SDL2/SDL.h>
+
+#include <SDL2/SDL.h>
+
 #elif _WIN32
-	#include <SDL.h>
+#include <SDL.h>
 #endif
+
+namespace engine {
 
 // Hold time related functions.
 // In charge of computing the delta time and
 // ensure smooth game ticking.
-class Timer
-{
-public:
-    Timer();
-    virtual ~Timer();
+    class Timer {
+    public:
+        Timer();
 
-    // Compute delta time as the number of milliseconds since last frame
-    unsigned int computeDeltaTime();
+        virtual ~Timer();
 
-    // Wait if the game run faster than the decided FPS
-    void delayTime();
+        // Compute delta time as the number of milliseconds since last frame
+        unsigned int computeDeltaTime();
 
-private:
-	const static int FPS = 60;
-	const static int frameDelay = 1000 / FPS;
+        // Wait if the game run faster than the decided FPS
+        void delayTime();
 
-	// Time in milliseconds when frame starts
-	unsigned int frameStart;
+    private:
+        const static int FPS = 60;
+        const static int frameDelay = 1000 / FPS;
 
-	// Last frame start time in milliseconds
-	unsigned int lastFrame;
+        // Time in milliseconds when frame starts
+        unsigned int frameStart;
 
-	// Time it tooks to run the loop. Used to cap framerate.
-	unsigned int frameTime;
-};
+        // Last frame start time in milliseconds
+        unsigned int lastFrame;
 
+        // Time it tooks to run the loop. Used to cap framerate.
+        unsigned int frameTime;
+    };
+}
 #endif

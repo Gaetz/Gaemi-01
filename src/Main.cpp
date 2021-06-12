@@ -1,12 +1,14 @@
 #include "engine/Engine.h"
-#include "engine/Log.h"
+#include "Log.h"
+
+using engine::Engine;
 
 LogConfig LOG_CONFIG {};
 
 int main(int argc, char* argv[])
 {
     // Init logging
-    LOG_CONFIG.reporting_level = Debug;
+    LOG_CONFIG.reportingLevel = static_cast<int>(LogLevel::Debug);
     LOG_CONFIG.restart = true;
     if (LOG_CONFIG.restart) {
         Log::restart();

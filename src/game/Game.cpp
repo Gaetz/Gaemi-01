@@ -2,48 +2,40 @@
 // Created by gaetz on 08/06/2021.
 //
 
-
-
-
 #ifdef __linux__
-    #include <SDL2/SDL_events.h>
+
+#include <SDL2/SDL_events.h>
+
 #elif _WIN32
-	#include <SDL_events.h>
+#include <SDL_events.h>
 #endif
+
 #include "../engine/Game.h"
+
+using game::Game;
 
 Game::Game() : isRunning(true) {}
 
-Game::~Game()
-{
+Game::~Game() {
 }
 
 
-void Game::load()
-{
+void Game::load() {
 
 }
 
-void Game::handleInputs()
-{
-    SDL_Event e;
-    while (SDL_PollEvent(&e) != 0)
-    {
-        // Close the window when user clicks the X button or alt-f4
-        if (e.type == SDL_QUIT) isRunning = false;
-    }
-}
-
-void Game::update(unsigned int dt)
-{
+void Game::processInputs() {
 
 }
 
-void Game::draw()
-{
+void Game::update(unsigned int dt) {
 
 }
-void Game::cleanup()
-{
+
+void Game::draw() {
+
+}
+
+void Game::cleanup() {
 
 }

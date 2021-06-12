@@ -7,7 +7,7 @@
 
 #include "Types.h"
 
-namespace vkinit {
+namespace engine::vk {
 
     // Create a command pool for commands submitted to the graphics queue.
     VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex,

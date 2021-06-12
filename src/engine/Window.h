@@ -6,23 +6,25 @@
 #define WINDOW_H
 
 #ifdef __linux__
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
+
 #elif _WIN32
 #include <SDL.h>
 #include <SDL_vulkan.h>
 #endif
 
 #include <memory>
+#include <string>
+
+using std::string;
 using std::unique_ptr;
 
-#include <string>
-using std::string;
+namespace engine {
 
-struct SdlWindowDestroyer
-{
-    void operator()(SDL_Window *window) const
-    {
+struct SdlWindowDestroyer {
+    void operator()(SDL_Window *window) const {
         SDL_DestroyWindow(window);
     }
 };
@@ -30,12 +32,16 @@ struct SdlWindowDestroyer
 class Window {
 public:
     explicit Window(string titleP);
+
     ~Window();
 
     bool init(int width, int height, bool isFullscreen);
+
     void updateFpsCounter(long dt);
+
     void cleanup();
-    SDL_Window* get() { return window.get(); }
+
+    SDL_Window *get() { return window.get(); }
 
 private:
     unique_ptr<SDL_Window, SdlWindowDestroyer> window;
@@ -45,5 +51,6 @@ private:
     int frameCount;
 };
 
+}
 
 #endif //WINDOW_H

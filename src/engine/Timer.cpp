@@ -1,5 +1,7 @@
 #include "Timer.h"
 
+using engine::Timer;
+
 Timer::Timer() : frameStart(0), lastFrame(0), frameTime(0)
 {
 }

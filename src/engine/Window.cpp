@@ -2,10 +2,12 @@
 // Created by gaetz on 08/06/2021.
 //
 
-#include "Window.h"
-#include "Log.h"
-
 #include <utility>
+
+#include "Window.h"
+#include "../Log.h"
+
+using engine::Window;
 
 Window::Window(string titleP): title(std::move(titleP)),
                                      previousSeconds(0),
@@ -15,7 +17,7 @@ Window::Window(string titleP): title(std::move(titleP)),
 }
 
 Window::~Window() {
-    LOG(Info) << "Bye :)";
+    LOG(LogLevel::Info) << "Bye :)";
 }
 
 bool Window::init(int width, int height, bool isFullscreen) {
@@ -30,7 +32,7 @@ bool Window::init(int width, int height, bool isFullscreen) {
 
     if (!window) return false;
 
-    LOG(Info) << "Window initialised";
+    LOG(LogLevel::Info) << "Window initialised";
     return true;
 }
 

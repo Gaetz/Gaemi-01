@@ -1,35 +1,52 @@
 #include "Engine.h"
 
 #ifdef __linux__
-    #include <SDL2/SDL.h>
+
+#include <SDL2/SDL.h>
+
 #elif _WIN32
-	#include <SDL.h>
+#include <SDL.h>
 #endif
+
 #include <fstream>
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 
-#include "VkInit.h"
+#include "vk/VkInit.h"
 #include "Timer.h"
-#include "Log.h"
-#include "VkPipelineBuilder.h"
+#include "../Log.h"
+#include "vk/VkPipelineBuilder.h"
 
 #ifdef _DEBUG
-#define VK_CHECK(x)                                                 \
-	do                                                              \
-	{                                                               \
-		VkResult err = x;                                           \
-		if (err)                                                    \
-		{                                                           \
-			LOG(Error) << "Detected Vulkan error: " << err;         \
-			abort();                                                \
-		}                                                           \
-	} while (0)
+#define VK_CHECK(x)                                                             \
+    do                                                                          \
+    {                                                                           \
+        VkResult err = x;                                                       \
+        if (err)                                                                \
+        {                                                                       \
+            LOG(LogLevel::Error) << "Detected Vulkan error: " << err;           \
+            abort();                                                            \
+        }                                                                       \
+    } while (0)
 #endif
 
+using engine::Engine;
+using engine::vk::VkPipelineBuilder;
+using engine::input::InputState;
+
+Engine::Engine() :
+        isInitialized {false},
+        frameNumber {0},
+        windowExtent {1280, 720},
+        window {"Gaemi-01"},
+        inputSystem {windowExtent.width, windowExtent.height},
+        selectedShader {0} {
+
+}
 
 void Engine::init() {
     SDL_Init(SDL_INIT_VIDEO);
     window.init(windowExtent.width, windowExtent.height, false);
+    inputSystem.init();
     initVulkan();
     initSwapchain();
     initCommands();
@@ -68,7 +85,7 @@ void Engine::draw() {
 
     // Begin the command buffer recording. We will use this command buffer exactly once,
     // so we want to let Vulkan know that
-    VkCommandBufferBeginInfo cmdBeginInfo{};
+    VkCommandBufferBeginInfo cmdBeginInfo {};
     cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     cmdBeginInfo.pNext = nullptr;
     cmdBeginInfo.pInheritanceInfo = nullptr;
@@ -78,11 +95,11 @@ void Engine::draw() {
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
     VkClearValue clearValue;
     float flash = abs(sin(frameNumber / 120.f));
-    clearValue.color = { { 0.0f, 0.0f, flash, 1.0f } };
+    clearValue.color = {{0.0f, 0.0f, flash, 1.0f}};
 
     // Start the main renderpass.
     // We will use the clear color from above, and the framebuffer of the index the swapchain gave us.
-    VkRenderPassBeginInfo renderPassBeginInfo{};
+    VkRenderPassBeginInfo renderPassBeginInfo {};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.pNext = nullptr;
     renderPassBeginInfo.renderPass = renderPass;
@@ -94,8 +111,13 @@ void Engine::draw() {
     renderPassBeginInfo.pClearValues = &clearValue;
     vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+    // -- DRAW HERE --
 
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, trianglePipeline);
+    if (selectedShader == 0) {
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, trianglePipeline);
+    } else {
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, redTrianglePipeline);
+    }
     vkCmdDraw(cmd, 3, 1, 0, 0);
 
     //game.draw();
@@ -109,7 +131,7 @@ void Engine::draw() {
     // Prepare the submission to the queue.
     // We want to wait on the presentSemaphore, as that semaphore is signaled when the swapchain is ready.
     // We will signal the renderSemaphore, to signal that rendering has finished.
-    VkSubmitInfo submitInfo{};
+    VkSubmitInfo submitInfo {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.pNext = nullptr;
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -128,7 +150,7 @@ void Engine::draw() {
     // This will put the image we just rendered into the visible window.
     // We want to wait on the renderSemaphore for that,
     // as it's necessary that drawing commands have finished before the image is displayed to the user.
-    VkPresentInfoKHR presentInfo{};
+    VkPresentInfoKHR presentInfo {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = nullptr;
     presentInfo.pSwapchains = &swapchain;
@@ -148,12 +170,11 @@ void Engine::run() {
     Timer timer;
 
     game.load();
-    while (game.isRunning)
-    {
+    while (game.isRunning) {
         uint32_t dt = timer.computeDeltaTime();
         window.updateFpsCounter(dt);
 
-        game.handleInputs();
+        processInputs();
         game.update(dt);
         draw();
 
@@ -193,7 +214,7 @@ void Engine::initVulkan() {
 
     // Use VkBootstrap to select a GPU.
     // We want a GPU that can write to the SDL surface and supports Vulkan 1.1
-    vkb::PhysicalDeviceSelector selector{ vkbInstance };
+    vkb::PhysicalDeviceSelector selector {vkbInstance};
     vkb::PhysicalDevice physicalDevice = selector
             .set_minimum_version(1, 1)
             .set_surface(surface)
@@ -201,7 +222,7 @@ void Engine::initVulkan() {
             .value();
 
     // Create the final Vulkan device
-    vkb::DeviceBuilder deviceBuilder{ physicalDevice };
+    vkb::DeviceBuilder deviceBuilder {physicalDevice};
     vkb::Device vkbDevice = deviceBuilder.build().value();
 
     // Get the VkDevice handle used in the rest of a Vulkan application
@@ -215,10 +236,10 @@ void Engine::initVulkan() {
 
 void Engine::cleanupVulkan() {
     vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroySwapchainKHR(device,swapchain, nullptr);
+    vkDestroySwapchainKHR(device, swapchain, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
 
-    for(int i = 0; i < swapchainImages.size(); ++i) {
+    for (int i = 0; i < swapchainImages.size(); ++i) {
         vkDestroyFramebuffer(device, framebuffers[i], nullptr);
         vkDestroyImageView(device, swapchainImageViews[i], nullptr);
     }
@@ -232,7 +253,7 @@ void Engine::cleanupVulkan() {
 }
 
 void Engine::initSwapchain() {
-    vkb::SwapchainBuilder swapchainBuilder { chosenGPU, device, surface };
+    vkb::SwapchainBuilder swapchainBuilder {chosenGPU, device, surface};
     vkb::Swapchain vkbSwapchain = swapchainBuilder.use_default_format_selection()
             .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
             .set_desired_extent(windowExtent.width, windowExtent.height)
@@ -248,18 +269,19 @@ void Engine::initSwapchain() {
 
 void Engine::initCommands() {
     // Command pool
-    auto commandPoolInfo = vkinit::commandPoolCreateInfo(graphicsQueueFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+    auto commandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily,
+                                                     VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool));
 
     // Command buffer
-    auto cmdAllocInfo = vkinit::commandBufferAllocateInfo(commandPool, 1);
+    auto cmdAllocInfo = vk::commandBufferAllocateInfo(commandPool, 1);
     VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &mainCommandBuffer));
 }
 
 void Engine::initDefaultRenderpass() {
     // -- COLOR ATTACHMENT --
     // The renderpass will use this color attachment.
-    VkAttachmentDescription colorAttachment{};
+    VkAttachmentDescription colorAttachment {};
     // The attachment will have the format needed by the swapchain
     colorAttachment.format = swapchainImageFormat;
     // 1 sample, we won't be doing MSAA
@@ -277,19 +299,19 @@ void Engine::initDefaultRenderpass() {
     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     // -- COLOR ATTACHMENT REFERENCE --
-    VkAttachmentReference colorAttachmentRef{};
+    VkAttachmentReference colorAttachmentRef {};
     // Attachment number will index into the pAttachments array in the parent renderpass itself
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     // -- SUBPASS --
-    VkSubpassDescription subpass{};
+    VkSubpassDescription subpass {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
 
     // -- RENDERPASS --
-    VkRenderPassCreateInfo vkRenderPassCreateInfo{};
+    VkRenderPassCreateInfo vkRenderPassCreateInfo {};
     vkRenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     // Connect the color attachment to the info
     vkRenderPassCreateInfo.attachmentCount = 1;
@@ -325,7 +347,7 @@ void Engine::initFramebuffers() {
 }
 
 void Engine::initSyncStructures() {
-    VkFenceCreateInfo fenceCreateInfo{};
+    VkFenceCreateInfo fenceCreateInfo {};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.pNext = nullptr;
     // We want to create the fence with the Create Signaled flag, so we can
@@ -342,20 +364,20 @@ void Engine::initSyncStructures() {
     VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore));
 }
 
-bool Engine::loadShaderModule(const char *path, VkShaderModule *outShaderModule) {
+bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule) {
     // Open the file stream in binary mode and put cursor at end
-    std::ifstream file{path, std::ios::ate | std::ios::binary};
-    if(!file.is_open()) {
+    std::ifstream file {path, std::ios::ate | std::ios::binary};
+    if (!file.is_open()) {
         return false;
     }
     // Find what the size of the file is by looking up the location of the cursor, which is end of file.
-    size_t fileSize = (size_t)file.tellg();
+    size_t fileSize = (size_t) file.tellg();
     // Spirv expects the buffer to be on uint32, so make sure to reserve an int vector big enough for the entire file.
     vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
     // Put file cursor at beginning.
     file.seekg(0);
     // Load the entire file into the buffer.
-    file.read((char*)buffer.data(), fileSize);
+    file.read((char*) buffer.data(), fileSize);
     file.close();
 
     // Create a new shader module, using the buffer we loaded
@@ -379,22 +401,36 @@ void Engine::initPipelines() {
     // -- SHADER MODULES --
     VkShaderModule triangleFragShader;
     if (!loadShaderModule("../../shaders/triangle.frag.spv", &triangleFragShader)) {
-        LOG(Error) << "Error when building the triangle fragment shader module";
+        LOG(LogLevel::Error) << "Error when building the triangle fragment shader module";
     } else {
-        LOG(Info) << "Triangle fragment shader successfully loaded";
+        LOG(LogLevel::Info) << "Triangle fragment shader successfully loaded";
     }
 
     VkShaderModule triangleVertexShader;
     if (!loadShaderModule("../../shaders/triangle.vert.spv", &triangleVertexShader)) {
-        LOG(Error) << "Error when building the triangle vertex shader module";
+        LOG(LogLevel::Error) << "Error when building the triangle vertex shader module";
     } else {
-        LOG(Info) << "Triangle vertex shader successfully loaded";
+        LOG(LogLevel::Info) << "Triangle vertex shader successfully loaded";
+    }
+
+    VkShaderModule redTriangleFragShader;
+    if (!loadShaderModule("../../shaders/redTriangle.frag.spv", &redTriangleFragShader)) {
+        LOG(LogLevel::Error) << "Error when building the red triangle fragment shader module";
+    } else {
+        LOG(LogLevel::Info) << "Red triangle fragment shader successfully loaded";
+    }
+
+    VkShaderModule redTriangleVertexShader;
+    if (!loadShaderModule("../../shaders/redTriangle.vert.spv", &redTriangleVertexShader)) {
+        LOG(LogLevel::Error) << "Error when building the red triangle vertex shader module";
+    } else {
+        LOG(LogLevel::Info) << "Red triangle vertex shader successfully loaded";
     }
 
     // -- LAYOUT --
     // The pipeline layout that controls the inputs/outputs of the shader
     // We are not using descriptor sets or other systems yet, so no need to use anything other than empty default
-    VkPipelineLayoutCreateInfo pipeline_layout_info = vkinit::pipelineLayoutCreateInfo();
+    VkPipelineLayoutCreateInfo pipeline_layout_info = vk::pipelineLayoutCreateInfo();
     VK_CHECK(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &trianglePipelineLayout));
 
     // -- BUILD PIPELINE --
@@ -402,41 +438,63 @@ void Engine::initPipelines() {
 
     //	Build both the vertex and fragment stages. This lets the pipeline know the shader modules per stage.
     pipelineBuilder.shaderStages.push_back(
-            vkinit::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertexShader)
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertexShader)
     );
     pipelineBuilder.shaderStages.push_back(
-            vkinit::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
     );
 
     // Vertex input controls how to read vertices from vertex buffers.
-    pipelineBuilder.vertexInputInfo = vkinit::vertexInputStateCreateInfo();
+    pipelineBuilder.vertexInputInfo = vk::vertexInputStateCreateInfo();
 
     // Input assembly is the configuration for drawing triangle lists, strips, or individual points.
-    pipelineBuilder.inputAssembly = vkinit::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    pipelineBuilder.inputAssembly = vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
     // Build viewport and scissor from the swapchain extents
     pipelineBuilder.viewport.x = 0.0f;
     pipelineBuilder.viewport.y = 0.0f;
-    pipelineBuilder.viewport.width = (float)windowExtent.width;
-    pipelineBuilder.viewport.height = (float)windowExtent.height;
+    pipelineBuilder.viewport.width = (float) windowExtent.width;
+    pipelineBuilder.viewport.height = (float) windowExtent.height;
     pipelineBuilder.viewport.minDepth = 0.0f;
     pipelineBuilder.viewport.maxDepth = 1.0f;
 
-    pipelineBuilder.scissor.offset = { 0, 0 };
+    pipelineBuilder.scissor.offset = {0, 0};
     pipelineBuilder.scissor.extent = windowExtent;
 
     // Configure the rasterizer to draw filled triangles
-    pipelineBuilder.rasterizer = vkinit::rasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+    pipelineBuilder.rasterizer = vk::rasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
 
     // Multisampling
-    pipelineBuilder.multisampling = vkinit::multisamplingStateCreateInfo();
+    pipelineBuilder.multisampling = vk::multisamplingStateCreateInfo();
 
     // Blend attachments
-    pipelineBuilder.colorBlendAttachment = vkinit::colorBlendAttachmentState();
+    pipelineBuilder.colorBlendAttachment = vk::colorBlendAttachmentState();
 
     // Layout
     pipelineBuilder.pipelineLayout = trianglePipelineLayout;
 
     // Build
     trianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
+
+    // Overwrite pipeline to use different shaders
+    pipelineBuilder.shaderStages.clear();
+    pipelineBuilder.shaderStages.push_back(
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, redTriangleVertexShader));
+    pipelineBuilder.shaderStages.push_back(
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, redTriangleFragShader));
+    redTrianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
+}
+
+void engine::Engine::processInputs() {
+    inputSystem.preUpdate();
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        game.isRunning = inputSystem.processEvent(event);
+    }
+    inputSystem.update();
+
+    InputState state = inputSystem.getInputState();
+    if (state.keyboard.getKeyState(SDL_SCANCODE_SPACE) == ButtonState::Pressed) {
+        selectedShader = ++selectedShader % 2;
+    }
 }

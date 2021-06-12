@@ -4,8 +4,8 @@
 
 #include "VkInit.h"
 
-VkCommandPoolCreateInfo vkinit::commandPoolCreateInfo(uint32_t queueFamilyIndex,
-                                                      VkCommandPoolCreateFlags flags) {
+VkCommandPoolCreateInfo engine::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
+                                                  VkCommandPoolCreateFlags flags) {
     VkCommandPoolCreateInfo commandPoolInfo {};
     commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolInfo.pNext = nullptr;
@@ -15,9 +15,9 @@ VkCommandPoolCreateInfo vkinit::commandPoolCreateInfo(uint32_t queueFamilyIndex,
     return commandPoolInfo;
 }
 
-VkCommandBufferAllocateInfo vkinit::commandBufferAllocateInfo(VkCommandPool pool,
-                                                              uint32_t count,
-                                                              VkCommandBufferLevel level) {
+VkCommandBufferAllocateInfo engine::vk::commandBufferAllocateInfo(VkCommandPool pool,
+                                                          uint32_t count,
+                                                          VkCommandBufferLevel level) {
     VkCommandBufferAllocateInfo cmdAllocInfo {};
     cmdAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     cmdAllocInfo.pNext = nullptr;
@@ -28,8 +28,8 @@ VkCommandBufferAllocateInfo vkinit::commandBufferAllocateInfo(VkCommandPool pool
     return cmdAllocInfo;
 }
 
-VkPipelineShaderStageCreateInfo vkinit::pipelineShaderStageCreateInfo(VkShaderStageFlagBits shaderStage,
-                                      VkShaderModule shaderModule) {
+VkPipelineShaderStageCreateInfo engine::vk::pipelineShaderStageCreateInfo(VkShaderStageFlagBits shaderStage,
+                                                                  VkShaderModule shaderModule) {
     VkPipelineShaderStageCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     info.pNext = nullptr;
@@ -41,7 +41,7 @@ VkPipelineShaderStageCreateInfo vkinit::pipelineShaderStageCreateInfo(VkShaderSt
     return info;
 }
 
-VkPipelineVertexInputStateCreateInfo vkinit::vertexInputStateCreateInfo() {
+VkPipelineVertexInputStateCreateInfo engine::vk::vertexInputStateCreateInfo() {
     VkPipelineVertexInputStateCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     info.pNext = nullptr;
@@ -52,7 +52,7 @@ VkPipelineVertexInputStateCreateInfo vkinit::vertexInputStateCreateInfo() {
     return info;
 }
 
-VkPipelineInputAssemblyStateCreateInfo vkinit::inputAssemblyCreateInfo(VkPrimitiveTopology topology) {
+VkPipelineInputAssemblyStateCreateInfo engine::vk::inputAssemblyCreateInfo(VkPrimitiveTopology topology) {
     VkPipelineInputAssemblyStateCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     info.pNext = nullptr;
@@ -63,7 +63,7 @@ VkPipelineInputAssemblyStateCreateInfo vkinit::inputAssemblyCreateInfo(VkPrimiti
     return info;
 }
 
-VkPipelineRasterizationStateCreateInfo vkinit::rasterizationStateCreateInfo(VkPolygonMode polygonMode)
+VkPipelineRasterizationStateCreateInfo engine::vk::rasterizationStateCreateInfo(VkPolygonMode polygonMode)
 {
     VkPipelineRasterizationStateCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -88,7 +88,7 @@ VkPipelineRasterizationStateCreateInfo vkinit::rasterizationStateCreateInfo(VkPo
     return info;
 }
 
-VkPipelineMultisampleStateCreateInfo vkinit::multisamplingStateCreateInfo()
+VkPipelineMultisampleStateCreateInfo engine::vk::multisamplingStateCreateInfo()
 {
     VkPipelineMultisampleStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -104,7 +104,7 @@ VkPipelineMultisampleStateCreateInfo vkinit::multisamplingStateCreateInfo()
     return info;
 }
 
-VkPipelineColorBlendAttachmentState vkinit::colorBlendAttachmentState() {
+VkPipelineColorBlendAttachmentState engine::vk::colorBlendAttachmentState() {
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -112,7 +112,7 @@ VkPipelineColorBlendAttachmentState vkinit::colorBlendAttachmentState() {
     return colorBlendAttachment;
 }
 
-VkPipelineLayoutCreateInfo vkinit::pipelineLayoutCreateInfo() {
+VkPipelineLayoutCreateInfo engine::vk::pipelineLayoutCreateInfo() {
     VkPipelineLayoutCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     info.pNext = nullptr;
