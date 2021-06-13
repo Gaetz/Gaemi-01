@@ -27,16 +27,17 @@ std::ostringstream& Log::get(LogLevel level) {
 
     // Log
     time_t now;
-    //struct tm* timeInfo;
-    struct tm timeInfo;
     char date[19];
-
+#ifdef __linux__
+    struct tm* timeInfo;
+    timeInfo = localtime(&now);
+    strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
+#elif defined(__WIN32__)
+    struct tm timeInfo;
     time(&now);
-    //timeInfo = localtime(&now);
     localtime_s(&timeInfo, &now);
-    //strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
     strftime(date, 19, "%y-%m-%d %H:%M:%S", &timeInfo);
-
+#endif
     // Log
     os << date << " " << getLabel(level) << ": \t";
     return os;
