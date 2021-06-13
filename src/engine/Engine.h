@@ -13,7 +13,7 @@
 #include "vk/Types.h"
 #include "Window.h"
 #include "Game.h"
-#include "../engine/input/InputSystem.h"
+#include "input/InputSystem.h"
 
 using std::vector;
 using engine::input::InputSystem;
@@ -77,6 +77,7 @@ public:
 
     VkPipeline meshPipeline;
     Mesh triangleMesh;
+    VkPipelineLayout meshPipelineLayout;
 
     // Getters and setters
 

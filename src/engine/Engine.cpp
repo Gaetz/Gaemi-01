@@ -8,7 +8,6 @@
 #include <SDL.h>
 #endif
 
-
 #include <fstream>
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 
@@ -16,6 +15,8 @@
 #include "Timer.h"
 #include "../Log.h"
 #include "vk/PipelineBuilder.h"
+#include "math/Transformations.h"
+#include "math/Functions.h"
 
 #ifdef _DEBUG
 #define VK_CHECK(x)                                                             \
@@ -121,14 +122,31 @@ void Engine::draw() {
 
     if (selectedShader == 0) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, trianglePipeline);
+        vkCmdDraw(cmd, 3, 1, 0, 0);
     } else if (selectedShader == 1) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, redTrianglePipeline);
+        vkCmdDraw(cmd, 3, 1, 0, 0);
     } else if (selectedShader == 2) {
+        // Bind pipeline
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipeline);
         VkDeviceSize offset = 0;
         vkCmdBindVertexBuffers(cmd, 0, 1, &triangleMesh.vertexBuffer.buffer, &offset);
+
+        // Compute transform matrix
+        Vec3 camPos { 0.f, 0.f, -2.f };
+        Mat4 view = math::translate(Mat4(1.f), camPos);
+        Mat4 projection = math::perspective(math::toRad(70.f), 1280.f / 720.f, 0.1f, 200.f);
+        projection[1][1] *= -1;
+        Mat4 model = math::rotate(Mat4(1.0f), math::toRad(frameNumber * 0.4f), Vec3(0, 1, 0));
+        Mat4 transform = projection * view * model;
+
+        // Push constants
+        vk::MeshPushConstants pushConstants;
+        pushConstants.renderMatrix = transform;
+        vkCmdPushConstants(cmd, meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vk::MeshPushConstants), &pushConstants);
+
+        vkCmdDraw(cmd, triangleMesh.vertices.size(), 1, 0, 0);
     }
-    vkCmdDraw(cmd, 3, 1, 0, 0);
 
     //game.draw();
 
@@ -526,6 +544,7 @@ void Engine::initPipelines() {
     // Build
     trianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
 
+
     // -- RED TRIANGLE PIPELINE --
 
     // Overwrite pipeline to use different shaders
@@ -536,7 +555,9 @@ void Engine::initPipelines() {
             vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, redTriangleFragShader));
     redTrianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
 
+
     // -- MESH TRIANGLE PIPELINE --
+
     vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
 
     // Connect the pipeline builder vertex input info to the one we get from Vertex
@@ -554,7 +575,22 @@ void Engine::initPipelines() {
     pipelineBuilder.shaderStages.push_back(
             vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader));
 
+    // Pipeline layout for push constans
+    VkPipelineLayoutCreateInfo meshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
+
+    // Setup push constants
+    VkPushConstantRange pushConstant;
+    pushConstant.offset = 0;
+    pushConstant.size = sizeof(vk::MeshPushConstants);
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    meshPipelineLayoutInfo.pushConstantRangeCount = 1;
+    meshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+
+    VK_CHECK(vkCreatePipelineLayout(device, &meshPipelineLayoutInfo, nullptr, &meshPipelineLayout));
+
     // Build pipeline
+    pipelineBuilder.pipelineLayout = meshPipelineLayout;
     meshPipeline = pipelineBuilder.buildPipeline(device, renderPass);
 
 
@@ -570,6 +606,7 @@ void Engine::initPipelines() {
         vkDestroyPipeline(device, redTrianglePipeline, nullptr);
         vkDestroyPipeline(device, meshPipeline, nullptr);
         vkDestroyPipelineLayout(device, trianglePipelineLayout, nullptr);
+        vkDestroyPipelineLayout(device, meshPipelineLayout, nullptr);
     });
 }
 

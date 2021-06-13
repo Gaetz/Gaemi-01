@@ -5,6 +5,8 @@
 #ifndef MATH_FUNCTIONS_H
 #define MATH_FUNCTIONS_H
 
+#include "../../../externals/glm/glm/trigonometric.hpp"
+
 namespace engine::math {
 
 const float pi = 3.1415926535f;
@@ -13,12 +15,12 @@ const float piOver2 = pi / 2.0f;
 const float infinity = std::numeric_limits<float>::infinity();
 const float negInfinity = -std::numeric_limits<float>::infinity();
 
-inline float toRadians(float degrees) {
-    return degrees * pi / 180.0f;
+inline float toRad(float degrees) {
+    return glm::radians(degrees);
 }
 
-inline float toDegrees(float radians) {
-    return radians * 180.0f / pi;
+inline float toDeg(float radians) {
+    return glm::degrees(radians);
 }
 
 inline bool nearZero(float val, float epsilon = 0.001f) {

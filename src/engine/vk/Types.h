@@ -7,12 +7,21 @@
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
+#include "../math/Types.h"
+
+using engine::math::Vec4;
+using engine::math::Mat4;
 
 namespace engine::vk {
 
 struct AllocatedBuffer {
     VkBuffer buffer;
     VmaAllocation allocation;
+};
+
+struct MeshPushConstants {
+    Vec4 data;
+    Mat4 renderMatrix;
 };
 
 }

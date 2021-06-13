@@ -18,14 +18,14 @@ find_package(Vulkan REQUIRED)
     else ()
         message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
     endif ()
-
-    if (CMAKE_BUILD_TYPE MATCHES Debug)
-        set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "_DEBUG")
-    else ()
-        set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
-    endif ()
 #endif ()
-
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "_DEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+else ()
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
+endif ()
 
 ## Libs
 add_subdirectory( externals )
