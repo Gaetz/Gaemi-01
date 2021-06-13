@@ -7,6 +7,9 @@
 
 #include <vector>
 #include <DeletionQueue.h>
+#include <vk_mem_alloc.h>
+#include <Mesh.h>
+
 #include "vk/Types.h"
 #include "Window.h"
 #include "Game.h"
@@ -16,6 +19,7 @@ using std::vector;
 using engine::input::InputSystem;
 using game::Game;
 using engine::vk::DeletionQueue;
+using engine::vk::Mesh;
 
 namespace engine {
 
@@ -65,6 +69,15 @@ public:
     VkPipelineLayout trianglePipelineLayout;
     DeletionQueue mainDeletionQueue;
 
+    // Allocator
+
+    VmaAllocator allocator;
+
+    // Meshes
+
+    VkPipeline meshPipeline;
+    Mesh triangleMesh;
+
     // Getters and setters
 
     InputSystem& getInputSystem() { return inputSystem; }
@@ -109,7 +122,13 @@ private:
 
     bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
 
+    // Meshes
+
+    void loadMeshes();
+    void uploadMesh(Mesh& mesh);
+
     // Clean
+
     void cleanupVulkan();
 };
 

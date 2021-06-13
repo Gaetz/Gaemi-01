@@ -6,10 +6,14 @@
 #define VK_TYPES_H
 
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 namespace engine::vk {
 
-
+struct AllocatedBuffer {
+    VkBuffer buffer;
+    VmaAllocation allocation;
+};
 
 }
 
