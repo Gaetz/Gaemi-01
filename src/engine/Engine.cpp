@@ -424,6 +424,7 @@ bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule)
     // Open the file stream in binary mode and put cursor at end
     std::ifstream file {path, std::ios::ate | std::ios::binary};
     if (!file.is_open()) {
+        LOG(LogLevel::Error) << "Cannot read shader file " << path;
         return false;
     }
     // Find what the size of the file is by looking up the location of the cursor, which is end of file.
