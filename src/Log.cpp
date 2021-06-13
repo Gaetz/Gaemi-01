@@ -32,7 +32,7 @@ std::ostringstream& Log::get(LogLevel level) {
     struct tm* timeInfo;
     timeInfo = localtime(&now);
     strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
-#elif defined(__WIN32__)
+#elif defined(WIN32)
     struct tm timeInfo;
     time(&now);
     localtime_s(&timeInfo, &now);
