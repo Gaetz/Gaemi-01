@@ -5,15 +5,8 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#ifdef __linux__
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
-
-#elif _WIN32
-#include <SDL.h>
-#include <SDL_vulkan.h>
-#endif
 
 #include <memory>
 #include <string>

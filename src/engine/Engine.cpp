@@ -2,12 +2,7 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
-#ifdef __linux__
 #include <SDL2/SDL.h>
-#elif _WIN32
-#include <SDL.h>
-#endif
-
 #include <fstream>
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 

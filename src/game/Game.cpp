@@ -2,13 +2,7 @@
 // Created by gaetz on 08/06/2021.
 //
 
-#ifdef __linux__
-
 #include <SDL2/SDL_events.h>
-
-#elif _WIN32
-#include <SDL_events.h>
-#endif
 
 #include "../engine/Game.h"
 
