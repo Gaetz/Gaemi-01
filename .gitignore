@@ -16,3 +16,7 @@ release/
 .vscode/ipch
 /cmake-build-debug/
 bin/
+
+## Exceptions for 3d obj files
+!assets/*.obj
+!assets/**/*.obj
