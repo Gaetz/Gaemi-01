@@ -39,7 +39,17 @@ namespace engine::vk {
     // Controls how this pipeline blends into a given attachment.
     VkPipelineColorBlendAttachmentState colorBlendAttachmentState();
 
+    // Generate a layout for a pipeline
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo();
+
+    // Generate image
+    VkImageCreateInfo imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent);
+
+    // Generate image view
+    VkImageViewCreateInfo imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags);
+
+    // Info about how to use depth-testing on a render pipeline
+    VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool depthTest, bool depthWrite, VkCompareOp compareOp);
 }
 
 

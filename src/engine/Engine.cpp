@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <fstream>
 #include "../../externals/vkbootstrap/VkBootstrap.h"
+#include <array>
 
 #include "vk/VkInit.h"
 #include "Timer.h"
@@ -33,6 +34,7 @@ using engine::Engine;
 using engine::vk::PipelineBuilder;
 using engine::input::InputState;
 using engine::vk::Vertex;
+using std::array;
 
 Engine::Engine() :
         isInitialized {false},
@@ -99,8 +101,15 @@ void Engine::draw() {
     float flash = abs(sin(frameNumber / 120.f));
     clearValue.color = {{0.0f, 0.0f, flash, 1.0f}};
 
+    // Clear depth
+    VkClearValue depthClear;
+    depthClear.depthStencil.depth = 1.0f;
+
+    // Prepare clear values
+    array<VkClearValue, 2> clearValues { clearValue, depthClear };
+
     // Start the main renderpass.
-    // We will use the clear color from above, and the framebuffer of the index the swapchain gave us.
+    // We will use the clear color and depth from above, and the framebuffer of the index the swapchain gave us.
     VkRenderPassBeginInfo renderPassBeginInfo {};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.pNext = nullptr;
@@ -109,8 +118,8 @@ void Engine::draw() {
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent = windowExtent;
     renderPassBeginInfo.framebuffer = framebuffers[swapchainImageIndex];
-    renderPassBeginInfo.clearValueCount = 1;
-    renderPassBeginInfo.pClearValues = &clearValue;
+    renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassBeginInfo.pClearValues = clearValues.data();
     vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // -- DRAW HERE --
@@ -288,6 +297,9 @@ void Engine::cleanupVulkan() {
 }
 
 void Engine::initSwapchain() {
+
+    // -- SWAPCHAIN INIT --
+
     vkb::SwapchainBuilder swapchainBuilder {chosenGPU, device, surface};
     vkb::Swapchain vkbSwapchain = swapchainBuilder.use_default_format_selection()
             .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
@@ -304,6 +316,42 @@ void Engine::initSwapchain() {
     // Cleanup callback
     mainDeletionQueue.pushFunction([=]() {
         vkDestroySwapchainKHR(device, swapchain, nullptr);
+    });
+
+
+    // -- DEPTH BUFFER INIT --
+
+    // Depth size matches window size
+    VkExtent3D depthImageExtent {
+        windowExtent.width,
+        windowExtent.height,
+        1
+    };
+
+    // Hardcode depth format to 32 bits float
+    depthFormat = VK_FORMAT_D32_SFLOAT;
+
+    VkImageCreateInfo depthImageInfo = vk::imageCreateInfo(depthFormat,
+                                                            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                                            depthImageExtent);
+    // Allocate depth image from local GPU memory
+    VmaAllocationCreateInfo depthImageAllocInfo {};
+    depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    // Allocate and create the image
+    vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation, nullptr);
+
+    // Build an image-view for the depth image to use for rendering
+    VkImageViewCreateInfo depthImageViewInfo = vk::imageViewCreateInfo(depthFormat,
+                                                                       depthImage.image,
+                                                                       VK_IMAGE_ASPECT_DEPTH_BIT);
+    VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthImageView));
+
+    // Cleanup callback
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyImageView(device, depthImageView, nullptr);
+        vmaDestroyImage(allocator, depthImage.image, depthImage.allocation);
     });
 }
 
@@ -323,6 +371,7 @@ void Engine::initCommands() {
 }
 
 void Engine::initDefaultRenderpass() {
+
     // -- COLOR ATTACHMENT --
     // The renderpass will use this color attachment.
     VkAttachmentDescription colorAttachment {};
@@ -348,18 +397,39 @@ void Engine::initDefaultRenderpass() {
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    // -- DEPTH ATTACHMENT --
+    VkAttachmentDescription depthAttachment {};
+    depthAttachment.flags = 0;
+    depthAttachment.format = depthFormat;
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    // -- DEPTH ATTACHMENT REFERENCE --
+    VkAttachmentReference depthAttachmentRef {};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     // -- SUBPASS --
     VkSubpassDescription subpass {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
     // -- RENDERPASS --
+    // Prepare attachments
+    array<VkAttachmentDescription, 2> attachments { colorAttachment, depthAttachment };
+    // Setup renderpass
     VkRenderPassCreateInfo vkRenderPassCreateInfo {};
     vkRenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     // Connect the color attachment to the info
-    vkRenderPassCreateInfo.attachmentCount = 1;
-    vkRenderPassCreateInfo.pAttachments = &colorAttachment;
+    vkRenderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    vkRenderPassCreateInfo.pAttachments = attachments.data();
     // Connect the subpass to the info
     vkRenderPassCreateInfo.subpassCount = 1;
     vkRenderPassCreateInfo.pSubpasses = &subpass;
@@ -379,19 +449,24 @@ void Engine::initFramebuffers() {
     framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferCreateInfo.pNext = nullptr;
     framebufferCreateInfo.renderPass = renderPass;
-    framebufferCreateInfo.attachmentCount = 1;
     framebufferCreateInfo.width = windowExtent.width;
     framebufferCreateInfo.height = windowExtent.height;
     framebufferCreateInfo.layers = 1;
 
     // Grab how many images we have in the swapchain
     const uint32_t swapchainImageCount = swapchainImages.size();
-    framebuffers = std::vector<VkFramebuffer>(swapchainImageCount);
+    framebuffers = vector<VkFramebuffer>(swapchainImageCount);
 
     // Create framebuffers for each of the swapchain image views
     for (size_t i = 0; i < swapchainImageCount; ++i) {
-        framebufferCreateInfo.pAttachments = &swapchainImageViews[i];
+        // Prepare attachments
+        array<VkImageView, 2> attachments { swapchainImageViews[i], depthImageView };
+
+        // Create framebuffer
+        framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferCreateInfo.pAttachments = attachments.data();
         VK_CHECK(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &framebuffers[i]));
+
         // Cleanup callback
         mainDeletionQueue.pushFunction([=]() {
             vkDestroyFramebuffer(device, framebuffers[i], nullptr);
@@ -544,6 +619,9 @@ void Engine::initPipelines() {
     // Layout
     pipelineBuilder.pipelineLayout = trianglePipelineLayout;
 
+    // Depth Stencil
+    pipelineBuilder.depthStencil = vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
     // Build
     trianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
 
@@ -578,7 +656,7 @@ void Engine::initPipelines() {
     pipelineBuilder.shaderStages.push_back(
             vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader));
 
-    // Pipeline layout for push constans
+    // Pipeline layout for push constants
     VkPipelineLayoutCreateInfo meshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
 
     // Setup push constants

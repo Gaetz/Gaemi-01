@@ -19,6 +19,11 @@ struct AllocatedBuffer {
     VmaAllocation allocation;
 };
 
+struct AllocatedImage {
+    VkImage image;
+    VmaAllocation allocation;
+};
+
 struct MeshPushConstants {
     Vec4 data;
     Mat4 renderMatrix;

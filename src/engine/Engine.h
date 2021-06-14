@@ -82,6 +82,12 @@ public:
     VkPipelineLayout meshPipelineLayout;
     Mesh monkeyMesh;
 
+    // Depth
+
+    VkImageView depthImageView;
+    vk::AllocatedImage depthImage;
+    VkFormat depthFormat;
+
     // Getters and setters
 
     InputSystem& getInputSystem() { return inputSystem; }
