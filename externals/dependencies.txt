@@ -1,7 +1,7 @@
 glm             0.9.9.8     https://github.com/g-truc/glm/releases/tag/0.9.9.8
 dearimgui       1.83        https://github.com/ocornut/imgui/releases/tag/v1.83
 stb_image       2.26        https://github.com/nothings/stb
-tinhyobjloader  1.06        https://github.com/tinyobjloader/tinyobjloader/releases/tag/v1.0.6
+tinyobjloader   latest(git) https://github.com/tinyobjloader
 VkBootstrap     0.4         https://github.com/charles-lunarg/vk-bootstrap/releases
 vma             2.3         https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/releases
 SDL             2.0.14 VC   https://www.libsdl.org/download-2.0.php

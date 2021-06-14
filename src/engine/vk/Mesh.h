@@ -6,9 +6,12 @@
 #define VK_MESH_H
 
 #include <vector>
+#include <string>
+
 #include "../math/Types.h"
 #include "Types.h"
 
+using std::string;
 using std::vector;
 using engine::vk::AllocatedBuffer;
 using engine::math::Vec3;
@@ -31,6 +34,8 @@ struct Vertex {
 struct Mesh {
     vector<Vertex> vertices;
     AllocatedBuffer vertexBuffer;
+
+    bool loadFromObj(const string& filename);
 };
 
 }

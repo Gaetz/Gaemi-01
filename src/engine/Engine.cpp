@@ -121,11 +121,15 @@ void Engine::draw() {
     } else if (selectedShader == 1) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, redTrianglePipeline);
         vkCmdDraw(cmd, 3, 1, 0, 0);
-    } else if (selectedShader == 2) {
+    } else if (selectedShader == 2 || selectedShader == 3) {
         // Bind pipeline
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipeline);
         VkDeviceSize offset = 0;
-        vkCmdBindVertexBuffers(cmd, 0, 1, &triangleMesh.vertexBuffer.buffer, &offset);
+
+        if (selectedShader == 2)
+            vkCmdBindVertexBuffers(cmd, 0, 1, &triangleMesh.vertexBuffer.buffer, &offset);
+        else if (selectedShader == 3)
+            vkCmdBindVertexBuffers(cmd, 0, 1, &monkeyMesh.vertexBuffer.buffer, &offset);
 
         // Compute transform matrix
         Vec3 camPos { 0.f, 0.f, -2.f };
@@ -140,7 +144,10 @@ void Engine::draw() {
         pushConstants.renderMatrix = transform;
         vkCmdPushConstants(cmd, meshPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vk::MeshPushConstants), &pushConstants);
 
-        vkCmdDraw(cmd, triangleMesh.vertices.size(), 1, 0, 0);
+        if (selectedShader == 2)
+            vkCmdDraw(cmd, triangleMesh.vertices.size(), 1, 0, 0);
+        else if (selectedShader == 3)
+            vkCmdDraw(cmd, monkeyMesh.vertices.size(), 1, 0, 0);
     }
 
     //game.draw();
@@ -616,22 +623,25 @@ void engine::Engine::processInputs() {
 
     InputState state = inputSystem.getInputState();
     if (state.keyboard.getKeyState(SDL_SCANCODE_SPACE) == ButtonState::Pressed) {
-        selectedShader = ++selectedShader % 3;
+        selectedShader = ++selectedShader % MAX_SHADERS;
     }
 }
 
 void engine::Engine::loadMeshes() {
+    // Load triangle
     triangleMesh.vertices.resize(3);
-
     triangleMesh.vertices[0].position = { 1.f, 1.f, 0.f };
     triangleMesh.vertices[1].position = { -1.f, 1.f, 0.f };
     triangleMesh.vertices[2].position = { 0.f, -1.f, 0.f };
-
     triangleMesh.vertices[0].color = { 0.f, 1.f, 0.f };
     triangleMesh.vertices[1].color = { 0.f, 1.f, 0.f };
     triangleMesh.vertices[2].color = { 0.f, 1.f, 0.f };
 
+    // Load monkey from obj file
+    monkeyMesh.loadFromObj("../../assets/monkey_smooth.obj");
+
     uploadMesh(triangleMesh);
+    uploadMesh(monkeyMesh);
 }
 
 void engine::Engine::uploadMesh(Mesh& mesh) {

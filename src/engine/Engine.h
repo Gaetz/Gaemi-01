@@ -21,6 +21,8 @@ using game::Game;
 using engine::vk::DeletionQueue;
 using engine::vk::Mesh;
 
+constexpr int MAX_SHADERS = 4;
+
 namespace engine {
 
 class Engine {
@@ -78,6 +80,7 @@ public:
     VkPipeline meshPipeline;
     Mesh triangleMesh;
     VkPipelineLayout meshPipelineLayout;
+    Mesh monkeyMesh;
 
     // Getters and setters
 
