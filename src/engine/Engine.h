@@ -69,9 +69,8 @@ public:
 
     // Pipeline
 
-    VkPipeline trianglePipeline;
-    VkPipeline redTrianglePipeline;
-    VkPipelineLayout trianglePipelineLayout;
+    VkPipeline meshPipeline;
+    VkPipelineLayout meshPipelineLayout;
     DeletionQueue mainDeletionQueue;
 
     // Allocator
@@ -80,10 +79,6 @@ public:
 
     // Meshes
 
-    VkPipeline meshPipeline;
-    Mesh triangleMesh;
-    VkPipelineLayout meshPipelineLayout;
-    Mesh monkeyMesh;
     vector<RenderObject> renderables;
     unordered_map<string, vk::Material> materials;
     unordered_map<string, Mesh> meshes;
@@ -93,10 +88,6 @@ public:
     VkImageView depthImageView;
     vk::AllocatedImage depthImage;
     VkFormat depthFormat;
-
-    // Getters and setters
-
-    InputSystem& getInputSystem() { return inputSystem; }
 
     // Initializes everything in the engine
     void init();

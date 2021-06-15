@@ -48,7 +48,7 @@ Engine::Engine() :
 
 void Engine::init() {
     SDL_Init(SDL_INIT_VIDEO);
-    window.init(windowExtent.width, windowExtent.height, false);
+    window.init(static_cast<int>(windowExtent.width), static_cast<int>(windowExtent.height), false);
     inputSystem.init();
     initVulkan();
     initSwapchain();
@@ -510,27 +510,6 @@ void Engine::initPipelines() {
         LOG(LogLevel::Info) << "Triangle fragment shader successfully loaded";
     }
 
-    VkShaderModule triangleVertexShader;
-    if (!loadShaderModule("../../shaders/triangle.vert.spv", &triangleVertexShader)) {
-        LOG(LogLevel::Error) << "Error when building the triangle vertex shader module";
-    } else {
-        LOG(LogLevel::Info) << "Triangle vertex shader successfully loaded";
-    }
-
-    VkShaderModule redTriangleFragShader;
-    if (!loadShaderModule("../../shaders/redTriangle.frag.spv", &redTriangleFragShader)) {
-        LOG(LogLevel::Error) << "Error when building the red triangle fragment shader module";
-    } else {
-        LOG(LogLevel::Info) << "Red triangle fragment shader successfully loaded";
-    }
-
-    VkShaderModule redTriangleVertexShader;
-    if (!loadShaderModule("../../shaders/redTriangle.vert.spv", &redTriangleVertexShader)) {
-        LOG(LogLevel::Error) << "Error when building the red triangle vertex shader module";
-    } else {
-        LOG(LogLevel::Info) << "Red triangle vertex shader successfully loaded";
-    }
-
     VkShaderModule meshVertShader;
     if (!loadShaderModule("../../shaders/triMesh.vert.spv", &meshVertShader)) {
         LOG(LogLevel::Error) << "Error when building the triangle vertex shader module";
@@ -538,25 +517,46 @@ void Engine::initPipelines() {
         LOG(LogLevel::Info) << "Red Triangle vertex shader successfully loaded";
     }
 
+
     // -- LAYOUT --
     // The pipeline layout that controls the inputs/outputs of the shader
     // We are not using descriptor sets or other systems yet, so no need to use anything other than empty default
-    VkPipelineLayoutCreateInfo pipeline_layout_info = vk::pipelineLayoutCreateInfo();
-    VK_CHECK(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &trianglePipelineLayout));
+    // Pipeline layout for push constants
+    VkPipelineLayoutCreateInfo meshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
+
+    // Setup push constants
+    VkPushConstantRange pushConstant;
+    pushConstant.offset = 0;
+    pushConstant.size = sizeof(vk::MeshPushConstants);
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    meshPipelineLayoutInfo.pushConstantRangeCount = 1;
+    meshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+
+    VK_CHECK(vkCreatePipelineLayout(device, &meshPipelineLayoutInfo, nullptr, &meshPipelineLayout));
+
 
     // -- BUILD PIPELINE --
     PipelineBuilder pipelineBuilder;
 
-    //	Build both the vertex and fragment stages. This lets the pipeline know the shader modules per stage.
+    // Clear the shader stages for the builder
+    pipelineBuilder.shaderStages.clear();
+
+    // Shader stage
     pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertexShader)
-    );
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
     pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
-    );
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader));
 
     // Vertex input controls how to read vertices from vertex buffers.
     pipelineBuilder.vertexInputInfo = vk::vertexInputStateCreateInfo();
+    vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
+
+    // Connect the pipeline builder vertex input info to the one we get from Vertex
+    pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
+    pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
+    pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
+    pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
 
     // Input assembly is the configuration for drawing triangle lists, strips, or individual points.
     pipelineBuilder.inputAssembly = vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -581,59 +581,8 @@ void Engine::initPipelines() {
     // Blend attachments
     pipelineBuilder.colorBlendAttachment = vk::colorBlendAttachmentState();
 
-    // Layout
-    pipelineBuilder.pipelineLayout = trianglePipelineLayout;
-
     // Depth Stencil
     pipelineBuilder.depthStencil = vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
-
-    // Build
-    trianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
-
-
-    // -- RED TRIANGLE PIPELINE --
-
-    // Overwrite pipeline to use different shaders
-    pipelineBuilder.shaderStages.clear();
-    pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, redTriangleVertexShader));
-    pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, redTriangleFragShader));
-    redTrianglePipeline = pipelineBuilder.buildPipeline(device, renderPass);
-
-
-    // -- MESH TRIANGLE PIPELINE --
-
-    vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
-
-    // Connect the pipeline builder vertex input info to the one we get from Vertex
-    pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
-    pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
-    pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
-    pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
-
-    // Clear the shader stages for the builder
-    pipelineBuilder.shaderStages.clear();
-
-    // Shader stage
-    pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
-    pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader));
-
-    // Pipeline layout for push constants
-    VkPipelineLayoutCreateInfo meshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
-
-    // Setup push constants
-    VkPushConstantRange pushConstant;
-    pushConstant.offset = 0;
-    pushConstant.size = sizeof(vk::MeshPushConstants);
-    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    meshPipelineLayoutInfo.pushConstantRangeCount = 1;
-    meshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
-
-    VK_CHECK(vkCreatePipelineLayout(device, &meshPipelineLayoutInfo, nullptr, &meshPipelineLayout));
 
     // Build pipeline & material
     pipelineBuilder.pipelineLayout = meshPipelineLayout;
@@ -643,16 +592,10 @@ void Engine::initPipelines() {
 
     // -- CLEANUP --
     vkDestroyShaderModule(device, triangleFragShader, nullptr);
-    vkDestroyShaderModule(device, triangleVertexShader, nullptr);
-    vkDestroyShaderModule(device, redTriangleVertexShader, nullptr);
-    vkDestroyShaderModule(device, redTriangleFragShader, nullptr);
     vkDestroyShaderModule(device, meshVertShader, nullptr);
 
     mainDeletionQueue.pushFunction([=]() {
-        vkDestroyPipeline(device, trianglePipeline, nullptr);
-        vkDestroyPipeline(device, redTrianglePipeline, nullptr);
         vkDestroyPipeline(device, meshPipeline, nullptr);
-        vkDestroyPipelineLayout(device, trianglePipelineLayout, nullptr);
         vkDestroyPipelineLayout(device, meshPipelineLayout, nullptr);
     });
 }
@@ -697,6 +640,7 @@ void engine::Engine::processInputs() {
 
 void engine::Engine::loadMeshes() {
     // Load triangle
+    Mesh triangleMesh;
     triangleMesh.vertices.resize(3);
     triangleMesh.vertices[0].position = { 1.f, 1.f, 0.f };
     triangleMesh.vertices[1].position = { -1.f, 1.f, 0.f };
@@ -706,6 +650,7 @@ void engine::Engine::loadMeshes() {
     triangleMesh.vertices[2].color = { 0.f, 1.f, 0.f };
 
     // Load monkey from obj file
+    Mesh monkeyMesh;
     monkeyMesh.loadFromObj("../../assets/monkey_smooth.obj");
 
     uploadMesh(triangleMesh);
