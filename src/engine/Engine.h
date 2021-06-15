@@ -6,20 +6,23 @@
 #define ENGINE_H
 
 #include <vector>
+#include <unordered_map>
 #include <DeletionQueue.h>
 #include <vk_mem_alloc.h>
-#include <Mesh.h>
 
-#include "vk/Types.h"
+#include "vk/RenderObject.h"
 #include "Window.h"
 #include "Game.h"
 #include "input/InputSystem.h"
 
 using std::vector;
+using std::unordered_map;
+
 using engine::input::InputSystem;
 using game::Game;
 using engine::vk::DeletionQueue;
 using engine::vk::Mesh;
+using engine::vk::RenderObject;
 
 constexpr int MAX_SHADERS = 4;
 
@@ -81,6 +84,9 @@ public:
     Mesh triangleMesh;
     VkPipelineLayout meshPipelineLayout;
     Mesh monkeyMesh;
+    vector<RenderObject> renderables;
+    unordered_map<string, vk::Material> materials;
+    unordered_map<string, Mesh> meshes;
 
     // Depth
 
@@ -128,6 +134,8 @@ private:
 
     void initPipelines();
 
+    void initScene();
+
     // Shaders
 
     bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
@@ -136,6 +144,13 @@ private:
 
     void loadMeshes();
     void uploadMesh(Mesh& mesh);
+    vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
+    vk::Material* getMaterial(const string& name);
+    Mesh* getMesh(const string& name);
+
+    // Draw
+
+    void drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
 
     // Clean
 
