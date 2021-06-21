@@ -178,3 +178,20 @@ VkPipelineDepthStencilStateCreateInfo engine::vk::depthStencilCreateInfo(bool de
 
     return info;
 }
+
+VkSemaphoreCreateInfo engine::vk::semaphoreCreateInfo() {
+    // For the semaphores we don't need any flags
+    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreCreateInfo.pNext = nullptr;
+    semaphoreCreateInfo.flags = 0;
+    return semaphoreCreateInfo;
+}
+
+VkFenceCreateInfo engine::vk::fenceCreateInfo(VkFenceCreateFlagBits flags) {
+    VkFenceCreateInfo fenceCreateInfo {};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.pNext = nullptr;
+    fenceCreateInfo.flags = flags;
+    return fenceCreateInfo;
+}

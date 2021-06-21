@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <array>
 #include <DeletionQueue.h>
 #include <vk_mem_alloc.h>
 
@@ -17,6 +18,7 @@
 
 using std::vector;
 using std::unordered_map;
+using std::array;
 
 using engine::input::InputSystem;
 using game::Game;
@@ -24,7 +26,8 @@ using engine::vk::DeletionQueue;
 using engine::vk::Mesh;
 using engine::vk::RenderObject;
 
-constexpr int MAX_SHADERS = 4;
+// Buffer this number of frames when rendering
+constexpr unsigned int FRAME_OVERLAP = 2;
 
 namespace engine {
 
@@ -57,15 +60,12 @@ public:
 
     VkQueue graphicsQueue;
     uint32_t graphicsQueueFamily;
-    VkCommandPool commandPool;
-    VkCommandBuffer mainCommandBuffer;
 
     // Render pass and synchronisation
 
     VkRenderPass renderPass;
     vector<VkFramebuffer> framebuffers;
-    VkSemaphore presentSemaphore, renderSemaphore;
-    VkFence renderFence;
+    array<vk::FrameData, FRAME_OVERLAP> frames;
 
     // Pipeline
 
@@ -104,10 +104,12 @@ public:
     // Run main loop
     void run();
 
+    // Get the frame we are rendering right now
+    vk::FrameData& getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
+
 private:
     Game game;
     InputSystem inputSystem;
-    int selectedShader;
 
     // Setup vulkan
 

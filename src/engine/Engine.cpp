@@ -41,10 +41,8 @@ Engine::Engine() :
         frameNumber {0},
         windowExtent {1280, 720},
         window {"Gaemi-01"},
-        inputSystem {windowExtent.width, windowExtent.height},
-        selectedShader {0} {
-
-}
+        inputSystem {windowExtent.width, windowExtent.height} 
+        {}
 
 void Engine::init() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -74,19 +72,19 @@ void Engine::cleanup() {
 
 void Engine::draw() {
     // Wait until the GPU has finished rendering the last frame. Timeout of 1 second
-    VK_CHECK(vkWaitForFences(device, 1, &renderFence, true, 1000000000));
-    VK_CHECK(vkResetFences(device, 1, &renderFence));
+    VK_CHECK(vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000));
+    VK_CHECK(vkResetFences(device, 1, &getCurrentFrame().renderFence));
 
     // Request image from the swapchain, one second timeout
     uint32_t swapchainImageIndex;
-    VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, presentSemaphore, nullptr, &swapchainImageIndex));
+    VK_CHECK(vkAcquireNextImageKHR(device, swapchain, 1000000000, getCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
 
     // Now that we are sure that the commands finished executing,
     // we can safely reset the command buffer to begin recording again.
-    VK_CHECK(vkResetCommandBuffer(mainCommandBuffer, 0));
+    VK_CHECK(vkResetCommandBuffer(getCurrentFrame().mainCommandBuffer, 0));
 
     // Naming it cmd for shorter writing
-    VkCommandBuffer cmd = mainCommandBuffer;
+    VkCommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
 
     // Begin the command buffer recording. We will use this command buffer exactly once,
     // so we want to let Vulkan know that
@@ -141,15 +139,15 @@ void Engine::draw() {
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submitInfo.pWaitDstStageMask = &waitStage;
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &presentSemaphore;
+    submitInfo.pWaitSemaphores = &getCurrentFrame().presentSemaphore;
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderSemaphore;
+    submitInfo.pSignalSemaphores = &getCurrentFrame().renderSemaphore;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmd;
 
     // Submit command buffer to the queue and execute it.
     // renderFence will now block until the graphic commands finish execution
-    VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo, renderFence));
+    VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo, getCurrentFrame().renderFence));
 
     // This will put the image we just rendered into the visible window.
     // We want to wait on the renderSemaphore for that,
@@ -159,7 +157,7 @@ void Engine::draw() {
     presentInfo.pNext = nullptr;
     presentInfo.pSwapchains = &swapchain;
     presentInfo.swapchainCount = 1;
-    presentInfo.pWaitSemaphores = &renderSemaphore;
+    presentInfo.pWaitSemaphores = &getCurrentFrame().renderSemaphore;
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pImageIndices = &swapchainImageIndex;
 
@@ -250,7 +248,9 @@ void Engine::initVulkan() {
 
 void Engine::cleanupVulkan() {
     // Make sure the GPU has stopped before clearing
-    vkWaitForFences(device, 1, &renderFence, true, 1000000000);
+    --frameNumber;
+    vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000);
+    ++frameNumber;
     mainDeletionQueue.flush();
 
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -324,15 +324,18 @@ void Engine::initCommands() {
     // Command pool
     auto commandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily,
                                                      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-    VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool));
+    
+    for(int i = 0; i < FRAME_OVERLAP; ++i) {
+        VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
 
-    // Command buffer
-    auto cmdAllocInfo = vk::commandBufferAllocateInfo(commandPool, 1);
-    VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &mainCommandBuffer));
-    // Cleanup callback
-    mainDeletionQueue.pushFunction([=]() {
-        vkDestroyCommandPool(device, commandPool, nullptr);
-    });
+        // Command buffer
+        auto cmdAllocInfo = vk::commandBufferAllocateInfo(frames[i].commandPool, 1);
+        VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &frames[i].mainCommandBuffer));
+        // Cleanup callback
+        mainDeletionQueue.pushFunction([=]() {
+            vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
+        });
+    }
 }
 
 void Engine::initDefaultRenderpass() {
@@ -441,30 +444,25 @@ void Engine::initFramebuffers() {
 }
 
 void Engine::initSyncStructures() {
-    VkFenceCreateInfo fenceCreateInfo {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.pNext = nullptr;
-    // We want to create the fence with the Create Signaled flag, so we can
-    // wait on it before using it on a GPU command (for the first frame)
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &renderFence));
-    // Cleanup callback
-    mainDeletionQueue.pushFunction([=]() {
-        vkDestroyFence(device, renderFence, nullptr);
-    });
+    VkFenceCreateInfo fenceCreateInfo = vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+    VkSemaphoreCreateInfo semaphoreCreateInfo = vk::semaphoreCreateInfo();
 
-    // For the semaphores we don't need any flags
-    VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreCreateInfo.pNext = nullptr;
-    semaphoreCreateInfo.flags = 0;
-    VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &presentSemaphore));
-    VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderSemaphore));
-    // Cleanup callbacks
-    mainDeletionQueue.pushFunction([=]() {
-        vkDestroySemaphore(device, presentSemaphore, nullptr);
-        vkDestroySemaphore(device, renderSemaphore, nullptr);
-    });
+	for (int i = 0; i < FRAME_OVERLAP; ++i) {     
+        VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &frames[i].renderFence));
+        // Cleanup callback
+        mainDeletionQueue.pushFunction([=]() {
+            vkDestroyFence(device, frames[i].renderFence, nullptr);
+        });
+
+
+        VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore));
+        VK_CHECK(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore));
+        // Cleanup callbacks
+        mainDeletionQueue.pushFunction([=]() {
+            vkDestroySemaphore(device, frames[i].presentSemaphore, nullptr);
+            vkDestroySemaphore(device, frames[i].renderSemaphore, nullptr);
+        });
+    }
 }
 
 bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule) {
@@ -633,9 +631,6 @@ void engine::Engine::processInputs() {
     inputSystem.update();
 
     InputState state = inputSystem.getInputState();
-    if (state.keyboard.getKeyState(SDL_SCANCODE_SPACE) == ButtonState::Pressed) {
-        selectedShader = ++selectedShader % MAX_SHADERS;
-    }
 }
 
 void engine::Engine::loadMeshes() {

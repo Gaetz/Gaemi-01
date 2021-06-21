@@ -29,6 +29,14 @@ struct MeshPushConstants {
     Mat4 renderMatrix;
 };
 
+struct FrameData {
+    VkSemaphore presentSemaphore, renderSemaphore;
+    VkFence renderFence;
+
+    VkCommandPool commandPool;
+    VkCommandBuffer mainCommandBuffer;
+};
+
 }
 
 #endif //VK_TYPES_H

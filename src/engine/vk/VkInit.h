@@ -50,6 +50,12 @@ namespace engine::vk {
 
     // Info about how to use depth-testing on a render pipeline
     VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo(bool depthTest, bool depthWrite, VkCompareOp compareOp);
+
+    // Create semaphore info
+    VkSemaphoreCreateInfo semaphoreCreateInfo();
+
+    // Create fence info
+    VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlagBits flags);
 }
 
 
