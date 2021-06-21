@@ -63,7 +63,8 @@ add_custom_target(
     DEPENDS ${SPIRV_BINARY_FILES}
 )
 
-##Copy shaders to build under Windows
+##Copy shaders and assets to build under Windows
 if(WIN32)
   file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 endif()
