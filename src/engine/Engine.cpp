@@ -878,7 +878,7 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
         if (object.material != lastMaterial) {
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipeline);
             lastMaterial = object.material;
-            // Offset for scene data buffer
+            // Offset for scene data dynamic buffer
             uint32_t uniformOffset = padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
             // Bind descriptor set when changing pipeline
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 1, &uniformOffset);
