@@ -89,6 +89,11 @@ public:
     vk::AllocatedImage depthImage;
     VkFormat depthFormat;
 
+    // Descriptor sets
+
+    VkDescriptorSetLayout globalSetLayout;
+    VkDescriptorPool descriptorPool;
+
     // Initializes everything in the engine
     void init();
 
@@ -125,13 +130,16 @@ private:
 
     void initSyncStructures();
 
+    void initDescriptors();
+
     void initPipelines();
 
     void initScene();
 
-    // Shaders
+    // Shaders and buffers
 
     bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
+    AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
     // Meshes
 

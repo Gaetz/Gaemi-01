@@ -35,6 +35,14 @@ struct FrameData {
 
     VkCommandPool commandPool;
     VkCommandBuffer mainCommandBuffer;
+    AllocatedBuffer cameraBuffer;
+    VkDescriptorSet globalDescriptor;
+};
+
+struct GPUCameraData {
+    Mat4 view;
+    Mat4 projection;
+    Mat4 viewProj;
 };
 
 }

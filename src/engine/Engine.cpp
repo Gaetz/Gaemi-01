@@ -54,6 +54,7 @@ void Engine::init() {
     initDefaultRenderpass();
     initFramebuffers();
     initSyncStructures();
+    initDescriptors();
     initPipelines();
     loadMeshes();
     initScene();
@@ -499,6 +500,105 @@ bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule)
     return true;
 }
 
+AllocatedBuffer Engine::createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
+    VkBufferCreateInfo bufferInfo {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.pNext = nullptr;
+    bufferInfo.size = allocSize;
+    bufferInfo.usage = usage;
+
+    VmaAllocationCreateInfo vmaAllocInfo {};
+    vmaAllocInfo.usage = memoryUsage;
+
+    // Allocate memory
+    AllocatedBuffer allocatedBuffer;
+    VK_CHECK(vmaCreateBuffer(allocator,
+                             &bufferInfo,
+                             &vmaAllocInfo,
+                             &allocatedBuffer.buffer,
+                             &allocatedBuffer.allocation,
+                             nullptr));
+                             
+    mainDeletionQueue.pushFunction([=](){
+        vmaDestroyBuffer(allocator, allocatedBuffer.buffer, allocatedBuffer.allocation);
+    });
+    return allocatedBuffer;
+}
+
+
+void Engine::initDescriptors() {
+
+    // Create a descriptor pool that will hold 10 uniform buffers
+    vector<VkDescriptorPoolSize> sizes {{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 }};
+    VkDescriptorPoolCreateInfo poolInfo {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags = 0;
+    poolInfo.maxSets = 10;
+    poolInfo.poolSizeCount = static_cast<uint32_t>(sizes.size());
+    poolInfo.pPoolSizes = sizes.data();
+    VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool));
+    mainDeletionQueue.pushFunction([=](){
+        vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+    });
+
+    // Binding info
+    VkDescriptorSetLayoutBinding cameraBufferBinding {};
+    cameraBufferBinding.binding = 0;
+    cameraBufferBinding.descriptorCount = 1;
+    cameraBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    cameraBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    // Set layout info
+    VkDescriptorSetLayoutCreateInfo setInfo {};
+    setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    setInfo.pNext = nullptr;
+    setInfo.bindingCount = 1;
+    setInfo.flags = 0;
+    setInfo.pBindings = &cameraBufferBinding;
+    VK_CHECK(vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout));
+    mainDeletionQueue.pushFunction([=](){
+        vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
+    });
+
+    // Create buffers
+    for(int i = 0; i < FRAME_OVERLAP; ++i) {
+        frames[i].cameraBuffer = createBuffer(sizeof(vk::GPUCameraData), 
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+        // Allocate one descriptor for each frame
+        VkDescriptorSetAllocateInfo allocInfo {};
+        allocInfo.pNext = nullptr;
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.pSetLayouts = &globalSetLayout;
+        VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor));
+
+        // Make the descriptor point into the camera buffer
+        VkDescriptorBufferInfo bufferInfo {};
+        // Descriptor will point to the camera buffer
+        bufferInfo.buffer = frames[i].cameraBuffer.buffer;
+        // ...at 0 offset
+        bufferInfo.offset = 0;
+        // ...of the size of camera data struct
+        bufferInfo.range = sizeof(vk::GPUCameraData);
+
+        VkWriteDescriptorSet setWrite {};
+        setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        setWrite.pNext = nullptr;
+        // We will write into blending 0 of the global descriptor
+        setWrite.dstBinding = 0;
+        setWrite.descriptorCount = 1;
+        setWrite.dstSet = frames[i].globalDescriptor;
+        setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        setWrite.pBufferInfo = &bufferInfo;
+        vkUpdateDescriptorSets(device, 1, &setWrite, 0, nullptr);
+    }
+}
+
+
+
 void Engine::initPipelines() {
     // -- SHADER MODULES --
     VkShaderModule triangleFragShader;
@@ -530,6 +630,9 @@ void Engine::initPipelines() {
 
     meshPipelineLayoutInfo.pushConstantRangeCount = 1;
     meshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+
+    meshPipelineLayoutInfo.setLayoutCount = 1;
+    meshPipelineLayoutInfo.pSetLayouts = &globalSetLayout;
 
     VK_CHECK(vkCreatePipelineLayout(device, &meshPipelineLayoutInfo, nullptr, &meshPipelineLayout));
 
@@ -720,6 +823,16 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
                                         0.1f, 200.f);
     projection[1][1] *= -1;
 
+    // Fill GPUCamera data struct and copy it to the buffer
+    vk::GPUCameraData cameraData;
+    cameraData.projection = projection;
+    cameraData.view = view;
+    cameraData.viewProj = projection * view;
+    void* data;
+    vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &data);
+    memcpy(data, &cameraData, sizeof(vk::GPUCameraData));
+    vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
+
     // Draw with push constants
     Mesh* lastMesh = nullptr;
     vk::Material* lastMaterial = nullptr;
@@ -730,12 +843,13 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
         if (object.material != lastMaterial) {
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipeline);
             lastMaterial = object.material;
+            // Bind descriptor set when changing pipeline
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 0, nullptr);
         }
 
         // Push transform
-        Mat4 transform = projection * view * object.transform;
         vk::MeshPushConstants constants;
-        constants.renderMatrix = transform;
+        constants.renderMatrix = object.transform;
         vkCmdPushConstants(cmd,
                            object.material->pipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT,
