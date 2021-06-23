@@ -47,6 +47,7 @@ public:
     VkDebugUtilsMessengerEXT debugMessenger;
     VkPhysicalDevice chosenGPU;
     VkDevice device;
+    VkPhysicalDeviceProperties gpuProperties;
 
     // Swapchain
 
@@ -94,6 +95,11 @@ public:
     VkDescriptorSetLayout globalSetLayout;
     VkDescriptorPool descriptorPool;
 
+    // Scene data
+
+    vk::GPUSceneData sceneParams;
+    AllocatedBuffer sceneParamsBuffer;
+
     // Initializes everything in the engine
     void init();
 
@@ -140,6 +146,7 @@ private:
 
     bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
     AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+    size_t padUniformBufferSize(size_t originalSize);
 
     // Meshes
 

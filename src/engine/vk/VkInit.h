@@ -56,6 +56,12 @@ namespace engine::vk {
 
     // Create fence info
     VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlagBits flags);
+
+    // Create descriptor set layout binding
+    VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding);
+
+    // Create descriptor write
+    VkWriteDescriptorSet writeDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo , uint32_t binding);
 }
 
 

@@ -45,6 +45,14 @@ struct GPUCameraData {
     Mat4 viewProj;
 };
 
+struct GPUSceneData {
+	Vec4 fogColor; // w is for exponent
+	Vec4 fogDistances; // x for min, y for max, zw unused.
+	Vec4 ambientColor;
+	Vec4 sunlightDirection; // w for sun power
+	Vec4 sunlightColor;
+};
+
 }
 
 #endif //VK_TYPES_H

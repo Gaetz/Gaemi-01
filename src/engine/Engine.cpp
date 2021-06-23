@@ -236,6 +236,10 @@ void Engine::initVulkan() {
     graphicsQueue = vkbDevice.get_queue(vkb::QueueType::graphics).value();
     graphicsQueueFamily = vkbDevice.get_queue_index(vkb::QueueType::graphics).value();
 
+    // Physical device properties
+    vkGetPhysicalDeviceProperties(chosenGPU, &gpuProperties);
+	LOG(LogLevel::Info) << "The GPU has a minimum buffer alignment of " << gpuProperties.limits.minUniformBufferOffsetAlignment;
+
     // Vulkan memory allocator
     VmaAllocatorCreateInfo allocatorCreateInfo {};
     allocatorCreateInfo.physicalDevice = chosenGPU;
@@ -518,7 +522,7 @@ AllocatedBuffer Engine::createBuffer(size_t allocSize, VkBufferUsageFlags usage,
                              &allocatedBuffer.buffer,
                              &allocatedBuffer.allocation,
                              nullptr));
-                             
+
     mainDeletionQueue.pushFunction([=](){
         vmaDestroyBuffer(allocator, allocatedBuffer.buffer, allocatedBuffer.allocation);
     });
@@ -526,8 +530,18 @@ AllocatedBuffer Engine::createBuffer(size_t allocSize, VkBufferUsageFlags usage,
 }
 
 
-void Engine::initDescriptors() {
+size_t Engine::padUniformBufferSize(size_t originalSize) {
+    // Calculate required alignment based on minimum device offset alignment
+	size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
+	size_t alignedSize = originalSize;
+	if (minUboAlignment > 0) {
+		alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+	}
+	return alignedSize;
+}
 
+
+void Engine::initDescriptors() {
     // Create a descriptor pool that will hold 10 uniform buffers
     vector<VkDescriptorPoolSize> sizes {{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 }};
     VkDescriptorPoolCreateInfo poolInfo {};
@@ -541,24 +555,30 @@ void Engine::initDescriptors() {
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     });
 
-    // Binding info
-    VkDescriptorSetLayoutBinding cameraBufferBinding {};
-    cameraBufferBinding.binding = 0;
-    cameraBufferBinding.descriptorCount = 1;
-    cameraBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    cameraBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    // Binding for camera data at 0
+    VkDescriptorSetLayoutBinding cameraBufferBinding = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,VK_SHADER_STAGE_VERTEX_BIT, 0);
+	// Binding for scene data at 1
+	VkDescriptorSetLayoutBinding sceneBufferBinding = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+	
+    array<VkDescriptorSetLayoutBinding, 2> bindings { cameraBufferBinding, sceneBufferBinding };
 
     // Set layout info
     VkDescriptorSetLayoutCreateInfo setInfo {};
     setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     setInfo.pNext = nullptr;
-    setInfo.bindingCount = 1;
     setInfo.flags = 0;
-    setInfo.pBindings = &cameraBufferBinding;
+    setInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    setInfo.pBindings = bindings.data();
     VK_CHECK(vkCreateDescriptorSetLayout(device, &setInfo, nullptr, &globalSetLayout));
     mainDeletionQueue.pushFunction([=](){
         vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
     });
+
+
+    // Uniform buffer for scene data: two scene params (one for each frame) in same buffer
+    const size_t sceneParamBufferSize = FRAME_OVERLAP * padUniformBufferSize(sizeof(vk::GPUSceneData));
+    sceneParamsBuffer = createBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+
 
     // Create buffers
     for(int i = 0; i < FRAME_OVERLAP; ++i) {
@@ -576,24 +596,25 @@ void Engine::initDescriptors() {
         VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, &frames[i].globalDescriptor));
 
         // Make the descriptor point into the camera buffer
-        VkDescriptorBufferInfo bufferInfo {};
+        VkDescriptorBufferInfo cameraInfo {};
         // Descriptor will point to the camera buffer
-        bufferInfo.buffer = frames[i].cameraBuffer.buffer;
+        cameraInfo.buffer = frames[i].cameraBuffer.buffer;
         // ...at 0 offset
-        bufferInfo.offset = 0;
+        cameraInfo.offset = 0;
         // ...of the size of camera data struct
-        bufferInfo.range = sizeof(vk::GPUCameraData);
+        cameraInfo.range = sizeof(vk::GPUCameraData);
 
-        VkWriteDescriptorSet setWrite {};
-        setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        setWrite.pNext = nullptr;
-        // We will write into blending 0 of the global descriptor
-        setWrite.dstBinding = 0;
-        setWrite.descriptorCount = 1;
-        setWrite.dstSet = frames[i].globalDescriptor;
-        setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        setWrite.pBufferInfo = &bufferInfo;
-        vkUpdateDescriptorSets(device, 1, &setWrite, 0, nullptr);
+        // Make the descriptor point into the scene buffer
+        VkDescriptorBufferInfo sceneInfo {};
+        sceneInfo.buffer = sceneParamsBuffer.buffer;
+        sceneInfo.offset = padUniformBufferSize(sizeof(vk::GPUSceneData)) * i;
+        sceneInfo.range = sizeof(vk::GPUSceneData);
+
+        VkWriteDescriptorSet cameraWrite = vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frames[i].globalDescriptor, &cameraInfo, 0);
+        VkWriteDescriptorSet sceneWrite = vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frames[i].globalDescriptor, &sceneInfo, 1);
+        array<VkWriteDescriptorSet, 2> setWrites { cameraWrite, sceneWrite };
+
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);
     }
 }
 
@@ -601,18 +622,18 @@ void Engine::initDescriptors() {
 
 void Engine::initPipelines() {
     // -- SHADER MODULES --
-    VkShaderModule triangleFragShader;
-    if (!loadShaderModule("../../shaders/triangle.frag.spv", &triangleFragShader)) {
+    VkShaderModule defaultLitFragShader;
+    if (!loadShaderModule("../../shaders/defaultLit.frag.spv", &defaultLitFragShader)) {
         LOG(LogLevel::Error) << "Error when building the triangle fragment shader module";
     } else {
-        LOG(LogLevel::Info) << "Triangle fragment shader successfully loaded";
+        LOG(LogLevel::Info) << "Default lit fragment shader successfully loaded";
     }
 
     VkShaderModule meshVertShader;
     if (!loadShaderModule("../../shaders/triMesh.vert.spv", &meshVertShader)) {
         LOG(LogLevel::Error) << "Error when building the triangle vertex shader module";
     } else {
-        LOG(LogLevel::Info) << "Red Triangle vertex shader successfully loaded";
+        LOG(LogLevel::Info) << "Mesh vertex shader successfully loaded";
     }
 
 
@@ -647,7 +668,7 @@ void Engine::initPipelines() {
     pipelineBuilder.shaderStages.push_back(
             vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
     pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader));
+            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, defaultLitFragShader));
 
     // Vertex input controls how to read vertices from vertex buffers.
     pipelineBuilder.vertexInputInfo = vk::vertexInputStateCreateInfo();
@@ -692,7 +713,7 @@ void Engine::initPipelines() {
 
 
     // -- CLEANUP --
-    vkDestroyShaderModule(device, triangleFragShader, nullptr);
+    vkDestroyShaderModule(device, defaultLitFragShader, nullptr);
     vkDestroyShaderModule(device, meshVertShader, nullptr);
 
     mainDeletionQueue.pushFunction([=]() {
@@ -832,6 +853,17 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &data);
     memcpy(data, &cameraData, sizeof(vk::GPUCameraData));
     vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
+
+    // Fill GPUSceneData with random ambiant color
+    float framed = frameNumber / 120.0f;
+    sceneParams.ambientColor = { math::sin(framed), 0, math::cos(framed), 1};
+
+    char* sceneData;
+    vmaMapMemory(allocator, sceneParamsBuffer.allocation, (void**)&sceneData);
+    int frameIndex = frameNumber % FRAME_OVERLAP;
+	sceneData += padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
+	memcpy(sceneData, &sceneParams, sizeof(vk::GPUSceneData));
+	vmaUnmapMemory(allocator, sceneParamsBuffer.allocation);
 
     // Draw with push constants
     Mesh* lastMesh = nullptr;
