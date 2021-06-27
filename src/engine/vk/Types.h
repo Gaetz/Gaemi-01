@@ -58,6 +58,11 @@ struct UploadContext {
     VkCommandPool commandPool;
 };
 
+class Texture {
+public:
+    AllocatedImage image;
+    VkImageView imageView;
+};
 }
 
 #endif //VK_TYPES_H

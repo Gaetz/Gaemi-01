@@ -7,6 +7,13 @@
 
 #include "Types.h"
 
+#include <string>
+using std::string;
+
+namespace engine {
+class Engine;
+}
+
 namespace engine::vk {
 
     // Create a command pool for commands submitted to the graphics queue.
@@ -55,7 +62,7 @@ namespace engine::vk {
     VkSemaphoreCreateInfo semaphoreCreateInfo();
 
     // Create fence info
-    VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlagBits flags = VK_FENCE_CREATE_FLAG_BITS_MAX_ENUM);
+    VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlagBits flags = static_cast<VkFenceCreateFlagBits>(0));
 
     // Create descriptor set layout binding
     VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding);

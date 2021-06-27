@@ -4,6 +4,9 @@
 
 #include "VkInit.h"
 
+#include "../Engine.h"
+#include "../../Log.h"
+
 VkCommandPoolCreateInfo engine::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
                                                   VkCommandPoolCreateFlags flags) {
     VkCommandPoolCreateInfo commandPoolInfo {};
