@@ -55,13 +55,15 @@ namespace engine::vk {
     VkSemaphoreCreateInfo semaphoreCreateInfo();
 
     // Create fence info
-    VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlagBits flags);
+    VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlagBits flags = VK_FENCE_CREATE_FLAG_BITS_MAX_ENUM);
 
     // Create descriptor set layout binding
     VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding);
 
     // Create descriptor write
     VkWriteDescriptorSet writeDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo , uint32_t binding);
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlagBits flags);
 }
 
 

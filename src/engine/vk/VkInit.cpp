@@ -220,3 +220,12 @@ VkWriteDescriptorSet engine::vk::writeDescriptorBuffer(VkDescriptorType type, Vk
 
 	return write;
 }
+
+VkCommandBufferBeginInfo engine::vk::commandBufferBeginInfo(VkCommandBufferUsageFlagBits flags) {
+    VkCommandBufferBeginInfo cmdBeginInfo {};
+    cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    cmdBeginInfo.pNext = nullptr;
+    cmdBeginInfo.pInheritanceInfo = nullptr;
+    cmdBeginInfo.flags = flags;
+    return cmdBeginInfo;
+}

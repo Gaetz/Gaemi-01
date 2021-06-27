@@ -89,11 +89,7 @@ void Engine::draw() {
 
     // Begin the command buffer recording. We will use this command buffer exactly once,
     // so we want to let Vulkan know that
-    VkCommandBufferBeginInfo cmdBeginInfo {};
-    cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    cmdBeginInfo.pNext = nullptr;
-    cmdBeginInfo.pInheritanceInfo = nullptr;
-    cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkCommandBufferBeginInfo cmdBeginInfo = vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
@@ -341,6 +337,13 @@ void Engine::initCommands() {
             vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
         });
     }
+
+    // Upload command pool
+    auto uploadCommandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily);
+    VK_CHECK(vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyCommandPool(device, uploadContext.commandPool, nullptr);
+    });
 }
 
 void Engine::initDefaultRenderpass() {
@@ -449,6 +452,7 @@ void Engine::initFramebuffers() {
 }
 
 void Engine::initSyncStructures() {
+    // Image fence and semaphores
     VkFenceCreateInfo fenceCreateInfo = vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
     VkSemaphoreCreateInfo semaphoreCreateInfo = vk::semaphoreCreateInfo();
 
@@ -468,6 +472,13 @@ void Engine::initSyncStructures() {
             vkDestroySemaphore(device, frames[i].renderSemaphore, nullptr);
         });
     }
+
+	// Upload fence
+    VkFenceCreateInfo uploadFenceCreateInfo = vk::fenceCreateInfo();
+    VK_CHECK(vkCreateFence(device, &uploadFenceCreateInfo, nullptr, &uploadContext.uploadFence));
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyFence(device, uploadContext.uploadFence, nullptr);
+    });
 }
 
 bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule) {
@@ -784,31 +795,67 @@ void engine::Engine::loadMeshes() {
 }
 
 void engine::Engine::uploadMesh(Mesh& mesh) {
-    VkBufferCreateInfo bufferInfo {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = mesh.vertices.size() * sizeof(Vertex);
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    const size_t bufferSize = mesh.vertices.size() * sizeof(Vertex);
 
-    // Let the VMA library know that this data should be writeable by CPU, but also readable by GPU
+    // -- STAGING BUFFER to load mesh into CPU memory --
+    VkBufferCreateInfo stagingBufferInfo {};
+    stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    stagingBufferInfo.pNext = nullptr;
+    stagingBufferInfo.size = bufferSize;
+    stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    // Let the VMA library know that this data should be writeable by CPU only
     VmaAllocationCreateInfo vmaAllocInfo {};
-    vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 
     // Allocate memory
+    AllocatedBuffer stagingBuffer;
     VK_CHECK(vmaCreateBuffer(allocator,
-                             &bufferInfo,
+                             &stagingBufferInfo,
+                             &vmaAllocInfo,
+                             &stagingBuffer.buffer,
+                             &stagingBuffer.allocation,
+                             nullptr));
+
+    // Copy data into staging buffer
+    void* data;
+    vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+    memcpy(data, mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
+    vmaUnmapMemory(allocator, stagingBuffer.allocation);
+
+    // -- VERTEX BUFFER --
+    // Transfer data from staging buffer to GPU vertex buffer
+    VkBufferCreateInfo vertexBufferInfo {};
+    vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vertexBufferInfo.pNext = nullptr;
+    vertexBufferInfo.size = bufferSize;
+    vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    // Let the VMA library know that this data should be GPU native
+    vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    // Allocate the buffer
+    VK_CHECK(vmaCreateBuffer(allocator,
+                             &vertexBufferInfo,
                              &vmaAllocInfo,
                              &mesh.vertexBuffer.buffer,
                              &mesh.vertexBuffer.allocation,
                              nullptr));
+
+    // -- EXECUTE ALLOC COMMAND --
+    immediateSubmit([=](VkCommandBuffer cmd) {
+        VkBufferCopy copy;
+        copy.srcOffset = 0;
+        copy.dstOffset = 0;
+        copy.size = bufferSize;
+        vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
+    });
+
+    // -- CLEAN --
     mainDeletionQueue.pushFunction([=]() {
         vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
     });
-
-    // Copy vertex data
-    void* data;
-    vmaMapMemory(allocator, mesh.vertexBuffer.allocation, &data);
-    memcpy(data, mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
-    vmaUnmapMemory(allocator, mesh.vertexBuffer.allocation);
+    vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 }
 
 engine::vk::Material*
@@ -903,6 +950,39 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
         // Draw
         vkCmdDraw(cmd, object.mesh->vertices.size(), 1, 0, 0);
     }
+}
+
+void engine::Engine::immediateSubmit(std::function<void(VkCommandBuffer)>&& submittedFunc) {
+    VkCommandBufferAllocateInfo cmdAllocateInfo = vk::commandBufferAllocateInfo(uploadContext.commandPool, 1);
+    VkCommandBuffer cmd;
+    VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocateInfo, &cmd));
+
+    VkCommandBufferBeginInfo cmdBeginInfo = vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+
+    // Execute function
+    submittedFunc(cmd);
+    VK_CHECK(vkEndCommandBuffer(cmd));
+
+    VkSubmitInfo submitInfo {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = nullptr;
+    submitInfo.waitSemaphoreCount = 0;
+    submitInfo.pWaitSemaphores = nullptr;
+    submitInfo.pWaitDstStageMask = nullptr;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
+    submitInfo.pCommandBuffers = &cmd;
+
+    // Submit command buffer to the queue and execute it.
+    // uploadFence will now block until the graphic commands finish execution
+    VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo, uploadContext.uploadFence));
+    vkWaitForFences(device, 1, &uploadContext.uploadFence, true, 9999999999);
+    vkResetFences(device, 1, &uploadContext.uploadFence);
+
+    // Clear the command pool. This will free the command buffer too
+    vkResetCommandPool(device, uploadContext.commandPool, 0);
 }
 
 

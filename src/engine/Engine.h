@@ -100,6 +100,11 @@ public:
     vk::GPUSceneData sceneParams;
     AllocatedBuffer sceneParamsBuffer;
 
+    // Transfer and textures
+
+    vk::UploadContext uploadContext;
+
+
     // Initializes everything in the engine
     void init();
 
@@ -156,9 +161,10 @@ private:
     vk::Material* getMaterial(const string& name);
     Mesh* getMesh(const string& name);
 
-    // Draw
+    // Draw and commands
 
     void drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
+    void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& submittedFunc);
 
     // Clean
 

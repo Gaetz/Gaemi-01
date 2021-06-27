@@ -53,6 +53,11 @@ struct GPUSceneData {
 	Vec4 sunlightColor;
 };
 
+struct UploadContext {
+    VkFence uploadFence;
+    VkCommandPool commandPool;
+};
+
 }
 
 #endif //VK_TYPES_H
