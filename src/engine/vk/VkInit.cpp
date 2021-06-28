@@ -4,6 +4,9 @@
 
 #include "VkInit.h"
 
+#include "../Engine.h"
+#include "../../Log.h"
+
 VkCommandPoolCreateInfo engine::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
                                                   VkCommandPoolCreateFlags flags) {
     VkCommandPoolCreateInfo commandPoolInfo {};
@@ -219,4 +222,13 @@ VkWriteDescriptorSet engine::vk::writeDescriptorBuffer(VkDescriptorType type, Vk
 	write.pBufferInfo = bufferInfo;
 
 	return write;
+}
+
+VkCommandBufferBeginInfo engine::vk::commandBufferBeginInfo(VkCommandBufferUsageFlagBits flags) {
+    VkCommandBufferBeginInfo cmdBeginInfo {};
+    cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    cmdBeginInfo.pNext = nullptr;
+    cmdBeginInfo.pInheritanceInfo = nullptr;
+    cmdBeginInfo.flags = flags;
+    return cmdBeginInfo;
 }

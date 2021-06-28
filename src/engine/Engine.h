@@ -102,6 +102,12 @@ public:
     vk::GPUSceneData sceneParams;
     AllocatedBuffer sceneParamsBuffer;
 
+    // Transfer and textures
+
+    vk::UploadContext uploadContext;
+    unordered_map<string, vk::Texture> textures;
+
+
     // Initializes everything in the engine
     void init();
 
@@ -119,6 +125,9 @@ public:
 
     // Get the frame we are rendering right now
     vk::FrameData& getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
+
+    // Create a vulkan buffer
+    AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
 private:
     Game game;
@@ -147,8 +156,7 @@ private:
     // Shaders and buffers
 
     bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
-    AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-    size_t padUniformBufferSize(size_t originalSize);
+    size_t padUniformBufferSize(size_t originalSize) const;
 
     // Meshes
 
@@ -157,10 +165,13 @@ private:
     vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
     vk::Material* getMaterial(const string& name);
     Mesh* getMesh(const string& name);
+    void loadImages();
+    bool loadImageFromFile(const string& path, vk::AllocatedImage& outImage);
 
-    // Draw
+    // Draw & commands
 
     void drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
+    void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& submittedFunc);
 
     // Clean
 

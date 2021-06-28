@@ -14,6 +14,9 @@
 #include "math/Transformations.h"
 #include "math/Functions.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #ifdef _DEBUG
 #define VK_CHECK(x)                                                             \
     do                                                                          \
@@ -57,6 +60,7 @@ void Engine::init() {
     initDescriptors();
     initPipelines();
     loadMeshes();
+    loadImages();
     initScene();
     isInitialized = true;
 }
@@ -89,16 +93,12 @@ void Engine::draw() {
 
     // Begin the command buffer recording. We will use this command buffer exactly once,
     // so we want to let Vulkan know that
-    VkCommandBufferBeginInfo cmdBeginInfo {};
-    cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    cmdBeginInfo.pNext = nullptr;
-    cmdBeginInfo.pInheritanceInfo = nullptr;
-    cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VkCommandBufferBeginInfo cmdBeginInfo = vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
     VkClearValue clearValue;
-    float flash = abs(sin(frameNumber / 120.f));
+    float flash = abs(sin(static_cast<float>(frameNumber) / 120.f));
     clearValue.color = {{0.0f, 0.0f, flash, 1.0f}};
 
     // Clear depth
@@ -341,6 +341,13 @@ void Engine::initCommands() {
             vkDestroyCommandPool(device, frames[i].commandPool, nullptr);
         });
     }
+
+    // Upload command pool
+    auto uploadCommandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily);
+    VK_CHECK(vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyCommandPool(device, uploadContext.commandPool, nullptr);
+    });
 }
 
 void Engine::initDefaultRenderpass() {
@@ -449,6 +456,7 @@ void Engine::initFramebuffers() {
 }
 
 void Engine::initSyncStructures() {
+    // Image fence and semaphores
     VkFenceCreateInfo fenceCreateInfo = vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
     VkSemaphoreCreateInfo semaphoreCreateInfo = vk::semaphoreCreateInfo();
 
@@ -468,6 +476,13 @@ void Engine::initSyncStructures() {
             vkDestroySemaphore(device, frames[i].renderSemaphore, nullptr);
         });
     }
+
+	// Upload fence
+    VkFenceCreateInfo uploadFenceCreateInfo = vk::fenceCreateInfo();
+    VK_CHECK(vkCreateFence(device, &uploadFenceCreateInfo, nullptr, &uploadContext.uploadFence));
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyFence(device, uploadContext.uploadFence, nullptr);
+    });
 }
 
 bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule) {
@@ -478,8 +493,8 @@ bool Engine::loadShaderModule(const char* path, VkShaderModule* outShaderModule)
         return false;
     }
     // Find what the size of the file is by looking up the location of the cursor, which is end of file.
-    size_t fileSize = (size_t) file.tellg();
-    // Spirv expects the buffer to be on uint32, so make sure to reserve an int vector big enough for the entire file.
+    auto fileSize = file.tellg();
+    // SpirV expects the buffer to be on uint32, so make sure to reserve an int vector big enough for the entire file.
     vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
     // Put file cursor at beginning.
     file.seekg(0);
@@ -515,7 +530,7 @@ AllocatedBuffer Engine::createBuffer(size_t allocSize, VkBufferUsageFlags usage,
     vmaAllocInfo.usage = memoryUsage;
 
     // Allocate memory
-    AllocatedBuffer allocatedBuffer;
+    AllocatedBuffer allocatedBuffer {};
     VK_CHECK(vmaCreateBuffer(allocator,
                              &bufferInfo,
                              &vmaAllocInfo,
@@ -530,7 +545,7 @@ AllocatedBuffer Engine::createBuffer(size_t allocSize, VkBufferUsageFlags usage,
 }
 
 
-size_t Engine::padUniformBufferSize(size_t originalSize) {
+size_t Engine::padUniformBufferSize(size_t originalSize) const {
     // Calculate required alignment based on minimum device offset alignment
 	size_t minUboAlignment = gpuProperties.limits.minUniformBufferOffsetAlignment;
 	size_t alignedSize = originalSize;
@@ -763,7 +778,7 @@ void Engine::initScene() {
     // Our scene will be composed of a monkey and triangles
 
     // Monkey
-    RenderObject monkey;
+    RenderObject monkey {};
     monkey.mesh = getMesh("monkey");
     monkey.material = getMaterial("defaultMesh");
     monkey.transform = Mat4 {1.0f };
@@ -772,7 +787,7 @@ void Engine::initScene() {
     // Triangles
     for (int x = -20; x <= 20; ++x) {
         for (int y = -20; y <= 20; ++y) {
-            RenderObject triangle;
+            RenderObject triangle {};
             triangle.mesh = getMesh("triangle");
             triangle.material = getMaterial("defaultMesh");
             Mat4 translation = math::translate(Mat4{1.0f}, Vec3{x, 0, y});
@@ -818,36 +833,72 @@ void engine::Engine::loadMeshes() {
 }
 
 void engine::Engine::uploadMesh(Mesh& mesh) {
-    VkBufferCreateInfo bufferInfo {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = mesh.vertices.size() * sizeof(Vertex);
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    const size_t bufferSize = mesh.vertices.size() * sizeof(Vertex);
 
-    // Let the VMA library know that this data should be writeable by CPU, but also readable by GPU
+    // -- STAGING BUFFER to load mesh into CPU memory --
+    VkBufferCreateInfo stagingBufferInfo {};
+    stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    stagingBufferInfo.pNext = nullptr;
+    stagingBufferInfo.size = bufferSize;
+    stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    // Let the VMA library know that this data should be writeable by CPU only
     VmaAllocationCreateInfo vmaAllocInfo {};
-    vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 
     // Allocate memory
+    AllocatedBuffer stagingBuffer {};
     VK_CHECK(vmaCreateBuffer(allocator,
-                             &bufferInfo,
+                             &stagingBufferInfo,
+                             &vmaAllocInfo,
+                             &stagingBuffer.buffer,
+                             &stagingBuffer.allocation,
+                             nullptr));
+
+    // Copy data into staging buffer
+    void* data;
+    vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+    memcpy(data, mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
+    vmaUnmapMemory(allocator, stagingBuffer.allocation);
+
+    // -- VERTEX BUFFER --
+    // Transfer data from staging buffer to GPU vertex buffer
+    VkBufferCreateInfo vertexBufferInfo {};
+    vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vertexBufferInfo.pNext = nullptr;
+    vertexBufferInfo.size = bufferSize;
+    vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    // Let the VMA library know that this data should be GPU native
+    vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    // Allocate the buffer
+    VK_CHECK(vmaCreateBuffer(allocator,
+                             &vertexBufferInfo,
                              &vmaAllocInfo,
                              &mesh.vertexBuffer.buffer,
                              &mesh.vertexBuffer.allocation,
                              nullptr));
+
+    // -- EXECUTE ALLOC COMMAND --
+    immediateSubmit([=](VkCommandBuffer cmd) {
+        VkBufferCopy copy;
+        copy.srcOffset = 0;
+        copy.dstOffset = 0;
+        copy.size = bufferSize;
+        vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
+    });
+
+    // -- CLEAN --
     mainDeletionQueue.pushFunction([=]() {
         vmaDestroyBuffer(allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
     });
-
-    // Copy vertex data
-    void* data;
-    vmaMapMemory(allocator, mesh.vertexBuffer.allocation, &data);
-    memcpy(data, mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
-    vmaUnmapMemory(allocator, mesh.vertexBuffer.allocation);
+    vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 }
 
 engine::vk::Material*
 engine::Engine::createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) {
-    engine::vk::Material material;
+    engine::vk::Material material {};
     material.pipeline = pipelineP;
     material.pipelineLayout = pipelineLayoutP;
     materials[name] = material;
@@ -877,12 +928,12 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     Vec3 camPos {0.f, -6.f, -10.f};
     Mat4 view = math::translate(Mat4{1.f}, camPos);
     Mat4 projection = math::perspective(math::toRad(70.f),
-                                        windowExtent.width / windowExtent.height,
+                                        static_cast<float>(windowExtent.width) / static_cast<float>(windowExtent.height),
                                         0.1f, 200.f);
     projection[1][1] *= -1;
 
     // Fill GPUCamera data struct and copy it to the buffer
-    vk::GPUCameraData cameraData;
+    vk::GPUCameraData cameraData {};
     cameraData.projection = projection;
     cameraData.view = view;
     cameraData.viewProj = projection * view;
@@ -891,13 +942,13 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     memcpy(data, &cameraData, sizeof(vk::GPUCameraData));
     vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
-    // Fill GPUSceneData with random ambiant color
-    float framed = frameNumber / 120.0f;
+    // Fill GPUSceneData with random ambient color
+    float framed = static_cast<float>(frameNumber) / 120.0f;
     sceneParams.ambientColor = { math::sin(framed), 0, math::cos(framed), 1};
 
     char* sceneData;
     vmaMapMemory(allocator, sceneParamsBuffer.allocation, (void**)&sceneData);
-    int frameIndex = frameNumber % FRAME_OVERLAP;
+    unsigned int frameIndex = frameNumber % FRAME_OVERLAP;
 	sceneData += padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
 	memcpy(sceneData, &sceneParams, sizeof(vk::GPUSceneData));
 	vmaUnmapMemory(allocator, sceneParamsBuffer.allocation);
@@ -934,7 +985,7 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
         }
 
         // Push transform
-        vk::MeshPushConstants constants;
+        vk::MeshPushConstants constants {};
         constants.renderMatrix = object.transform;
         vkCmdPushConstants(cmd,
                            object.material->pipelineLayout,
@@ -954,5 +1005,135 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     }
 }
 
+void engine::Engine::immediateSubmit(std::function<void(VkCommandBuffer)>&& submittedFunc) {
+    VkCommandBufferAllocateInfo cmdAllocateInfo = vk::commandBufferAllocateInfo(uploadContext.commandPool, 1);
+    VkCommandBuffer cmd;
+    VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocateInfo, &cmd));
 
+    VkCommandBufferBeginInfo cmdBeginInfo = vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
+    // Execute function
+    submittedFunc(cmd);
+    VK_CHECK(vkEndCommandBuffer(cmd));
+
+    VkSubmitInfo submitInfo {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = nullptr;
+    submitInfo.waitSemaphoreCount = 0;
+    submitInfo.pWaitSemaphores = nullptr;
+    submitInfo.pWaitDstStageMask = nullptr;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
+    submitInfo.pCommandBuffers = &cmd;
+
+    // Submit command buffer to the queue and execute it.
+    // uploadFence will now block until the graphic commands finish execution
+    VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo, uploadContext.uploadFence));
+    vkWaitForFences(device, 1, &uploadContext.uploadFence, true, 9999999999);
+    vkResetFences(device, 1, &uploadContext.uploadFence);
+
+    // Clear the command pool. This will free the command buffer too
+    vkResetCommandPool(device, uploadContext.commandPool, 0);
+}
+
+void engine::Engine::loadImages() {
+    vk::Texture lostEmpire {};
+    loadImageFromFile("../../assets/lost_empire-RGBA.png", lostEmpire.image);
+
+    VkImageViewCreateInfo imageViewInfo = vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, lostEmpire.image.image, VK_IMAGE_ASPECT_COLOR_BIT);
+    vkCreateImageView(device, &imageViewInfo, nullptr, &lostEmpire.imageView);
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroyImageView(device, lostEmpire.imageView, nullptr);
+    });
+
+    textures["empire_diffuse"] = lostEmpire;
+}
+
+bool engine::Engine::loadImageFromFile(const string& path, vk::AllocatedImage& outImage)
+{
+    int texWidth, texHeight, texChannels;
+    stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    if (!pixels) {
+        LOG(LogLevel::Error) << "Failed to load texture file " << path;
+        return false;
+    }
+    void* pixel_ptr = pixels;
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+    VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+    AllocatedBuffer stagingBuffer = createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+    void* data;
+    vmaMapMemory(allocator, stagingBuffer.allocation, &data);
+    memcpy(data, pixel_ptr, static_cast<size_t>(imageSize));
+    vmaUnmapMemory(allocator, stagingBuffer.allocation);
+    stbi_image_free(pixels);
+
+    VkExtent3D imageExtent;
+    imageExtent.width = static_cast<uint32_t>(texWidth);
+    imageExtent.height = static_cast<uint32_t>(texHeight);
+    imageExtent.depth = 1;
+
+    vk::AllocatedImage newImage {};
+    VkImageCreateInfo imageCreateInfo = vk::imageCreateInfo(imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, imageExtent);
+    VmaAllocationCreateInfo imageAllocInfo {};
+    imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    // Allocate and create the image
+    vmaCreateImage(allocator, &imageCreateInfo, &imageAllocInfo, &newImage.image, &newImage.allocation, nullptr);
+
+    // Transition image to transfer-receiver
+    immediateSubmit([&](VkCommandBuffer cmd) {
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+
+        VkImageMemoryBarrier imageBarrierToTransfer {};
+        imageBarrierToTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imageBarrierToTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageBarrierToTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrierToTransfer.image = newImage.image;
+        imageBarrierToTransfer.subresourceRange = range;
+        imageBarrierToTransfer.srcAccessMask = 0;
+        imageBarrierToTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        // Barrier the image into the transfer-receive layout
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrierToTransfer);
+
+        VkBufferImageCopy copyRegion {};
+        copyRegion.bufferOffset = 0;
+        copyRegion.bufferRowLength = 0;
+        copyRegion.bufferImageHeight = 0;
+
+        copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.imageSubresource.mipLevel = 0;
+        copyRegion.imageSubresource.baseArrayLayer = 0;
+        copyRegion.imageSubresource.layerCount = 1;
+        copyRegion.imageExtent = imageExtent;
+
+        // Copy the buffer into the image
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.buffer, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+
+        VkImageMemoryBarrier imageBarrierToReadable = imageBarrierToTransfer;
+        imageBarrierToReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrierToReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageBarrierToReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        imageBarrierToReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        // Barrier the image into the shader readable layout
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrierToReadable);
+    });
+
+    mainDeletionQueue.pushFunction([=]() {
+        vmaDestroyImage(allocator, newImage.image, newImage.allocation);
+    });
+
+    LOG(LogLevel::Info) << "Texture loaded successfully " << path;
+    outImage = newImage;
+    return true;
+}

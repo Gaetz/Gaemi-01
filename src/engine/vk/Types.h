@@ -60,6 +60,16 @@ struct GPUObjectData {
     Mat4 modelMatrix;
 };
 
+struct UploadContext {
+    VkFence uploadFence;
+    VkCommandPool commandPool;
+};
+
+class Texture {
+public:
+    AllocatedImage image;
+    VkImageView imageView;
+};
 }
 
 #endif //VK_TYPES_H
