@@ -133,7 +133,7 @@ bool engine::vk::Mesh::loadFromObj(const string& filename) {
                 newVertex.uv.y = 1 - uy;
 
                 // If you want to see normals
-                newVertex.color = newVertex.normal;
+                //newVertex.color = newVertex.normal;
 
                 vertices.push_back(newVertex);
             }
@@ -143,6 +143,6 @@ bool engine::vk::Mesh::loadFromObj(const string& filename) {
             shape.mesh.material_ids[f];
         }
     }
-
+    LOG(LogLevel::Info) << "TinyObjReader: successfully loaded " << filename << reader.Error();
     return true;
 }

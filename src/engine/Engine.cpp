@@ -675,14 +675,14 @@ void Engine::initPipelines() {
     // -- SHADER MODULES --
     VkShaderModule defaultLitFragShader;
     if (!loadShaderModule("../../shaders/defaultLit.frag.spv", &defaultLitFragShader)) {
-        LOG(LogLevel::Error) << "Error when building the triangle fragment shader module";
+        LOG(LogLevel::Error) << "Error when building the default textured fragment shader module";
     } else {
         LOG(LogLevel::Info) << "Default lit fragment shader successfully loaded";
     }
 
     VkShaderModule meshVertShader;
     if (!loadShaderModule("../../shaders/triMesh.vert.spv", &meshVertShader)) {
-        LOG(LogLevel::Error) << "Error when building the triangle vertex shader module";
+        LOG(LogLevel::Error) << "Error when building the triangle mesh vertex shader module";
     } else {
         LOG(LogLevel::Info) << "Mesh vertex shader successfully loaded";
     }
@@ -796,6 +796,13 @@ void Engine::initScene() {
             renderables.push_back(triangle);
         }
     }
+
+    // Add lost empire
+    RenderObject map;
+    map.mesh = getMesh("lostEmpire");
+    map.material = getMaterial("defaultMesh");
+    map.transform = math::translate(Mat4{1.f}, Vec3{ 5,-10,0 });
+    renderables.push_back(map);
 }
 
 void engine::Engine::processInputs() {
@@ -824,12 +831,18 @@ void engine::Engine::loadMeshes() {
     Mesh monkeyMesh;
     monkeyMesh.loadFromObj("../../assets/monkey_smooth.obj");
 
+    // Lost empire
+    Mesh lostEmpire;
+    lostEmpire.loadFromObj("../../assets/lost_empire.obj");
+
     uploadMesh(triangleMesh);
     uploadMesh(monkeyMesh);
+    uploadMesh(lostEmpire);
 
     // Store (copy) meshes in lists
     meshes["triangle"] = triangleMesh;
     meshes["monkey"] = monkeyMesh;
+    meshes["lostEmpire"] = lostEmpire;
 }
 
 void engine::Engine::uploadMesh(Mesh& mesh) {
