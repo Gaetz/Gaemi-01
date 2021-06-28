@@ -28,6 +28,7 @@ using engine::vk::RenderObject;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
+constexpr unsigned int MAX_OBJECTS = 10000;
 
 namespace engine {
 
@@ -94,6 +95,7 @@ public:
 
     VkDescriptorSetLayout globalSetLayout;
     VkDescriptorPool descriptorPool;
+    VkDescriptorSetLayout objectSetLayout;
 
     // Scene data
 

@@ -37,6 +37,9 @@ struct FrameData {
     VkCommandBuffer mainCommandBuffer;
     AllocatedBuffer cameraBuffer;
     VkDescriptorSet globalDescriptor;
+
+    AllocatedBuffer objectBuffer;
+    VkDescriptorSet objectDescriptor;
 };
 
 struct GPUCameraData {
@@ -51,6 +54,10 @@ struct GPUSceneData {
 	Vec4 ambientColor;
 	Vec4 sunlightDirection; // w for sun power
 	Vec4 sunlightColor;
+};
+
+struct GPUObjectData {
+    Mat4 modelMatrix;
 };
 
 }
