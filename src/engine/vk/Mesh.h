@@ -15,6 +15,7 @@ using std::string;
 using std::vector;
 using engine::vk::AllocatedBuffer;
 using engine::math::Vec3;
+using engine::math::Vec2;
 
 namespace engine::vk {
 
@@ -27,7 +28,7 @@ struct Vertex {
     Vec3 position;
     Vec3 normal;
     Vec3 color;
-
+    Vec2 uv;
     static VertexInputDescription getVertexDescription();
 };
 

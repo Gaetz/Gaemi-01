@@ -42,9 +42,17 @@ VertexInputDescription Vertex::getVertexDescription() {
     colorAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     colorAttribute.offset = offsetof(Vertex, color);
 
+    // Color will be stored at Location 3
+    VkVertexInputAttributeDescription uvAttribute {};
+    uvAttribute.binding = 0;
+    uvAttribute.location = 3;
+    uvAttribute.format = VK_FORMAT_R32G32_SFLOAT;
+    uvAttribute.offset = offsetof(Vertex, uv);
+
     description.attributes.push_back(positionAttribute);
     description.attributes.push_back(normalAttribute);
     description.attributes.push_back(colorAttribute);
+    description.attributes.push_back(uvAttribute);
     return description;
 }
 
@@ -107,6 +115,10 @@ bool engine::vk::Mesh::loadFromObj(const string& filename) {
                 // tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
                 // tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
 
+                // uv
+                tinyobj::real_t ux = attrib.texcoords[2 * idx.texcoord_index + 0];
+                tinyobj::real_t uy = attrib.texcoords[2 * idx.texcoord_index + 1];
+
                 // Create vertex
                 Vertex newVertex;
                 newVertex.position.x = vx;
@@ -117,7 +129,10 @@ bool engine::vk::Mesh::loadFromObj(const string& filename) {
                 newVertex.normal.y = ny;
                 newVertex.normal.z = nz;
 
-                // Just to see normals
+                newVertex.uv.x = ux;
+                newVertex.uv.y = 1 - uy;
+
+                // If you want to see normals
                 newVertex.color = newVertex.normal;
 
                 vertices.push_back(newVertex);
