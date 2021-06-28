@@ -72,7 +72,7 @@ public:
     // Pipeline
 
     VkPipeline meshPipeline;
-    VkPipelineLayout meshPipelineLayout;
+    VkPipelineLayout texturedMeshPipelineLayout;
     DeletionQueue mainDeletionQueue;
 
     // Allocator
@@ -96,6 +96,7 @@ public:
     VkDescriptorSetLayout globalSetLayout;
     VkDescriptorPool descriptorPool;
     VkDescriptorSetLayout objectSetLayout;
+    VkDescriptorSetLayout singleTextureSetLayout;
 
     // Scene data
 

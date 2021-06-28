@@ -561,7 +561,8 @@ void Engine::initDescriptors() {
     vector<VkDescriptorPoolSize> sizes {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 },
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 }
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10 }
     };
     VkDescriptorPoolCreateInfo poolInfo {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -610,6 +611,19 @@ void Engine::initDescriptors() {
     VK_CHECK(vkCreateDescriptorSetLayout(device, &set2Info, nullptr, &objectSetLayout));
     mainDeletionQueue.pushFunction([=](){
         vkDestroyDescriptorSetLayout(device, objectSetLayout, nullptr);
+    });
+
+    // -- SAMPLER for single texture --
+    VkDescriptorSetLayoutBinding textureBind = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+    VkDescriptorSetLayoutCreateInfo set3info {};
+    set3info.bindingCount = 1;
+    set3info.flags = 0;
+    set3info.pNext = nullptr;
+    set3info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    set3info.pBindings = &textureBind;
+    VK_CHECK(vkCreateDescriptorSetLayout(device, &set3info, nullptr, &singleTextureSetLayout));
+    mainDeletionQueue.pushFunction([=](){
+        vkDestroyDescriptorSetLayout(device, singleTextureSetLayout, nullptr);
     });
 
     // -- CREATE BUFFERS FOR EACH FRAMES --
@@ -692,7 +706,7 @@ void Engine::initPipelines() {
     // The pipeline layout that controls the inputs/outputs of the shader
     // We are not using descriptor sets or other systems yet, so no need to use anything other than empty default
     // Pipeline layout for push constants
-    VkPipelineLayoutCreateInfo meshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
+    VkPipelineLayoutCreateInfo texturedMeshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
 
     // Setup push constants
     VkPushConstantRange pushConstant;
@@ -700,14 +714,14 @@ void Engine::initPipelines() {
     pushConstant.size = sizeof(vk::MeshPushConstants);
     pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-    meshPipelineLayoutInfo.pushConstantRangeCount = 1;
-    meshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+    texturedMeshPipelineLayoutInfo.pushConstantRangeCount = 1;
+    texturedMeshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
-    array<VkDescriptorSetLayout, 2> setLayouts { globalSetLayout, objectSetLayout };
-    meshPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-    meshPipelineLayoutInfo.pSetLayouts = setLayouts.data();
+    array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
+    texturedMeshPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+    texturedMeshPipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
-    VK_CHECK(vkCreatePipelineLayout(device, &meshPipelineLayoutInfo, nullptr, &meshPipelineLayout));
+    VK_CHECK(vkCreatePipelineLayout(device, &texturedMeshPipelineLayoutInfo, nullptr, &texturedMeshPipelineLayout));
 
 
     // -- BUILD PIPELINE --
@@ -759,9 +773,9 @@ void Engine::initPipelines() {
     pipelineBuilder.depthStencil = vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     // Build pipeline & material
-    pipelineBuilder.pipelineLayout = meshPipelineLayout;
+    pipelineBuilder.pipelineLayout = texturedMeshPipelineLayout;
     meshPipeline = pipelineBuilder.buildPipeline(device, renderPass);
-    createMaterial(meshPipeline, meshPipelineLayout, "defaultMesh");
+    createMaterial(meshPipeline, texturedMeshPipelineLayout, "defaultMesh");
 
 
     // -- CLEANUP --
@@ -770,7 +784,7 @@ void Engine::initPipelines() {
 
     mainDeletionQueue.pushFunction([=]() {
         vkDestroyPipeline(device, meshPipeline, nullptr);
-        vkDestroyPipelineLayout(device, meshPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(device, texturedMeshPipelineLayout, nullptr);
     });
 }
 
@@ -803,6 +817,29 @@ void Engine::initScene() {
     map.material = getMaterial("defaultMesh");
     map.transform = math::translate(Mat4{1.f}, Vec3{ 5,-10,0 });
     renderables.push_back(map);
+
+    // Textures for lost empire
+    VkSamplerCreateInfo samplerInfo = vk::samplerCreateInfo(VK_FILTER_NEAREST);
+    VkSampler texSampler;
+    vkCreateSampler(device, &samplerInfo, nullptr, &texSampler);
+    vk::Material* texturedMat =	getMaterial("defaultMesh");
+
+    // Allocate the descriptor set for single-texture to use on the material
+    VkDescriptorSetAllocateInfo allocInfo {};
+    allocInfo.pNext = nullptr;
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &singleTextureSetLayout;
+    vkAllocateDescriptorSets(device, &allocInfo, &texturedMat->textureSet);
+
+    // Write to the descriptor set so that it points to our empire_diffuse texture
+    VkDescriptorImageInfo imageBufferInfo;
+    imageBufferInfo.sampler = texSampler;
+    imageBufferInfo.imageView = textures["empire_diffuse"].imageView;
+    imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    VkWriteDescriptorSet texture1 = vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
+    vkUpdateDescriptorSets(device, 1, &texture1, 0, nullptr);
 }
 
 void engine::Engine::processInputs() {
@@ -995,6 +1032,16 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
         
             // -- OBJECT DATA DESCRIPTOR --
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 1, 1, &getCurrentFrame().objectDescriptor, 0, nullptr);
+
+            // -- TEXTURE --
+            if (object.material->textureSet != VK_NULL_HANDLE) {
+                // Texture descriptor
+                vkCmdBindDescriptorSets(cmd,
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        object.material->pipelineLayout,
+                                        2, 1, &object.material->textureSet,
+                                        0, nullptr);
+            }
         }
 
         // Push transform

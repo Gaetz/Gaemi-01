@@ -4,6 +4,9 @@
 layout (location = 0) in vec3 inColor;
 layout (location = 1) in vec2 texCoord;
 
+// Texture sampler
+layout (set = 2, binding = 0) uniform sampler2D tex1;
+
 // Output color
 layout (location = 0) out vec4 outColor;
 
@@ -18,5 +21,6 @@ layout(set = 0, binding = 1) uniform SceneData {
 void main()
 {
     //outColor = vec4(inColor + sceneData.ambientColor.xyz, 1.0f);
-	outColor = vec4(texCoord.x, texCoord.y, 0.5f, 1.0f);
+	vec3 color = texture(tex1,texCoord).xyz;
+	outColor = vec4(color,1.0f);
 }
