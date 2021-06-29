@@ -6,6 +6,7 @@
 #define INPUT_CONTROLLERSTATE_H
 
 #include <SDL2/SDL_gamecontroller.h>
+
 #include "../math/Types.h"
 
 using engine::math::Vec2;

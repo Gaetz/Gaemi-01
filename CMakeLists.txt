@@ -9,7 +9,7 @@ find_package(Vulkan REQUIRED)
 
 
 ## Debug fix for VsCode
-#if (WIN32)
+if (WIN32)
     if (CMAKE_BUILD_TYPE MATCHES "")
         # Build type is not set eg. command was "cmake .."
         message(STATUS "  Build type was unspecified, set to Debug")
@@ -18,7 +18,8 @@ find_package(Vulkan REQUIRED)
     else ()
         message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
     endif ()
-#endif ()
+endif ()
+
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "_DEBUG")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
@@ -67,4 +68,5 @@ add_custom_target(
 if(WIN32)
   file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
   file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/src)
 endif()

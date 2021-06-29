@@ -5,13 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Debug",
+            "name": "(Windows VC) Debug",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/src/Debug/Gaemi.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/src/Debug/",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "(Windows Clang) Debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/src/Gaemi.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/src/",
             "environment": [],
             "console": "externalTerminal"
         }

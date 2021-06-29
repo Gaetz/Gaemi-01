@@ -6,6 +6,7 @@
 #define INPUTSYSTEM_H
 
 #include <SDL2/SDL.h>
+
 #include "../math/Types.h"
 #include "KeyboardState.h"
 #include "MouseState.h"

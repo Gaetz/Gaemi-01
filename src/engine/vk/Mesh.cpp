@@ -140,7 +140,7 @@ bool engine::vk::Mesh::loadFromObj(const string& filename) {
             index_offset += fv;
 
             // per-face material
-            shape.mesh.material_ids[f];
+            //shape.mesh.material_ids[f];
         }
     }
     LOG(LogLevel::Info) << "TinyObjReader: successfully loaded " << filename << reader.Error();

@@ -6,6 +6,7 @@
 #define INPUT_KEYBOARDSTATE_H
 
 #include <SDL2/SDL_keyboard.h>
+
 enum class ButtonState;
 
 namespace engine::input {

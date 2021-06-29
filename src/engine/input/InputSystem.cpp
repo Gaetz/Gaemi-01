@@ -154,7 +154,7 @@ Vec2 InputSystem::filter2D(int inputX, int inputY) {
     Vec2 dir;
     dir.x = static_cast<float>(inputX);
     dir.y = static_cast<float>(inputY);
-    float length = dir.length();
+    float length = static_cast<float>(dir.length());
 
     // If length < deadZone, should be no input
     if (length < deadZone) {
