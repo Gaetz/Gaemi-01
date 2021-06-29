@@ -44,7 +44,7 @@ Engine::Engine() :
         frameNumber {0},
         windowExtent {1280, 720},
         window {"Gaemi-01"},
-        inputSystem {windowExtent.width, windowExtent.height} 
+        inputSystem {windowExtent.width, windowExtent.height}
         {}
 
 void Engine::init() {
@@ -329,7 +329,7 @@ void Engine::initCommands() {
     // Command pool
     auto commandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily,
                                                      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-    
+
     for(int i = 0; i < FRAME_OVERLAP; ++i) {
         VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
 
@@ -460,7 +460,7 @@ void Engine::initSyncStructures() {
     VkFenceCreateInfo fenceCreateInfo = vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
     VkSemaphoreCreateInfo semaphoreCreateInfo = vk::semaphoreCreateInfo();
 
-	for (int i = 0; i < FRAME_OVERLAP; ++i) {     
+	for (int i = 0; i < FRAME_OVERLAP; ++i) {
         VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &frames[i].renderFence));
         // Cleanup callback
         mainDeletionQueue.pushFunction([=]() {
@@ -581,7 +581,7 @@ void Engine::initDescriptors() {
     VkDescriptorSetLayoutBinding cameraBufferBinding = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,VK_SHADER_STAGE_VERTEX_BIT, 0);
 	// Binding for scene data at 1
 	VkDescriptorSetLayoutBinding sceneBufferBinding = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-	
+
     array<VkDescriptorSetLayoutBinding, 2> bindings { cameraBufferBinding, sceneBufferBinding };
 
     // Set layout info
@@ -628,7 +628,7 @@ void Engine::initDescriptors() {
 
     // -- CREATE BUFFERS FOR EACH FRAMES --
     for(int i = 0; i < FRAME_OVERLAP; ++i) {
-        frames[i].cameraBuffer = createBuffer(sizeof(vk::GPUCameraData), 
+        frames[i].cameraBuffer = createBuffer(sizeof(vk::GPUCameraData),
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VMA_MEMORY_USAGE_CPU_TO_GPU);
 
@@ -822,6 +822,9 @@ void Engine::initScene() {
     VkSamplerCreateInfo samplerInfo = vk::samplerCreateInfo(VK_FILTER_NEAREST);
     VkSampler texSampler;
     vkCreateSampler(device, &samplerInfo, nullptr, &texSampler);
+    mainDeletionQueue.pushFunction([=]() {
+        vkDestroySampler(device, texSampler, nullptr);
+    });
     vk::Material* texturedMat =	getMaterial("defaultMesh");
 
     // Allocate the descriptor set for single-texture to use on the material
@@ -1029,7 +1032,7 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
             uint32_t uniformOffset = padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
             // Bind descriptor set when changing pipeline
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 1, &uniformOffset);
-        
+
             // -- OBJECT DATA DESCRIPTOR --
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 1, 1, &getCurrentFrame().objectDescriptor, 0, nullptr);
 
