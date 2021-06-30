@@ -5,9 +5,9 @@ target_include_directories(GGame PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(GGame GEngine SDL2)
 
 ## Executable
-add_executable(Gaemi src/Main.cpp)
-set_property(TARGET Gaemi PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Gaemi>")
-target_link_libraries(Gaemi GGame GEngine vkbootstrap vma glm imgui stb_image Vulkan::Vulkan SDL2)
+add_executable(${CMAKE_PROJECT_NAME} src/Main.cpp)
+set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Gaemi>")
+target_link_libraries(${CMAKE_PROJECT_NAME} GGame GEngine vkbootstrap vma glm imgui stb_image Vulkan::Vulkan SDL2)
 
-add_dependencies(Gaemi Shaders)
+add_dependencies(${CMAKE_PROJECT_NAME} Shaders)
 
