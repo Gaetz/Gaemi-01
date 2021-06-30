@@ -5,7 +5,7 @@
 
 #include <tiny_obj_loader.h>
 #include "Mesh.h"
-#include "../../Log.h"
+#include "../Log.h"
 
 using engine::vk::VertexInputDescription;
 using engine::vk::Vertex;

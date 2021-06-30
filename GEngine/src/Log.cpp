@@ -1,6 +1,8 @@
 #include "Log.h"
 #include <ctime>
 #include <iostream>
+#include "Defines.h"
+
 
 Log::Log() {
     file.open(GAME_LOG_FILE, std::fstream::app);
@@ -28,11 +30,11 @@ std::ostringstream& Log::get(LogLevel level) {
     // Log
     time_t now;
     char date[19];
-#ifdef __linux__
+#ifdef GPLATFORM_LINUX
     struct tm* timeInfo;
     timeInfo = localtime(&now);
     strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
-#elif defined(WIN32)
+#elif GPLATFORM_WINDOWS
     struct tm timeInfo;
     time(&now);
     localtime_s(&timeInfo, &now);

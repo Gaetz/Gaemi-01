@@ -44,7 +44,8 @@ Engine::Engine() :
         frameNumber {0},
         windowExtent {1280, 720},
         window {"Gaemi-01"},
-        inputSystem {windowExtent.width, windowExtent.height}
+        inputSystem {windowExtent.width, windowExtent.height},
+        isRunning {false}
         {}
 
 void Engine::init() {
@@ -63,12 +64,12 @@ void Engine::init() {
     loadImages();
     initScene();
     isInitialized = true;
+    isRunning = true;
 }
 
 void Engine::cleanup() {
     if (isInitialized) {
         cleanupVulkan();
-        game.cleanup();
         window.cleanup();
         SDL_Quit();
     }
@@ -168,6 +169,7 @@ void Engine::draw() {
     frameNumber++;
 }
 
+/*
 void Engine::run() {
 
     Timer timer;
@@ -185,6 +187,7 @@ void Engine::run() {
         // which synchronizes with the monitor framerate.
     }
 }
+*/
 
 void Engine::initVulkan() {
     // -- INSTANCE --
@@ -845,15 +848,15 @@ void Engine::initScene() {
     vkUpdateDescriptorSets(device, 1, &texture1, 0, nullptr);
 }
 
-void engine::Engine::processInputs() {
+const InputState engine::Engine::processInputs() {
     inputSystem.preUpdate();
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        game.isRunning = inputSystem.processEvent(event);
+        isRunning = inputSystem.processEvent(event);
     }
     inputSystem.update();
 
-    InputState state = inputSystem.getInputState();
+    return inputSystem.getInputState();
 }
 
 void engine::Engine::loadMeshes() {

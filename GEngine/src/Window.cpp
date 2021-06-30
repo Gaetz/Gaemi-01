@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "Window.h"
-#include "../Log.h"
+#include "Log.h"
 
 using engine::Window;
 
@@ -51,10 +51,10 @@ void Window::updateFpsCounter(long dt) {
         previousSeconds = currentSeconds;
         char tmp[128];
         double fps = (double)frameCount / elapsedSeconds;
-#if __linux__
-        sprintf(tmp, "%s @ fps: %.2f", title.c_str(), fps);
-#else
+#if GPLATFORM_WINDOWS
         sprintf_s(tmp, "%s @ fps: %.2f", title.c_str(), fps);
+#else
+        sprintf(tmp, "%s @ fps: %.2f", title.c_str(), fps);
 #endif
         SDL_SetWindowTitle(window.get(), tmp);
         frameCount = 0;

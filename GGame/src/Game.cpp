@@ -4,7 +4,7 @@
 
 #include <SDL2/SDL_events.h>
 
-#include "../engine/Game.h"
+#include "Game.h"
 
 using game::Game;
 

@@ -8,20 +8,18 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
-#include <DeletionQueue.h>
 #include <vk_mem_alloc.h>
 
 #include "vk/RenderObject.h"
 #include "Window.h"
-#include "Game.h"
 #include "input/InputSystem.h"
+#include "vk/DeletionQueue.h"
 
 using std::vector;
 using std::unordered_map;
 using std::array;
 
 using engine::input::InputSystem;
-using game::Game;
 using engine::vk::DeletionQueue;
 using engine::vk::Mesh;
 using engine::vk::RenderObject;
@@ -41,6 +39,7 @@ public:
     int frameNumber;
     VkExtent2D windowExtent;
     Window window;
+    bool isRunning;
 
     // Instance and devices
 
@@ -116,13 +115,13 @@ public:
     void cleanup();
 
     // Process engine inputs
-    void processInputs();
+    const input::InputState processInputs();
 
     // Draw loop
     void draw();
 
     // Run main loop
-    void run();
+    //void run();
 
     // Get the frame we are rendering right now
     vk::FrameData& getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
@@ -131,7 +130,6 @@ public:
     AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
 private:
-    Game game;
     InputSystem inputSystem;
 
     // Setup vulkan

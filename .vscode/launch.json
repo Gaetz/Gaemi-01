@@ -8,23 +8,54 @@
             "name": "(Windows VC) Debug",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/Debug/Gaemi.exe",
+            "program": "${workspaceFolder}/build/GTestBed/Debug/GaemiTest.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/src/Debug/",
+            "cwd": "${workspaceFolder}/build/GTestBed/Debug/",
             "environment": [],
             "console": "externalTerminal"
         },
         {
-            "name": "(Windows Clang) Debug",
+            "name": "(Windows Clang) Debug Test",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/Gaemi.exe",
+            "program": "${workspaceFolder}/build/GTestBed/GaemiTest.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/src/",
+            "cwd": "${workspaceFolder}/build/GTestBed/",
             "environment": [],
             "console": "externalTerminal"
+        },
+        {
+            "name": "(Linux Clang) Debug Test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/GTestBed/GaemiTest",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/GTestBed/",
+            "environment": []
+        },
+        {
+            "name": "(Windows Clang) Debug Game",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/GGame/Gaemi.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/GGame/",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "(Linux Clang) Debug Game",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/GGame/Gaemi",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/GGame/",
+            "environment": []
         }
     ]
 }

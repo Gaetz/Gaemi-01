@@ -1,0 +1,9 @@
+add_subdirectory( src/input )
+add_subdirectory( src/vk )
+add_subdirectory( src/math )
+
+file( GLOB GEngine_SOURCES src/*.cpp )
+add_library( GEngine ${GEngine_SOURCES})
+target_include_directories(GEngine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(GEngine input vk vma math Vulkan::Vulkan SDL2)
