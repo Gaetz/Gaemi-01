@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Defines.h"
 
+using engine::Log;
 
 Log::Log() {
     file.open(GAME_LOG_FILE, std::fstream::app);

@@ -23,6 +23,8 @@ struct LogConfig {
 
 extern LogConfig LOG_CONFIG;
 
+namespace engine {
+
 // General purpose logging class
 // Logs in standard output and in a file, configured
 // with the GAME_LOG_FILE macro.
@@ -47,7 +49,7 @@ private:
 
     Log& operator=(const Log&);
 };
-
+}
 
 #define LOG(level)                                              \
     if (static_cast<int>(level) > LOG_CONFIG.reportingLevel)    \

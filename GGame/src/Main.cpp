@@ -1,7 +1,7 @@
-#include "../../GEngine/src/Engine.h"
-#include "../../GEngine/src/Log.h"
-#include "../../GEngine/src/Timer.h"
-#include "../../GEngine/src/input/InputSystem.h"
+#include <Log.h>
+#include <Timer.h>
+#include <input/InputSystem.h>
+#include <Engine.h>
 
 using engine::Engine;
 using engine::Timer;
@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     LOG_CONFIG.reportingLevel = static_cast<int>(LogLevel::Debug);
     LOG_CONFIG.restart = true;
     if (LOG_CONFIG.restart) {
-        Log::restart();
+        engine::Log::restart();
     }
 
     // Engine
