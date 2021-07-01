@@ -66,10 +66,12 @@ add_custom_target(
     DEPENDS ${SPIRV_BINARY_FILES}
 )
 
-##Copy shaders and assets to build under Windows
+## Copy shaders, assets and dll to build under Windows
 if(WIN32)
   file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
   file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
   file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed)
   file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame)
+  file(COPY ${CMAKE_BINARY_DIR}/GEngine/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed)
+  file(COPY ${CMAKE_BINARY_DIR}/GEngine/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame)
 endif()

@@ -7,18 +7,12 @@ using engine::Engine;
 using engine::Timer;
 using engine::input::InputState;
 
-LogConfig LOG_CONFIG {};
-
 void run(Engine& engine);
 
 int main(int argc, char* argv[])
 {
     // Init logging
-    LOG_CONFIG.reportingLevel = static_cast<int>(LogLevel::Debug);
-    LOG_CONFIG.restart = true;
-    if (LOG_CONFIG.restart) {
-        engine::Log::restart();
-    }
+    engine::Log::restart();
 
     // Engine
     Engine engine;

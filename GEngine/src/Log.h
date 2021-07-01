@@ -7,7 +7,10 @@
 #include <fstream>
 #include <sstream>
 
+#include "Defines.h"
 #define GAME_LOG_FILE "game.log"
+
+namespace engine {
 
 enum class LogLevel {
     Error = 0,
@@ -16,14 +19,7 @@ enum class LogLevel {
     Debug = 3
 };
 
-struct LogConfig {
-    int reportingLevel = static_cast<int>(LogLevel::Info);
-    bool restart = false;
-};
-
-extern LogConfig LOG_CONFIG;
-
-namespace engine {
+constexpr int LOG_REPORTING_LEVEL = (int)LogLevel::Debug;
 
 // General purpose logging class
 // Logs in standard output and in a file, configured
@@ -37,7 +33,7 @@ public:
 
     std::ostringstream& get(LogLevel level = LogLevel::Info);
 
-    static void restart();
+    GAPI static void restart();
 
 private:
     std::ostringstream os;
@@ -52,7 +48,7 @@ private:
 }
 
 #define LOG(level)                                              \
-    if (static_cast<int>(level) > LOG_CONFIG.reportingLevel)    \
+    if (static_cast<int>(level) > LOG_REPORTING_LEVEL)          \
         ;                                                       \
     else                                                        \
         Log().get(level)

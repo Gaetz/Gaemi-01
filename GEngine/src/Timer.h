@@ -2,6 +2,7 @@
 #define TIMER_H
 
 #include <SDL2/SDL.h>
+#include "Defines.h"
 
 namespace engine {
 
@@ -10,12 +11,12 @@ namespace engine {
 // ensure smooth game ticking.
     class Timer {
     public:
-        Timer();
+        GAPI Timer();
 
-        virtual ~Timer();
+        GAPI virtual ~Timer();
 
         // Compute delta time as the number of milliseconds since last frame
-        unsigned int computeDeltaTime();
+        GAPI unsigned int computeDeltaTime();
 
         // Wait if the game run faster than the decided FPS
         void delayTime();

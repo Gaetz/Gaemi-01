@@ -10,6 +10,7 @@
 #include <array>
 #include <vk_mem_alloc.h>
 
+#include "Defines.h"
 #include "vk/RenderObject.h"
 #include "Window.h"
 #include "input/InputSystem.h"
@@ -33,7 +34,7 @@ namespace engine {
 class Engine {
 public:
 
-    Engine();
+    GAPI Engine();
 
     bool isInitialized;
     int frameNumber;
@@ -109,16 +110,16 @@ public:
 
 
     // Initializes everything in the engine
-    void init();
+    GAPI void init();
 
     // Shuts down the engine
-    void cleanup();
+    GAPI void cleanup();
 
     // Process engine inputs
-    const input::InputState processInputs();
+    GAPI const input::InputState processInputs();
 
     // Draw loop
-    void draw();
+    GAPI void draw();
 
     // Run main loop
     //void run();

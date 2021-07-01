@@ -7,9 +7,10 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
-
 #include <memory>
 #include <string>
+
+#include "Defines.h"
 
 using std::string;
 using std::unique_ptr;
@@ -26,11 +27,11 @@ class Window {
 public:
     explicit Window(string titleP);
 
-    ~Window();
+    GAPI ~Window();
 
     bool init(int width, int height, bool isFullscreen);
 
-    void updateFpsCounter(long dt);
+    GAPI void updateFpsCounter(long dt);
 
     void cleanup();
 
