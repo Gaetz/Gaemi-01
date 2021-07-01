@@ -10,22 +10,24 @@ find_package(Vulkan REQUIRED)
 
 ## Debug fix for VsCode
 #if (WIN32)
-    if (CMAKE_BUILD_TYPE MATCHES "")
+    if (CMAKE_BUILD_TYPE EQUAL "")
         # Build type is not set eg. command was "cmake .."
-        message(STATUS "  Build type was unspecified, set to Debug")
+        message(STATUS "Build type was unspecified, set to Debug")
         set(CMAKE_BUILD_TYPE Debug)
-        add_definitions(-D_DEBUG)
     else ()
         message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
     endif ()
 #endif ()
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-D_DEBUG)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "_DEBUG")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 else ()
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "NDEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 endif ()
 
 ## Libs

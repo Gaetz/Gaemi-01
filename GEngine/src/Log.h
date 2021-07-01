@@ -6,8 +6,8 @@
 
 #include <fstream>
 #include <sstream>
-
 #include "Defines.h"
+
 #define GAME_LOG_FILE "game.log"
 
 namespace engine {

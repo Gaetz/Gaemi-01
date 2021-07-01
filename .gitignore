@@ -16,6 +16,7 @@ release/
 .vscode/ipch
 /cmake-build-debug/
 /cmake-build-debug-clang/
+/cmake-build-release-clang/
 bin/
 
 ## Exceptions for 3d obj files
