@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.8)
 set(CMAKE_CXX_STANDARD 17)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC")
 
 project(Gaemi VERSION 0.1.0)
 
@@ -34,10 +34,6 @@ add_subdirectory( GEngine )
 add_subdirectory( GTestBed )
 add_subdirectory( GGame )
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
-
-
-
 ## Vulkan validator
 find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
 
@@ -66,7 +62,7 @@ add_custom_target(
     DEPENDS ${SPIRV_BINARY_FILES}
 )
 
-## Copy shaders, assets and dll to build under Windows
+## Copy shaders, assets and .dll/.so to build under Windows
 if(WIN32)
   file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
   file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
@@ -74,4 +70,11 @@ if(WIN32)
   file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame)
   file(COPY ${CMAKE_BINARY_DIR}/GEngine/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed)
   file(COPY ${CMAKE_BINARY_DIR}/GEngine/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame)
+elseif(UNIX)
+    set(BUILD_DIR cmake-build-debug)
+    set(BUILD_DIR_CLANG cmake-build-debug-clang)
+    file(COPY ${BUILD_DIR}/GEngine/libGEngine.so DESTINATION ${BUILD_DIR}/GTestBed)
+    file(COPY ${BUILD_DIR}/GEngine/libGEngine.so DESTINATION ${BUILD_DIR}/GGame)
+    file(COPY ${BUILD_DIR_CLANG}/GEngine/libGEngine.so DESTINATION ${BUILD_DIR_CLANG}/GTestBed)
+    file(COPY ${BUILD_DIR_CLANG}/GEngine/libGEngine.so DESTINATION ${BUILD_DIR_CLANG}/GGame)
 endif()
