@@ -54,7 +54,7 @@ private:
     uint32_t windowHeight;
     InputState inputState;
     bool isCursorDisplayed;
-    SDL_GameController* controller;
+    SDL_GameController* controllerPtr;
 
     float filter1D(int input);
 

@@ -1,30 +1,20 @@
 # Gaemi-01
 
-Gaemi-NN is a cross platform C++ realtime engine, set for indie game dev and personal
+Gaemi-NN is a cross platform C++ realtime engine, set up for indie game dev and personal
 experiment. It is meant to be simple to use and straightforward. Version of the engine
 evolves with projects and progressively add features.
 
-# Compiler
+This version uses SDL2 and Vulkan. It is Linux and Windows portable.
 
-Clang
+## Documentation
 
-## install clang
+[Development setup](./doc/Setup.md)
+[Code conventions](./doc/CodeConventions.md)
+[Project structure](./doc/ProjectStructure.md)
 
-### windows
-download and execute https://releases.llvm.org/download.html
+## Inspirations
 
-## install ninja
-
-### windows
-
-Download from https://github.com/ninja-build/ninja/releases
-
-or build from source:
-
-```
-git clone git://github.com/martine/ninja.git
-cd ninja/
-cmake .
-```
-
-Then open ninja.sln, set project to release, build solution. Add to your path the `ninja/Release` folder. Don't forget to restart your terminal / IDE to update its terminal path.
+Game engine general architecture is inspired by:
+- My own SDL/OpenGL framework: https://github.com/Gaetz/SDL-OpenGL
+- VulkanGuide: https://vkguide.dev/
+- The Kohi Vulkan Game Engine Series: https://www.youtube.com/watch?v=dHPuU-DJoBM&list=PLv8Ddw9K0JPg1BEO-RS-0MYs423cvLVtj&index=1

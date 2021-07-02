@@ -16,7 +16,7 @@ InputSystem::InputSystem(uint32_t windowWidthP, uint32_t windowHeightP) :
         windowHeight {windowHeightP},
         inputState {},
         isCursorDisplayed {false},
-        controller {nullptr} {
+        controllerPtr {nullptr} {
 }
 
 bool InputSystem::init() {
@@ -30,10 +30,10 @@ bool InputSystem::init() {
     inputState.mouse.currentButtons = 0;
     inputState.mouse.previousButtons = 0;
 
-    // Get the connected controller, if it exists
-    controller = SDL_GameControllerOpen(0);
-    // Initialize controller state
-    inputState.controller.isConnected = (controller != nullptr);
+    // Get the connected controllerPtr, if it exists
+    controllerPtr = SDL_GameControllerOpen(0);
+    // Initialize controllerPtr state
+    inputState.controller.isConnected = (controllerPtr != nullptr);
     memset(inputState.controller.currentButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
     memset(inputState.controller.previousButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
 
@@ -41,8 +41,8 @@ bool InputSystem::init() {
 }
 
 void InputSystem::cleanup() {
-    if (controller != nullptr) {
-        SDL_GameControllerClose(controller);
+    if (controllerPtr != nullptr) {
+        SDL_GameControllerClose(controllerPtr);
     }
 }
 
@@ -94,22 +94,22 @@ void InputSystem::update() {
     // Controller
     // Buttons
     for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
-        inputState.controller.currentButtons[i] = SDL_GameControllerGetButton(controller, SDL_GameControllerButton(i));
+        inputState.controller.currentButtons[i] = SDL_GameControllerGetButton(controllerPtr, SDL_GameControllerButton(i));
     }
 
     // Triggers
     inputState.controller.leftTrigger = filter1D(
-            SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT));
+            SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_TRIGGERLEFT));
     inputState.controller.rightTrigger = filter1D(
-            SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+            SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
 
     // Sticks
-    x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX);
-    y = -SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY);
+    x = SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_LEFTX);
+    y = -SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_LEFTY);
     inputState.controller.leftStick = filter2D(x, y);
 
-    x = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX);
-    y = -SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY);
+    x = SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_RIGHTX);
+    y = -SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_RIGHTY);
     inputState.controller.rightStick = filter2D(x, y);
 }
 
