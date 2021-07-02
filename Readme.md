@@ -8,9 +8,9 @@ This version uses SDL2 and Vulkan. It is Linux and Windows portable.
 
 ## Documentation
 
-[Development setup](./doc/Setup.md)
-[Code conventions](./doc/CodeConventions.md)
-[Project structure](./doc/ProjectStructure.md)
+- [Development setup](./doc/Setup.md)
+- [Code conventions](./doc/CodeConventions.md)
+- [Project structure](./doc/ProjectStructure.md)
 
 ## Inspirations
 
