@@ -13,15 +13,16 @@ find_package(Vulkan REQUIRED)
 
 
 ## Debug fix for VsCode
-#if (WIN32)
-    if (CMAKE_BUILD_TYPE EQUAL "")
-        # Build type is not set eg. command was "cmake .."
-        message(STATUS "Build type was unspecified, set to Debug")
+if (CMAKE_BUILD_TYPE EQUAL "")
+    # Build type is not set eg. command was "cmake .."
+    message(STATUS "Build type was unspecified, set to Debug")
+    set(CMAKE_BUILD_TYPE Debug)
+else ()
+    if (WIN32)
         set(CMAKE_BUILD_TYPE Debug)
-    else ()
-        message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
     endif ()
-#endif ()
+    message(STATUS "  Build type specified as '${CMAKE_BUILD_TYPE}'")
+endif ()
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-D_DEBUG)
@@ -72,10 +73,10 @@ add_custom_target(
 if(WIN32)
   file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
   file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
-  file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed)
-  file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame)
-  file(COPY ${CMAKE_BINARY_DIR}/GEngine/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed)
-  file(COPY ${CMAKE_BINARY_DIR}/GEngine/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame)
+  file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed/Debug)
+  file(COPY externals/SDL2-2.0.14/lib/x64/SDL2.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame/Debug)
+  file(COPY ${CMAKE_BINARY_DIR}/GEngine/Debug/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GTestBed/Debug)
+  file(COPY ${CMAKE_BINARY_DIR}/GEngine/Debug/GEngine.dll DESTINATION ${CMAKE_BINARY_DIR}/GGame/Debug)
 elseif(UNIX)
     set(BUILD_DIR cmake-build-debug)
     set(BUILD_DIR_CLANG cmake-build-debug-clang)
