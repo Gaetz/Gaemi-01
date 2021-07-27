@@ -105,5 +105,12 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 #endif
 
 
+// Debug
+#ifdef _DEBUG
+    #define GDEBUG 1
+#elif defined(NDEBUG)
+    #define GRELEASE 1
+#endif
+
 #endif // DEFINES_H
 

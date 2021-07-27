@@ -49,6 +49,9 @@ std::ostringstream& Log::get(LogLevel level) {
 std::string Log::getLabel(LogLevel type) {
     std::string label;
     switch (type) {
+        case LogLevel::Trace:
+            label = "TRACE";
+            break;
         case LogLevel::Debug:
             label = "DEBUG";
             break;
@@ -60,6 +63,9 @@ std::string Log::getLabel(LogLevel type) {
             break;
         case LogLevel::Error:
             label = "ERROR";
+            break;
+        case LogLevel::Fatal:
+            label = "FATAL";
             break;
     }
     return label;

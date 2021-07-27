@@ -7,24 +7,32 @@
 #include <fstream>
 #include <sstream>
 #include "Defines.h"
+#include <iostream>
 
 #define GAME_LOG_FILE "game.log"
 
 namespace engine {
 
-enum class LogLevel {
-    Error = 0,
-    Warning = 1,
-    Info = 2,
-    Debug = 3
+enum LogLevel {
+    Fatal = 0,
+    Error = 1,
+    Warning = 2,
+    Info = 3,
+    Debug = 4,
+    Trace = 5
 };
 
-constexpr int LOG_REPORTING_LEVEL = (int)LogLevel::Debug;
+#ifdef GRELEASE
+constexpr int LOG_REPORTING_LEVEL = LogLevel::Error;
+#else
+constexpr int LOG_REPORTING_LEVEL = LogLevel::Trace;
+#endif
+
 
 // General purpose logging class
 // Logs in standard output and in a file, configured
 // with the GAME_LOG_FILE macro.
-// Usage : LOG(MessageLevel) << "Message"
+// Usage : LOG(LogLevel) << "Message"
 class Log {
 public:
     Log();
@@ -52,5 +60,4 @@ private:
         ;                                                       \
     else                                                        \
         Log().get(level)
-
 #endif
