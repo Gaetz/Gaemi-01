@@ -7,7 +7,6 @@
 #include <fstream>
 #include <sstream>
 #include "Defines.h"
-#include <iostream>
 
 #define GAME_LOG_FILE "game.log"
 

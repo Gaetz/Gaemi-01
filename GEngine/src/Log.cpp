@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include "Defines.h"
+#include "Asserts.h"
 
 using engine::Log;
 
@@ -69,4 +70,8 @@ std::string Log::getLabel(LogLevel type) {
             break;
     }
     return label;
+}
+
+void engine::reportAssertionFailure(const std::string& expression, const std::string& message, const char* codeFile, i32 codeLine) {
+    LOG(LogLevel::Fatal) << "Assertion failure: " << expression << " , message: " << message << " , in file " << codeFile << " line " << codeLine;
 }
