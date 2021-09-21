@@ -3,10 +3,10 @@
 //
 
 #include "InputSystem.h"
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_keyboard.h>
 #include <cstring>
 #include <SDL2/SDL_mouse.h>
-#include "../Window.h"
 #include "../math/Functions.h"
 
 using engine::input::InputSystem;

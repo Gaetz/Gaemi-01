@@ -39,18 +39,15 @@ using engine::input::InputState;
 using engine::vk::Vertex;
 using std::array;
 
-Engine::Engine() :
-        isInitialized {false},
-        frameNumber {0},
-        windowExtent {1280, 720},
-        window {"Gaemi-01"},
-        inputSystem {windowExtent.width, windowExtent.height},
-        isRunning {false}
-        {}
+Engine::Engine() {}
+
+Engine::~Engine() {
+    delete platform;
+}
 
 void Engine::init() {
     SDL_Init(SDL_INIT_VIDEO);
-    window.init(static_cast<int>(windowExtent.width), static_cast<int>(windowExtent.height), false);
+    platform->init("Gaemi-01", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(windowExtent.width), static_cast<int>(windowExtent.height));
     inputSystem.init();
     initVulkan();
     initSwapchain();
@@ -70,7 +67,7 @@ void Engine::init() {
 void Engine::cleanup() {
     if (isInitialized) {
         cleanupVulkan();
-        window.cleanup();
+        platform->shutdown();
         SDL_Quit();
     }
 
@@ -216,7 +213,7 @@ void Engine::initVulkan() {
 
     // -- DEVICE --
     // get the surface of the window we opened with SDL
-    SDL_Vulkan_CreateSurface(window.get(), instance, &surface);
+    SDL_Vulkan_CreateSurface((SDL_Window*)platform->getScreenSurface(), instance, &surface);
 
     // Use VkBootstrap to select a GPU.
     // We want a GPU that can write to the SDL surface and supports Vulkan 1.1

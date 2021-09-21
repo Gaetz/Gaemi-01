@@ -10,15 +10,15 @@
 #include <memory>
 #include <string>
 
-#include "Defines.h"
+#include "../Defines.h"
 
 using std::string;
 using std::unique_ptr;
 
-namespace engine {
+namespace engine::platforms {
 
 struct SdlWindowDestroyer {
-    void operator()(SDL_Window *window) const {
+    void operator()(SDL_Window* window) const {
         SDL_DestroyWindow(window);
     }
 };
@@ -27,15 +27,15 @@ class Window {
 public:
     explicit Window(string titleP);
 
-    GAPI ~Window();
+    ~Window();
 
-    bool init(int width, int height, bool isFullscreen);
+    b8 init(i32 x, i32 y, i32 width, i32 height, b8 isFullscreen);
 
-    GAPI void updateFpsCounter(long dt);
+    void updateFpsCounter(u64 dt);
 
     void cleanup();
 
-    SDL_Window *get() { return window.get(); }
+    SDL_Window* get() { return window.get(); }
 
 private:
     unique_ptr<SDL_Window, SdlWindowDestroyer> window;

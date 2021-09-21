@@ -9,8 +9,7 @@ using engine::input::InputState;
 
 void run(Engine& engine);
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     // Init logging
     engine::Log::restart();
 
@@ -26,11 +25,10 @@ int main(int argc, char* argv[])
 void run(Engine& engine) {
 
     Timer timer;
-
     //game.load();
     while (engine.isRunning) {
         uint32_t dt = timer.computeDeltaTime();
-        engine.window.updateFpsCounter(dt);
+        engine.platform->update(dt);
 
         const InputState inputState = engine.processInputs();
         //game.update(dt);

@@ -1,0 +1,40 @@
+//
+// Created by gaetz on 21/09/2021.
+//
+
+#ifndef VK_PLATFORM_H
+#define VK_PLATFORM_H
+
+#include <string>
+using std::string;
+
+#include "../Defines.h"
+
+namespace engine::platforms {
+
+class Platform {
+public:
+    virtual ~Platform() {}
+
+    virtual b8 init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) = 0;
+    GAPI virtual void update(u64 dt) = 0;
+    virtual void shutdown() = 0;
+    virtual b8 pumpMessages() = 0;
+    virtual void* getScreenSurface() = 0;
+
+    virtual void* allocate(u64 size, b8 aligned) = 0;
+    virtual void free(void* block, b8 aligned) = 0;
+    virtual void* zeroMemory(void* block, u64 size) = 0;
+    virtual void* copyMemory(void* dest, const void* source, u64 size) = 0;
+    virtual void* setMemory(void* dest, i32 value, u64 size) = 0;
+
+    virtual void consoleWrite(const string& message, u8 color) = 0;
+    virtual void consoleWriteError(const string& message, u8 color) = 0;
+
+    virtual f64 getAbsoluteTime() = 0;
+    virtual void sleep(u64 ms) = 0;
+};
+
+}
+
+#endif

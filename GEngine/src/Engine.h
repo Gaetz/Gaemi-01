@@ -12,7 +12,7 @@
 
 #include "Defines.h"
 #include "vk/RenderObject.h"
-#include "Window.h"
+#include "platforms/PlatformWin.h"
 #include "input/InputSystem.h"
 #include "vk/DeletionQueue.h"
 
@@ -24,6 +24,8 @@ using engine::input::InputSystem;
 using engine::vk::DeletionQueue;
 using engine::vk::Mesh;
 using engine::vk::RenderObject;
+using engine::platforms::Platform;
+using engine::platforms::PlatformWin;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -35,12 +37,20 @@ class Engine {
 public:
 
     GAPI Engine();
+    GAPI ~Engine();
 
-    bool isInitialized;
-    int frameNumber;
-    VkExtent2D windowExtent;
-    Window window;
-    bool isRunning;
+    bool isInitialized { false };
+    int frameNumber { 0 };
+    VkExtent2D windowExtent { 1280, 720 };
+    bool isRunning { false };
+
+    // Platform
+    #ifdef GPLATFORM_WINDOWS
+    Platform* platform = new PlatformWin();
+    #else
+    Platform platform* = nullptr;
+    // No implementation, won't compile
+    #endif
 
     // Instance and devices
 
@@ -131,7 +141,7 @@ public:
     AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
 private:
-    InputSystem inputSystem;
+    InputSystem inputSystem { windowExtent.width, windowExtent.height };
 
     // Setup vulkan
 

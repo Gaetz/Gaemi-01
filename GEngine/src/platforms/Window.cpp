@@ -5,9 +5,9 @@
 #include <utility>
 
 #include "Window.h"
-#include "Log.h"
+#include "../Log.h"
 
-using engine::Window;
+using engine::platforms::Window;
 
 Window::Window(string titleP): title(std::move(titleP)),
                                      previousSeconds(0),
@@ -20,14 +20,11 @@ Window::~Window() {
     LOG(LogLevel::Info) << "Bye :)";
 }
 
-bool Window::init(int width, int height, bool isFullscreen) {
+b8 Window::init(i32 x, i32 y, i32 width, i32 height, b8 isFullscreen) {
 
     SDL_WindowFlags flags = SDL_WINDOW_VULKAN;
     window = std::unique_ptr<SDL_Window, SdlWindowDestroyer>(
-            SDL_CreateWindow(title.c_str(),
-                             SDL_WINDOWPOS_CENTERED,
-                             SDL_WINDOWPOS_CENTERED,
-                             width, height, flags)
+            SDL_CreateWindow(title.c_str(), x, y, width, height, flags)
     );
 
     if (!window) return false;
@@ -40,7 +37,7 @@ void Window::cleanup() {
 
 }
 
-void Window::updateFpsCounter(long dt) {
+void Window::updateFpsCounter(u64 dt) {
     double elapsedSeconds;
 
     currentSeconds += dt / 1000.0;

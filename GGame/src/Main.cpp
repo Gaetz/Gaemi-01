@@ -30,7 +30,7 @@ void run(Engine& engine) {
     //game.load();
     while (engine.isRunning) {
         uint32_t dt = timer.computeDeltaTime();
-        engine.window.updateFpsCounter(dt);
+        engine.platform->update(dt);
 
         const InputState inputState = engine.processInputs();
         //game.update(dt);
