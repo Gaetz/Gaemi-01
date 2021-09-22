@@ -35,21 +35,19 @@ constexpr int LOG_REPORTING_LEVEL = LogLevel::Trace;
 class Log {
 public:
     Log();
-
     virtual ~Log();
 
     std::ostringstream& get(LogLevel level = LogLevel::Info);
-
     GAPI static void restart();
 
 private:
     std::ostringstream os;
     static std::ofstream file;
+    u32 logLevel;
 
     std::string getLabel(LogLevel type);
 
     Log(const Log&);
-
     Log& operator=(const Log&);
 };
 }

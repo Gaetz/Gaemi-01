@@ -1,4 +1,8 @@
 #include "PlatformWin.h"
+#include <array>
+#include <time.h>
+
+using std::array;
 
 using engine::platforms::PlatformWin;
 
@@ -7,6 +11,7 @@ PlatformWin::~PlatformWin() {
 }
 
 b8 PlatformWin::init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) {
+    SDL_Init(SDL_INIT_VIDEO);
     return window.init(x, y, width, height, false);
 }
 
@@ -16,6 +21,7 @@ void PlatformWin::update(u64 dt) {
 
 void PlatformWin::shutdown() {
     window.cleanup();
+    SDL_Quit();
 }
 
 b8 PlatformWin::pumpMessages() {
@@ -27,39 +33,70 @@ void* PlatformWin::getScreenSurface() {
 }
 
 void* PlatformWin::allocate(u64 size, b8 aligned) {
-    return nullptr;
+    return malloc(size);
 }
 
 
 void PlatformWin::free(void* block, b8 aligned) {
-
+    ::free(block);
 }
 
 void* PlatformWin::zeroMemory(void* block, u64 size) {
-    return nullptr;
+    return memset(block, 0, size);
 }
 
 void* PlatformWin::copyMemory(void* dest, const void* source, u64 size) {
-    return nullptr;
+    return memcpy(dest, source, size);
 }
 
 void* PlatformWin::setMemory(void* dest, i32 value, u64 size){
-    return nullptr;
+    return memset(dest, value, size);
 }
 
 void PlatformWin::consoleWrite(const string& message, u8 color) {
-
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Fatal, Error, Warn, Info, Debug, Trace
+    static array<u8, 6> levels { 64, 4, 6, 2, 1, 8 };
+    SetConsoleTextAttribute(consoleHandle, levels[color]);
+    OutputDebugStringA(message.c_str());
+    LPDWORD numberWritten = 0;
+    WriteConsoleA(consoleHandle, message.c_str(), (DWORD)message.length(), numberWritten, 0);
 }
 
 void PlatformWin::consoleWriteError(const string& message, u8 color) {
-
+    HANDLE consoleHandle = GetStdHandle(STD_ERROR_HANDLE);
+    // Fatal, Error, Warn, Info, Debug, Trace
+    static array<u8, 6> levels { 64, 4, 6, 2, 1, 8 };
+    SetConsoleTextAttribute(consoleHandle, levels[color]);
+    OutputDebugStringA(message.c_str());
+    LPDWORD numberWritten = 0;
+    WriteConsoleA(consoleHandle, message.c_str(), (DWORD)message.length(), numberWritten, 0);
 }
 
+u32 PlatformWin::getAbsoluteTimeMs() {
+    return SDL_GetTicks();
+}
 
-f64 PlatformWin::getAbsoluteTime() {
-    return 0.0f;
+f64 PlatformWin::getAbsoluteTimeSeconds() {
+    return static_cast<f64>(SDL_GetTicks()) / 1000.0f;
 }
 
 void PlatformWin::sleep(u64 ms) {
+    SDL_Delay(ms);
+}
 
+array<char, 19> engine::platforms::PlatformWin::getDate() {
+    time_t now;
+    array<char, 19> date {};
+    struct tm timeInfo {};
+    time(&now);
+    localtime_s(&timeInfo, &now);
+    strftime(date.data(), 19, "%y-%m-%d %H:%M:%S", &timeInfo);
+    return date;
+
+    /** LINUX
+    struct tm* timeInfo;
+    timeInfo = localtime(&now);
+    strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
+    */
 }

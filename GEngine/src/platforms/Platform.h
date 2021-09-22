@@ -8,19 +8,24 @@
 #include <string>
 using std::string;
 
+#include <array>
+using std::array;
+
 #include "../Defines.h"
 
 namespace engine::platforms {
 
 class Platform {
 public:
-    virtual ~Platform() {}
+    virtual ~Platform() = default;
 
     virtual b8 init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) = 0;
     GAPI virtual void update(u64 dt) = 0;
     virtual void shutdown() = 0;
     virtual b8 pumpMessages() = 0;
     virtual void* getScreenSurface() = 0;
+
+    // TODO Process input in a portable manner
 
     virtual void* allocate(u64 size, b8 aligned) = 0;
     virtual void free(void* block, b8 aligned) = 0;
@@ -31,8 +36,10 @@ public:
     virtual void consoleWrite(const string& message, u8 color) = 0;
     virtual void consoleWriteError(const string& message, u8 color) = 0;
 
-    virtual f64 getAbsoluteTime() = 0;
+    virtual u32 getAbsoluteTimeMs() = 0;
+    virtual f64 getAbsoluteTimeSeconds() = 0;
     virtual void sleep(u64 ms) = 0;
+    virtual array<char, 19> getDate() = 0;
 };
 
 }

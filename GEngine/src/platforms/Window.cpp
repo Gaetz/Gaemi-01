@@ -17,7 +17,7 @@ Window::Window(string titleP): title(std::move(titleP)),
 }
 
 Window::~Window() {
-    LOG(LogLevel::Info) << "Bye :)";
+    LOG(LogLevel::Trace) << "Bye :)";
 }
 
 b8 Window::init(i32 x, i32 y, i32 width, i32 height, b8 isFullscreen) {
@@ -29,7 +29,7 @@ b8 Window::init(i32 x, i32 y, i32 width, i32 height, b8 isFullscreen) {
 
     if (!window) return false;
 
-    LOG(LogLevel::Info) << "Window initialised";
+    LOG(LogLevel::Trace) << "Window initialised";
     return true;
 }
 

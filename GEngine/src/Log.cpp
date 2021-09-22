@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Defines.h"
 #include "Asserts.h"
+#include "Engine.h"
 
 using engine::Log;
 
@@ -13,7 +14,7 @@ Log::Log() {
 Log::~Log() {
     os << std::endl;
     file << os.str();
-    std::cout << os.str();
+    Engine::get().platform->consoleWrite(os.str(), logLevel);
     os.clear();
     file.close();
 }
@@ -28,20 +29,14 @@ void Log::restart() {
 std::ostringstream& Log::get(LogLevel level) {
     if (!file)
         return os;
+    logLevel = (u32)level;
 
-    // Log
-    time_t now;
     char date[19];
-#ifdef GPLATFORM_LINUX
-    struct tm* timeInfo;
-    timeInfo = localtime(&now);
-    strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
-#elif GPLATFORM_WINDOWS
-    struct tm timeInfo;
-    time(&now);
-    localtime_s(&timeInfo, &now);
-    strftime(date, 19, "%y-%m-%d %H:%M:%S", &timeInfo);
-#endif
+    auto isoDate = Engine::get().platform->getDate();
+    for (int i = 0; i < 19; ++i) {
+        date[i] = isoDate[i];
+    }
+
     // Log
     os << date << " " << getLabel(level) << ": \t";
     return os;

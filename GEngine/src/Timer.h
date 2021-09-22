@@ -1,10 +1,11 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <SDL2/SDL.h>
 #include "Defines.h"
 
 namespace engine {
+
+    class Engine;
 
 // Hold time related functions.
 // In charge of computing the delta time and
@@ -16,10 +17,10 @@ namespace engine {
         GAPI virtual ~Timer();
 
         // Compute delta time as the number of milliseconds since last frame
-        GAPI unsigned int computeDeltaTime();
+        GAPI unsigned int computeDeltaTime(u32 absoluteTime);
 
         // Wait if the game run faster than the decided FPS
-        void delayTime();
+        void delayTime(const Engine& engine, u32 absoluteTime);
 
     private:
         const static int FPS = 60;

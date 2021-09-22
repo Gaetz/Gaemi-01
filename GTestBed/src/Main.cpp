@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     engine::Log::restart();
 
     // Engine
-    Engine engine;
+    Engine& engine = Engine::get();
     engine.init();
     run(engine);
     engine.cleanup();
@@ -27,10 +27,11 @@ void run(Engine& engine) {
     Timer timer;
     //game.load();
     while (engine.isRunning) {
-        uint32_t dt = timer.computeDeltaTime();
-        engine.platform->update(dt);
+        u32 time = engine.getAbsoluteTime();
+        u32 dt = timer.computeDeltaTime(time);
 
         const InputState inputState = engine.processInputs();
+        engine.update(dt);
         //game.update(dt);
         engine.draw();
 

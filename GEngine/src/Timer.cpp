@@ -1,4 +1,5 @@
 #include "Timer.h"
+#include "Engine.h"
 
 using engine::Timer;
 
@@ -10,19 +11,19 @@ Timer::~Timer()
 {
 }
 
-unsigned int Timer::computeDeltaTime()
+unsigned int Timer::computeDeltaTime(u32 absoluteTime)
 {
-    frameStart = SDL_GetTicks();
+    frameStart = absoluteTime;
     unsigned int dt = frameStart - lastFrame;
     lastFrame = frameStart;
     return dt;
 }
 
-void Timer::delayTime()
+void Timer::delayTime(const Engine& engine, u32 absoluteTime)
 {
-    frameTime = SDL_GetTicks() - frameStart;
+    frameTime = absoluteTime - frameStart;
     if (frameTime < frameDelay) {
-        SDL_Delay(frameDelay - frameTime);
+        engine.sleep(frameDelay - frameTime);
     }
 }
 

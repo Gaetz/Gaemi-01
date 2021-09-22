@@ -15,6 +15,7 @@ build/
 release/
 .vscode/ipch
 /cmake-build-debug/
+/cmake-build-debug-cl/
 /cmake-build-debug-clang/
 /cmake-build-release-clang/
 bin/

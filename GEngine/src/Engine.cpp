@@ -39,14 +39,12 @@ using engine::input::InputState;
 using engine::vk::Vertex;
 using std::array;
 
-Engine::Engine() {}
-
-Engine::~Engine() {
-    delete platform;
+Engine& Engine::get() {
+    static Engine instance;
+    return instance;
 }
 
 void Engine::init() {
-    SDL_Init(SDL_INIT_VIDEO);
     platform->init("Gaemi-01", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(windowExtent.width), static_cast<int>(windowExtent.height));
     inputSystem.init();
     initVulkan();
@@ -68,9 +66,23 @@ void Engine::cleanup() {
     if (isInitialized) {
         cleanupVulkan();
         platform->shutdown();
-        SDL_Quit();
     }
+}
 
+void Engine::update(u64 dt) {
+    platform->update(dt);
+}
+
+u32 Engine::getAbsoluteTime() const {
+    return platform->getAbsoluteTimeMs();
+}
+
+f64 Engine::getAbsoluteTimeSeconds() const {
+    return platform->getAbsoluteTimeSeconds();
+}
+
+void Engine::sleep(u64 ms) const {
+    platform->sleep(ms);
 }
 
 void Engine::draw() {
@@ -166,26 +178,6 @@ void Engine::draw() {
     frameNumber++;
 }
 
-/*
-void Engine::run() {
-
-    Timer timer;
-
-    game.load();
-    while (game.isRunning) {
-        uint32_t dt = timer.computeDeltaTime();
-        window.updateFpsCounter(dt);
-
-        processInputs();
-        game.update(dt);
-        draw();
-
-        // Frame delay is managed by the renderer,
-        // which synchronizes with the monitor framerate.
-    }
-}
-*/
-
 void Engine::initVulkan() {
     // -- INSTANCE --
     vkb::InstanceBuilder builder;
@@ -238,7 +230,7 @@ void Engine::initVulkan() {
 
     // Physical device properties
     vkGetPhysicalDeviceProperties(chosenGPU, &gpuProperties);
-	LOG(LogLevel::Info) << "The GPU has a minimum buffer alignment of " << gpuProperties.limits.minUniformBufferOffsetAlignment;
+	LOG(LogLevel::Trace) << "The GPU has a minimum buffer alignment of " << gpuProperties.limits.minUniformBufferOffsetAlignment;
 
     // Vulkan memory allocator
     VmaAllocatorCreateInfo allocatorCreateInfo {};
@@ -845,7 +837,7 @@ void Engine::initScene() {
     vkUpdateDescriptorSets(device, 1, &texture1, 0, nullptr);
 }
 
-const InputState engine::Engine::processInputs() {
+InputState engine::Engine::processInputs() {
     inputSystem.preUpdate();
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -1199,4 +1191,8 @@ bool engine::Engine::loadImageFromFile(const string& path, vk::AllocatedImage& o
     LOG(LogLevel::Info) << "Texture loaded successfully " << path;
     outImage = newImage;
     return true;
+}
+
+std::array<char, 19> engine::Engine::getDate() {
+    return platform->getDate();
 }

@@ -19,6 +19,8 @@
 using std::vector;
 using std::unordered_map;
 using std::array;
+using std::unique_ptr;
+using std::make_unique;
 
 using engine::input::InputSystem;
 using engine::vk::DeletionQueue;
@@ -36,8 +38,10 @@ namespace engine {
 class Engine {
 public:
 
-    GAPI Engine();
-    GAPI ~Engine();
+    GAPI Engine() = default;
+    GAPI ~Engine() = default;
+
+    GAPI static Engine& get();
 
     bool isInitialized { false };
     int frameNumber { 0 };
@@ -46,9 +50,9 @@ public:
 
     // Platform
     #ifdef GPLATFORM_WINDOWS
-    Platform* platform = new PlatformWin();
+    unique_ptr<PlatformWin> platform = make_unique<PlatformWin>();
     #else
-    Platform platform* = nullptr;
+    Platform* platform = nullptr;
     // No implementation, won't compile
     #endif
 
@@ -126,13 +130,24 @@ public:
     GAPI void cleanup();
 
     // Process engine inputs
-    GAPI const input::InputState processInputs();
+    GAPI input::InputState processInputs();
+
+    // Update loop
+    GAPI void update(u64 dt);
 
     // Draw loop
     GAPI void draw();
 
-    // Run main loop
-    //void run();
+    // Get time since game started in milliseconds
+    GAPI u32 getAbsoluteTime() const;
+
+    // Get time since game started in seconds
+    GAPI f64 getAbsoluteTimeSeconds() const;
+
+    // Make the engine sleep for a time in milliseconds
+    GAPI void sleep(u64 ms) const;
+
+    GAPI std::array<char, 19> getDate();
 
     // Get the frame we are rendering right now
     vk::FrameData& getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
