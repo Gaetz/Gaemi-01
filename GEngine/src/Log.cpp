@@ -14,7 +14,7 @@ Log::Log() {
 Log::~Log() {
     os << std::endl;
     file << os.str();
-    Engine::get().platform->consoleWrite(os.str(), logLevel);
+    Engine::getState().platform->consoleWrite(os.str(), logLevel);
     os.clear();
     file.close();
 }
@@ -32,7 +32,7 @@ std::ostringstream& Log::get(LogLevel level) {
     logLevel = (u32)level;
 
     char date[19];
-    auto isoDate = Engine::get().platform->getDate();
+    auto isoDate = Engine::getState().platform->getDate();
     for (int i = 0; i < 19; ++i) {
         date[i] = isoDate[i];
     }

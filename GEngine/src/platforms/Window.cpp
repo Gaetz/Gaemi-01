@@ -20,7 +20,7 @@ Window::~Window() {
     LOG(LogLevel::Trace) << "Bye :)";
 }
 
-b8 Window::init(i32 x, i32 y, i32 width, i32 height, b8 isFullscreen) {
+bool Window::init(i32 x, i32 y, i32 width, i32 height, bool isFullscreen) {
 
     SDL_WindowFlags flags = SDL_WINDOW_VULKAN;
     window = std::unique_ptr<SDL_Window, SdlWindowDestroyer>(

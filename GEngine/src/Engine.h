@@ -35,17 +35,47 @@ constexpr unsigned int MAX_OBJECTS = 10000;
 
 namespace engine {
 
-class Engine {
-public:
+struct EngineConfig {
+    i16 startPositionX;
+    i16 startPositionY;
+    u16 startWidth;
+    u16 startHeight;
+    string name;
+    bool fullscreenMode;
+};
 
-    GAPI Engine() = default;
+struct EngineState {
+    bool isInitialized { false };
+    bool isRunning { false };
+    bool isPaused { false };
+    u64 frameNumber { 0 };
+    // Platform
+    #ifdef GPLATFORM_WINDOWS
+    Platform* platform = new PlatformWin();
+    #else
+    Platform* platform { nullptr };
+    // No implementation, won't compile
+    #endif
+
+};
+
+class Engine {
+private:
+    static EngineState state;
+    EngineConfig config;
+
+public:
+    GAPI Engine(const EngineConfig& configP);
     GAPI ~Engine() = default;
 
-    GAPI static Engine& get();
+    GAPI static EngineState& getState();
 
+    VkExtent2D windowExtent;
+    InputSystem inputSystem;
+
+    /*
     bool isInitialized { false };
     int frameNumber { 0 };
-    VkExtent2D windowExtent { 1280, 720 };
     bool isRunning { false };
 
     // Platform
@@ -55,6 +85,42 @@ public:
     Platform* platform = nullptr;
     // No implementation, won't compile
     #endif
+    */
+
+
+    // Initializes everything in the engine
+    GAPI void init();
+
+    // Run the engine
+    GAPI void run();
+
+    // Shuts down the engine
+    GAPI void cleanup();
+
+    // Process engine inputs
+    GAPI input::InputState processInputs();
+
+    // Update loop
+    GAPI void update(u64 dt);
+
+    // Draw loop
+    GAPI void draw();
+
+    // Get time since game started in milliseconds
+    GAPI u32 getAbsoluteTime() const;
+
+    // Get time since game started in seconds
+    GAPI f64 getAbsoluteTimeSeconds() const;
+
+    // Make the engine sleep for a time in milliseconds
+    GAPI void sleep(u64 ms) const;
+
+    GAPI std::array<char, 19> getDate();
+
+
+
+
+    // VULKAN
 
     // Instance and devices
 
@@ -122,44 +188,13 @@ public:
     vk::UploadContext uploadContext;
     unordered_map<string, vk::Texture> textures;
 
-
-    // Initializes everything in the engine
-    GAPI void init();
-
-    // Shuts down the engine
-    GAPI void cleanup();
-
-    // Process engine inputs
-    GAPI input::InputState processInputs();
-
-    // Update loop
-    GAPI void update(u64 dt);
-
-    // Draw loop
-    GAPI void draw();
-
-    // Get time since game started in milliseconds
-    GAPI u32 getAbsoluteTime() const;
-
-    // Get time since game started in seconds
-    GAPI f64 getAbsoluteTimeSeconds() const;
-
-    // Make the engine sleep for a time in milliseconds
-    GAPI void sleep(u64 ms) const;
-
-    GAPI std::array<char, 19> getDate();
-
     // Get the frame we are rendering right now
-    vk::FrameData& getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
+    vk::FrameData& getCurrentFrame() { return frames[state.frameNumber % FRAME_OVERLAP]; }
 
     // Create a vulkan buffer
     AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
 private:
-    InputSystem inputSystem { windowExtent.width, windowExtent.height };
-
-    // Setup vulkan
-
     void initVulkan();
 
     void initSwapchain();

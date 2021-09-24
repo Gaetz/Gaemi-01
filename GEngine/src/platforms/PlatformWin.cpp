@@ -10,7 +10,7 @@ PlatformWin::~PlatformWin() {
 
 }
 
-b8 PlatformWin::init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) {
+bool PlatformWin::init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) {
     SDL_Init(SDL_INIT_VIDEO);
     return window.init(x, y, width, height, false);
 }
@@ -24,7 +24,7 @@ void PlatformWin::shutdown() {
     SDL_Quit();
 }
 
-b8 PlatformWin::pumpMessages() {
+bool PlatformWin::pumpMessages() {
     return false;
 }
 
@@ -32,12 +32,12 @@ void* PlatformWin::getScreenSurface() {
     return window.get();
 }
 
-void* PlatformWin::allocate(u64 size, b8 aligned) {
+void* PlatformWin::allocate(u64 size, bool aligned) {
     return malloc(size);
 }
 
 
-void PlatformWin::free(void* block, b8 aligned) {
+void PlatformWin::free(void* block, bool aligned) {
     ::free(block);
 }
 

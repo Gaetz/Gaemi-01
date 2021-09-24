@@ -23,7 +23,6 @@ typedef double f64;
 
 // Booleans
 typedef int b32;
-typedef char b8;
 
 // Static assertion
 #if defined(__clang__) || defined(__gcc__)

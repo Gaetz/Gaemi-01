@@ -19,16 +19,16 @@ class Platform {
 public:
     virtual ~Platform() = default;
 
-    virtual b8 init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) = 0;
+    virtual bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) = 0;
     GAPI virtual void update(u64 dt) = 0;
     virtual void shutdown() = 0;
-    virtual b8 pumpMessages() = 0;
+    virtual bool pumpMessages() = 0;
     virtual void* getScreenSurface() = 0;
 
     // TODO Process input in a portable manner
 
-    virtual void* allocate(u64 size, b8 aligned) = 0;
-    virtual void free(void* block, b8 aligned) = 0;
+    virtual void* allocate(u64 size, bool aligned) = 0;
+    virtual void free(void* block, bool aligned) = 0;
     virtual void* zeroMemory(void* block, u64 size) = 0;
     virtual void* copyMemory(void* dest, const void* source, u64 size) = 0;
     virtual void* setMemory(void* dest, i32 value, u64 size) = 0;

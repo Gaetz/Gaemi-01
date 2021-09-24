@@ -29,7 +29,7 @@ public:
 
     ~Window();
 
-    b8 init(i32 x, i32 y, i32 width, i32 height, b8 isFullscreen);
+    bool init(i32 x, i32 y, i32 width, i32 height, bool isFullscreen);
 
     void updateFpsCounter(u64 dt);
 

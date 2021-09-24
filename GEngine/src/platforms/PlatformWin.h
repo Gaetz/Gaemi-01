@@ -18,14 +18,14 @@ public:
     PlatformWin() = default;
     ~PlatformWin() override;
 
-    b8 init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) override;
+    bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) override;
     void update(u64 dt) override;
     void shutdown() override;
-    b8 pumpMessages() override;
+    bool pumpMessages() override;
     void* getScreenSurface() override;
 
-    void* allocate(u64 size, b8 aligned) override;
-    void free(void* block, b8 aligned) override;
+    void* allocate(u64 size, bool aligned) override;
+    void free(void* block, bool aligned) override;
     void* zeroMemory(void* block, u64 size) override;
     void* copyMemory(void* dest, const void* source, u64 size) override;
     void* setMemory(void* dest, i32 value, u64 size) override;

@@ -39,14 +39,40 @@ using engine::input::InputState;
 using engine::vk::Vertex;
 using std::array;
 
-Engine& Engine::get() {
-    static Engine instance;
-    return instance;
+engine::EngineState Engine::state {};
+
+engine::EngineState& Engine::getState() {
+    return state;
+}
+
+GAPI Engine::Engine(const EngineConfig& configP) :
+    config { configP },
+    windowExtent { configP.startWidth, configP.startHeight },
+    inputSystem { configP.startWidth, configP.startHeight }
+{}
+
+void Engine::run() {
+    Timer timer;
+    //game.load();
+    while (state.isRunning) {
+        u32 time = getAbsoluteTime();
+        u32 dt = timer.computeDeltaTime(time);
+
+        const InputState inputState = processInputs();
+        update(dt);
+        //game.update(dt);
+        draw();
+
+        // Frame delay is managed by the renderer,
+        // which synchronizes with the monitor framerate.
+    }
 }
 
 void Engine::init() {
-    platform->init("Gaemi-01", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int>(windowExtent.width), static_cast<int>(windowExtent.height));
+    state.platform->init(config.name, config.startPositionX, config.startPositionY, config.startWidth, config.startHeight);
     inputSystem.init();
+    state.isInitialized = true;
+
     initVulkan();
     initSwapchain();
     initCommands();
@@ -58,31 +84,43 @@ void Engine::init() {
     loadMeshes();
     loadImages();
     initScene();
-    isInitialized = true;
-    isRunning = true;
+
+    state.isRunning = true;
+    state.isPaused = false;
 }
 
 void Engine::cleanup() {
-    if (isInitialized) {
+    if (state.isInitialized) {
         cleanupVulkan();
-        platform->shutdown();
+        state.platform->shutdown();
     }
 }
 
+InputState engine::Engine::processInputs() {
+    inputSystem.preUpdate();
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        state.isRunning = inputSystem.processEvent(event);
+    }
+    inputSystem.update();
+
+    return inputSystem.getInputState();
+}
+
 void Engine::update(u64 dt) {
-    platform->update(dt);
+    state.platform->update(dt);
 }
 
 u32 Engine::getAbsoluteTime() const {
-    return platform->getAbsoluteTimeMs();
+    return state.platform->getAbsoluteTimeMs();
 }
 
 f64 Engine::getAbsoluteTimeSeconds() const {
-    return platform->getAbsoluteTimeSeconds();
+    return state.platform->getAbsoluteTimeSeconds();
 }
 
 void Engine::sleep(u64 ms) const {
-    platform->sleep(ms);
+    state.platform->sleep(ms);
 }
 
 void Engine::draw() {
@@ -108,7 +146,7 @@ void Engine::draw() {
 
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
     VkClearValue clearValue;
-    float flash = abs(sin(static_cast<float>(frameNumber) / 120.f));
+    float flash = abs(sin(static_cast<float>(state.frameNumber) / 120.f));
     clearValue.color = {{0.0f, 0.0f, flash, 1.0f}};
 
     // Clear depth
@@ -175,7 +213,7 @@ void Engine::draw() {
     VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
 
     // Increase the number of frames drawn
-    frameNumber++;
+    state.frameNumber++;
 }
 
 void Engine::initVulkan() {
@@ -205,7 +243,7 @@ void Engine::initVulkan() {
 
     // -- DEVICE --
     // get the surface of the window we opened with SDL
-    SDL_Vulkan_CreateSurface((SDL_Window*)platform->getScreenSurface(), instance, &surface);
+    SDL_Vulkan_CreateSurface((SDL_Window*)state.platform->getScreenSurface(), instance, &surface);
 
     // Use VkBootstrap to select a GPU.
     // We want a GPU that can write to the SDL surface and supports Vulkan 1.1
@@ -245,9 +283,9 @@ void Engine::initVulkan() {
 
 void Engine::cleanupVulkan() {
     // Make sure the GPU has stopped before clearing
-    --frameNumber;
+    --state.frameNumber;
     vkWaitForFences(device, 1, &getCurrentFrame().renderFence, true, 1000000000);
-    ++frameNumber;
+    ++state.frameNumber;
     mainDeletionQueue.flush();
 
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -837,17 +875,6 @@ void Engine::initScene() {
     vkUpdateDescriptorSets(device, 1, &texture1, 0, nullptr);
 }
 
-InputState engine::Engine::processInputs() {
-    inputSystem.preUpdate();
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        isRunning = inputSystem.processEvent(event);
-    }
-    inputSystem.update();
-
-    return inputSystem.getInputState();
-}
-
 void engine::Engine::loadMeshes() {
     // Load triangle
     Mesh triangleMesh;
@@ -988,12 +1015,12 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
     // Fill GPUSceneData with random ambient color
-    float framed = static_cast<float>(frameNumber) / 120.0f;
+    float framed = static_cast<float>(state.frameNumber) / 120.0f;
     sceneParams.ambientColor = { math::sin(framed), 0, math::cos(framed), 1};
 
     char* sceneData;
     vmaMapMemory(allocator, sceneParamsBuffer.allocation, (void**)&sceneData);
-    unsigned int frameIndex = frameNumber % FRAME_OVERLAP;
+    unsigned int frameIndex = state.frameNumber % FRAME_OVERLAP;
 	sceneData += padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
 	memcpy(sceneData, &sceneParams, sizeof(vk::GPUSceneData));
 	vmaUnmapMemory(allocator, sceneParamsBuffer.allocation);
@@ -1194,5 +1221,5 @@ bool engine::Engine::loadImageFromFile(const string& path, vk::AllocatedImage& o
 }
 
 std::array<char, 19> engine::Engine::getDate() {
-    return platform->getDate();
+    return state.platform->getDate();
 }
