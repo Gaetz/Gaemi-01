@@ -34,10 +34,10 @@ constexpr int LOG_REPORTING_LEVEL = LogLevel::Trace;
 // Usage : LOG(LogLevel) << "Message"
 class Log {
 public:
-    Log();
-    virtual ~Log();
+    GAPI Log();
+    GAPI virtual ~Log();
 
-    std::ostringstream& get(LogLevel level = LogLevel::Info);
+    GAPI std::ostringstream& get(LogLevel level = LogLevel::Info);
     GAPI static void restart();
 
 private:
@@ -53,7 +53,7 @@ private:
 }
 
 #define LOG(level)                                              \
-    if (static_cast<int>(level) > LOG_REPORTING_LEVEL)          \
+    if (static_cast<int>(level) > engine::LOG_REPORTING_LEVEL)  \
         ;                                                       \
     else                                                        \
         Log().get(level)

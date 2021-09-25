@@ -68,7 +68,8 @@ void Engine::run() {
     }
 }
 
-void Engine::init() {
+void Engine::init(Game& game) {
+    state.game = &game;
     state.platform->init(config.name, config.startPositionX, config.startPositionY, config.startWidth, config.startHeight);
     inputSystem.init();
     state.isInitialized = true;
@@ -85,6 +86,7 @@ void Engine::init() {
     loadImages();
     initScene();
 
+    state.game->load();
     state.isRunning = true;
     state.isPaused = false;
 }
@@ -92,6 +94,7 @@ void Engine::init() {
 void Engine::cleanup() {
     if (state.isInitialized) {
         cleanupVulkan();
+        state.game->cleanup();
         state.platform->shutdown();
     }
 }
@@ -109,6 +112,7 @@ InputState engine::Engine::processInputs() {
 
 void Engine::update(u64 dt) {
     state.platform->update(dt);
+    state.game->update(dt);
 }
 
 u32 Engine::getAbsoluteTime() const {
@@ -211,6 +215,9 @@ void Engine::draw() {
     presentInfo.pImageIndices = &swapchainImageIndex;
 
     VK_CHECK(vkQueuePresentKHR(graphicsQueue, &presentInfo));
+
+    // Game update
+    state.game->draw();
 
     // Increase the number of frames drawn
     state.frameNumber++;

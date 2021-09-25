@@ -9,12 +9,15 @@
 #include <unordered_map>
 #include <array>
 #include <vk_mem_alloc.h>
+#include <functional>
 
 #include "Defines.h"
+#include "Game.h"
 #include "vk/RenderObject.h"
 #include "platforms/PlatformWin.h"
 #include "input/InputSystem.h"
 #include "vk/DeletionQueue.h"
+#include "../../GTestBed/src/GameImpl.h"
 
 using std::vector;
 using std::unordered_map;
@@ -28,6 +31,7 @@ using engine::vk::Mesh;
 using engine::vk::RenderObject;
 using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
+using game::Game;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -49,6 +53,8 @@ struct EngineState {
     bool isRunning { false };
     bool isPaused { false };
     u64 frameNumber { 0 };
+    Game* game;
+
     // Platform
     #ifdef GPLATFORM_WINDOWS
     Platform* platform = new PlatformWin();
@@ -56,7 +62,6 @@ struct EngineState {
     Platform* platform { nullptr };
     // No implementation, won't compile
     #endif
-
 };
 
 class Engine {
@@ -65,7 +70,7 @@ private:
     EngineConfig config;
 
 public:
-    GAPI Engine(const EngineConfig& configP);
+    GAPI explicit Engine(const EngineConfig& configP);
     GAPI ~Engine() = default;
 
     GAPI static EngineState& getState();
@@ -89,7 +94,7 @@ public:
 
 
     // Initializes everything in the engine
-    GAPI void init();
+    GAPI void init(Game& game);
 
     // Run the engine
     GAPI void run();
@@ -115,6 +120,7 @@ public:
     // Make the engine sleep for a time in milliseconds
     GAPI void sleep(u64 ms) const;
 
+    // Get a formatted date
     GAPI std::array<char, 19> getDate();
 
 
