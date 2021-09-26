@@ -53,15 +53,22 @@ GAPI Engine::Engine(const EngineConfig& configP) :
 
 void Engine::run() {
     Timer timer;
-    //game.load();
+    state.game->load();
     while (state.isRunning) {
         u32 time = getAbsoluteTime();
         u32 dt = timer.computeDeltaTime(time);
 
-        const InputState inputState = processInputs();
+        // Input
+        const InputState& inputState = processInputs();
+        state.game->setInputState(inputState);
+
+        // Update loop
         update(dt);
-        //game.update(dt);
+        state.game->update(dt);
+
+        // Render
         draw();
+        state.game->draw();
 
         // Frame delay is managed by the renderer,
         // which synchronizes with the monitor framerate.

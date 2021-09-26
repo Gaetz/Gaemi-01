@@ -6,6 +6,9 @@
 #define GAME_H
 
 #include "Defines.h"
+#include "input/InputSystem.h"
+
+using engine::input::InputState;
 
 namespace game {
     class Game {
@@ -15,6 +18,14 @@ namespace game {
         virtual void update(u32 dt) = 0;
         virtual void draw() = 0;
         virtual void cleanup() = 0;
+
+        void setInputState(const InputState& inputStateP) {
+            // Implicit copy
+            inputState = inputStateP;
+        }
+
+    protected:
+        InputState inputState;
     };
 }
 

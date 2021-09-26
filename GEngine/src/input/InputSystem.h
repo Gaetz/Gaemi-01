@@ -36,9 +36,11 @@ public:
 
     void cleanup();
 
-    InputState getInputState() const { return inputState; }
+    const InputState& getInputState() const { return inputState; }
 
-    bool processEvent(SDL_Event& event); // Returns isRunning status
+    // Returns isRunning status
+    bool processEvent(SDL_Event& event);
+
     void preUpdate();
 
     void update();

@@ -94,22 +94,22 @@ public:
 
 
     // Initializes everything in the engine
-    GAPI void init(Game& game);
+    void init(Game& game);
 
     // Run the engine
-    GAPI void run();
+    void run();
 
     // Shuts down the engine
-    GAPI void cleanup();
+    void cleanup();
 
     // Process engine inputs
-    GAPI input::InputState processInputs();
+    input::InputState processInputs();
 
     // Update loop
-    GAPI void update(u64 dt);
+    void update(u64 dt);
 
     // Draw loop
-    GAPI void draw();
+    void draw();
 
     // Get time since game started in milliseconds
     GAPI u32 getAbsoluteTime() const;
