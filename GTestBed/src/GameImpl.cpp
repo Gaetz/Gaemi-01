@@ -3,6 +3,7 @@
 //
 
 #include "GameImpl.h"
+#include "Memory.h"
 
 using game::GameImpl;
 

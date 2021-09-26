@@ -13,6 +13,7 @@
 #include "vk/PipelineBuilder.h"
 #include "math/Transformations.h"
 #include "math/Functions.h"
+#include "Memory.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -38,6 +39,7 @@ using engine::vk::PipelineBuilder;
 using engine::input::InputState;
 using engine::vk::Vertex;
 using std::array;
+using engine::Memory;
 
 engine::EngineState Engine::state {};
 
@@ -76,6 +78,7 @@ void Engine::run() {
 }
 
 void Engine::init(Game& game) {
+    Memory::instance().init();
     state.game = &game;
     state.platform->init(config.name, config.startPositionX, config.startPositionY, config.startWidth, config.startHeight);
     inputSystem.init();
@@ -103,6 +106,7 @@ void Engine::cleanup() {
         cleanupVulkan();
         state.game->cleanup();
         state.platform->shutdown();
+        Memory::instance().close();
     }
 }
 
