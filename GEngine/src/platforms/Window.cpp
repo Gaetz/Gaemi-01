@@ -47,7 +47,7 @@ void Window::updateFpsCounter(u64 dt) {
     {
         previousSeconds = currentSeconds;
         char tmp[128];
-        double fps = (double)frameCount / elapsedSeconds;
+        f64 fps = (f64)frameCount / elapsedSeconds;
 #if GPLATFORM_WINDOWS
         sprintf_s(tmp, "%s @ fps: %.2f", title.c_str(), fps);
 #else

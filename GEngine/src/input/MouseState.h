@@ -6,6 +6,7 @@
 #define INPUT_MOUSESTATE_H
 
 #include "../math/Types.h"
+#include "../Defines.h"
 
 using engine::math::Vec2;
 enum class ButtonState;
@@ -27,8 +28,8 @@ public:
 
 private:
     Vec2 position;
-    uint32_t currentButtons;
-    uint32_t previousButtons;
+    u32 currentButtons;
+    u32 previousButtons;
     Vec2 scrollWheel;
     bool isRelativeMode;
 };

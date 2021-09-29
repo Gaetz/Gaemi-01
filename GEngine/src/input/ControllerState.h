@@ -8,6 +8,7 @@
 #include <SDL2/SDL_gamecontroller.h>
 
 #include "../math/Types.h"
+#include "../Defines.h"
 
 using engine::math::Vec2;
 enum class ButtonState;
@@ -27,20 +28,20 @@ public:
 
     const Vec2& getRightStick() const { return rightStick; }
 
-    float getLeftTrigger() const { return leftTrigger; }
+    f32 getLeftTrigger() const { return leftTrigger; }
 
-    float getRightTrigger() const { return rightTrigger; }
+    f32 getRightTrigger() const { return rightTrigger; }
 
     bool getIsConnected() const { return isConnected; }
 
 
 private:
-    Uint8 currentButtons[SDL_CONTROLLER_BUTTON_MAX];
-    Uint8 previousButtons[SDL_CONTROLLER_BUTTON_MAX];
+    u8 currentButtons[SDL_CONTROLLER_BUTTON_MAX];
+    u8 previousButtons[SDL_CONTROLLER_BUTTON_MAX];
     Vec2 leftStick;
     Vec2 rightStick;
-    float leftTrigger;
-    float rightTrigger;
+    f32 leftTrigger;
+    f32 rightTrigger;
     bool isConnected;
 };
 }

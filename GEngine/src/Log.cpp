@@ -29,7 +29,7 @@ void Log::restart() {
 std::ostringstream& Log::get(LogLevel level) {
     if (!file)
         return os;
-    logLevel = (u32)level;
+    logLevel = static_cast<u32>(level);
 
     char date[19];
     auto isoDate = Engine::getState().platform->getDate();

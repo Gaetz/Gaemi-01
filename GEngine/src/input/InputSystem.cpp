@@ -76,7 +76,7 @@ void InputSystem::preUpdate() {
 
 void InputSystem::update() {
     // Mouse
-    int x = 0, y = 0;
+    i32 x = 0, y = 0;
     if (inputState.mouse.isRelativeMode) {
         inputState.mouse.currentButtons = SDL_GetRelativeMouseState(&x, &y);
     } else {
@@ -93,7 +93,7 @@ void InputSystem::update() {
 
     // Controller
     // Buttons
-    for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
+    for (i32 i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
         inputState.controller.currentButtons[i] = SDL_GameControllerGetButton(controllerPtr, SDL_GameControllerButton(i));
     }
 
@@ -129,12 +129,12 @@ void InputSystem::setMouseRelativeMode(bool isMouseRelativeOnP) {
     inputState.mouse.isRelativeMode = isMouseRelativeOnP;
 }
 
-float InputSystem::filter1D(int input) {
-    const int deadZone = CONTROLLER_DEAD_ZONE_1D;
-    const int maxValue = CONTROLLER_MAX_VALUE;
-    float retVal = 0.0f;
+float InputSystem::filter1D(i32 input) {
+    const i32 deadZone = CONTROLLER_DEAD_ZONE_1D;
+    const i32 maxValue = CONTROLLER_MAX_VALUE;
+    f32 retVal = 0.0f;
 
-    int absValue = input > 0 ? input : -input;
+    i32 absValue = input > 0 ? input : -input;
     if (absValue > deadZone) {
         // Compute fractional value between dead zone and max value
         retVal = static_cast<float>(absValue - deadZone) / (maxValue - deadZone);
@@ -147,14 +147,14 @@ float InputSystem::filter1D(int input) {
     return retVal;
 }
 
-Vec2 InputSystem::filter2D(int inputX, int inputY) {
+Vec2 InputSystem::filter2D(i32 inputX, i32 inputY) {
     const float deadZone = CONTROLLER_DEAD_ZONE_2D;
     const float maxValue = CONTROLLER_MAX_VALUE;
 
     Vec2 dir;
-    dir.x = static_cast<float>(inputX);
-    dir.y = static_cast<float>(inputY);
-    float length = static_cast<float>(dir.length());
+    dir.x = static_cast<f32>(inputX);
+    dir.y = static_cast<f32>(inputY);
+    float length = static_cast<f32>(dir.length());
 
     // If length < deadZone, should be no input
     if (length < deadZone) {

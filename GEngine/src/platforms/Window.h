@@ -40,9 +40,9 @@ public:
 private:
     unique_ptr<SDL_Window, SdlWindowDestroyer> window;
     string title;
-    double previousSeconds;
-    double currentSeconds;
-    int frameCount;
+    f64 previousSeconds;
+    f64 currentSeconds;
+    u64 frameCount;
 };
 
 }

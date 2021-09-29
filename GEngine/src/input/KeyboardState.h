@@ -6,6 +6,7 @@
 #define INPUT_KEYBOARDSTATE_H
 
 #include <SDL2/SDL_keyboard.h>
+#include "../Defines.h"
 
 enum class ButtonState;
 
@@ -18,7 +19,7 @@ public:
     ButtonState getKeyState(SDL_Scancode key) const;
 
 private:
-    const Uint8* currentState;
+    const u8* currentState;
     Uint8 previousState[SDL_NUM_SCANCODES];
 };
 }

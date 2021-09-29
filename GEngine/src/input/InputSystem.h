@@ -11,6 +11,7 @@
 #include "KeyboardState.h"
 #include "MouseState.h"
 #include "ControllerState.h"
+#include "../Defines.h"
 
 enum class ButtonState {
     None,
@@ -52,20 +53,20 @@ public:
     void setMouseRelativeMode(bool isMouseRelativeOnP);
 
 private:
-    uint32_t windowWidth;
-    uint32_t windowHeight;
+    u32 windowWidth;
+    u32 windowHeight;
     InputState inputState;
     bool isCursorDisplayed;
     SDL_GameController* controllerPtr;
 
-    float filter1D(int input);
+    f32 filter1D(int input);
 
     Vec2 filter2D(int inputX, int inputY);
 };
 
-constexpr int CONTROLLER_DEAD_ZONE_1D = 250;
-constexpr float CONTROLLER_DEAD_ZONE_2D = 8000.0f;
-constexpr int CONTROLLER_MAX_VALUE = 30000;
+constexpr i32 CONTROLLER_DEAD_ZONE_1D = 250;
+constexpr f32 CONTROLLER_DEAD_ZONE_2D = 8000.0f;
+constexpr i32 CONTROLLER_MAX_VALUE = 30000;
 
 }
 

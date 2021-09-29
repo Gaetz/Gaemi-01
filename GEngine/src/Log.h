@@ -22,9 +22,9 @@ enum LogLevel {
 };
 
 #ifdef GRELEASE
-constexpr int LOG_REPORTING_LEVEL = LogLevel::Error;
+constexpr i32 LOG_REPORTING_LEVEL = LogLevel::Error;
 #else
-constexpr int LOG_REPORTING_LEVEL = LogLevel::Trace;
+constexpr i32 LOG_REPORTING_LEVEL = LogLevel::Trace;
 #endif
 
 
@@ -36,6 +36,8 @@ class Log {
 public:
     GAPI Log();
     GAPI virtual ~Log();
+    Log(const Log&) = delete;
+    Log& operator=(const Log&) = delete;
 
     GAPI std::ostringstream& get(LogLevel level = LogLevel::Info);
     GAPI static void restart();
@@ -46,14 +48,11 @@ private:
     u32 logLevel;
 
     std::string getLabel(LogLevel type);
-
-    Log(const Log&);
-    Log& operator=(const Log&);
 };
 }
 
 #define LOG(level)                                              \
-    if (static_cast<int>(level) > engine::LOG_REPORTING_LEVEL)  \
+    if (static_cast<i32>(level) > engine::LOG_REPORTING_LEVEL)  \
         ;                                                       \
     else                                                        \
         Log().get(level)
