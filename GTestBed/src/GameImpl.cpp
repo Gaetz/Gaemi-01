@@ -3,12 +3,12 @@
 //
 
 #include "GameImpl.h"
-#include "Memory.h"
+#include "Engine.h"
 
 using game::GameImpl;
 
 void GameImpl::load() {
-
+    engine::Engine::getState().memoryManager.logMemoryUsage();
 }
 
 void GameImpl::update(u32 dt) {

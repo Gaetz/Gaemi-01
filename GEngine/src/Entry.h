@@ -14,7 +14,7 @@ using engine::Log;
 namespace engine {
     class Entry {
     public:
-        GAPI static int start(EngineConfig& config, game::Game& game);
+        GAPI static int start(EngineConfig& config, game::Game& game, u64 sizeOfGameClass);
     };
 }
 

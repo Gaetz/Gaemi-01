@@ -18,6 +18,7 @@
 #include "input/InputSystem.h"
 #include "vk/DeletionQueue.h"
 #include "../../GTestBed/src/GameImpl.h"
+#include "Memory.h"
 
 using std::vector;
 using std::unordered_map;
@@ -32,6 +33,7 @@ using engine::vk::RenderObject;
 using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
+using engine::Memory;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -54,6 +56,7 @@ struct EngineState {
     bool isPaused { false };
     u64 frameNumber { 0 };
     Game* game;
+    Memory memoryManager;
 
     // Platform
     #ifdef GPLATFORM_WINDOWS
@@ -94,7 +97,7 @@ public:
 
 
     // Initializes everything in the engine
-    void init(Game& game);
+    void init(Game& game, u64 sizeOfGameClass);
 
     // Run the engine
     void run();

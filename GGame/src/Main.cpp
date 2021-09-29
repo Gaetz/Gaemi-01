@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     // Create game
     GameImpl game = GameImpl::instance();
     // Startup
-    engine::Entry::start(config, game);
+    engine::Entry::start(config, game, sizeof(GameImpl));
 
     return 0;
 }

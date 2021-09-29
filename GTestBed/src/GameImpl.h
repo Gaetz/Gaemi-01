@@ -25,6 +25,7 @@ namespace game {
 
     private:
         GameImpl() = default;
+        u64 blop { 25 };
     };
 
 }

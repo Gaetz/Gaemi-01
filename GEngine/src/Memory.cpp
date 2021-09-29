@@ -8,8 +8,8 @@
 
 using engine::Memory;
 
-void Memory::init() {
-    platform = Engine::getState().platform;
+void Memory::init(Platform* platformP) {
+    platform = platformP;
 }
 
 void Memory::close() {
@@ -55,28 +55,13 @@ void *Memory::set(void *dest, i32 value, u64 size) {
 }
 
 void Memory::logMemoryUsage() {
-    const u64 gb = 1024 * 1024 * 1024;
-    const u64 mb = 1024 * 1024;
-    const u64 kb = 1024;
-
+    MemoryQuantity totalMem = computeUnitAndAmount(totalAllocated);
+    LOG(LogLevel::Info) << "Memory allocation: " << totalMem.amount << " " << totalMem.unit.data();
     for(i32 i = 0; i < MEMORY_TAG_MAX; ++i) {
-        array<char, 3> unit {' ', 'B', '\0'};
-        float amount = 1.0f;
-        if (taggedAllocations[i] >= gb) {
-            unit[0] = 'G';
-            amount = (float)taggedAllocations[i] / (float)gb;
-        } else if (taggedAllocations[i] >= mb) {
-            unit[0] = 'M';
-            amount = (float)taggedAllocations[i] / (float)mb;
-        } else if (taggedAllocations[i] >= kb) {
-            unit[0] = 'k';
-            amount = (float)taggedAllocations[i] / (float)kb;
-        } else {
-            unit[0] = 'B';
-            unit[1] = ' ';
-            amount = (float)taggedAllocations[i];
+        if(taggedAllocations[i] > 0) {
+            MemoryQuantity taggedMem = computeUnitAndAmount(taggedAllocations[i]);
+            LOG(LogLevel::Info) << memoryTagToString(i) << ": " << taggedMem.amount << " " << taggedMem.unit.data();
         }
-        LOG(LogLevel::Info) << memoryTagToString(i) << ": " << taggedAllocations[i] << unit.data();
     }
 }
 
@@ -101,4 +86,32 @@ std::string Memory::memoryTagToString(i32 i) {
         case 16: return "Scene";
         default: return "ERROR Memory tag not set";
     }
+}
+
+void Memory::addAllocated(u64 size, engine::MemoryTag tag) {
+    totalAllocated += size;
+    taggedAllocations[static_cast<i32>(tag)] += size;
+}
+
+engine::MemoryQuantity engine::Memory::computeUnitAndAmount(u64 size) {
+    const u64 gb = 1024 * 1024 * 1024;
+    const u64 mb = 1024 * 1024;
+    const u64 kb = 1024;
+
+    MemoryQuantity mem;
+    if (size >= gb) {
+        mem.unit[0] = 'G';
+        mem.amount = (float)size / (float)gb;
+    } else if (size >= mb) {
+        mem.unit[0] = 'M';
+        mem.amount = (float)size / (float)mb;
+    } else if (size >= kb) {
+        mem.unit[0] = 'k';
+        mem.amount = (float)size / (float)kb;
+    } else {
+        mem.unit[0] = 'B';
+        mem.unit[1] = ' ';
+        mem.amount = (float)size;
+    }
+    return mem;
 }

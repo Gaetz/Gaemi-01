@@ -37,17 +37,22 @@ namespace engine {
 
     constexpr u8 MEMORY_TAG_MAX = static_cast<u8>(MemoryTag::MaxNumber);
 
+    struct MemoryQuantity {
+        float amount { 1.0f };
+        array<char, 3> unit {' ', 'B', '\0'};
+    };
+
     class Memory {
     public:
 
-        static Memory& instance() {
-            static Memory memoryInstance;
-            return memoryInstance;
-        }
-
+        Memory() = default;
         ~Memory() = default;
+        Memory(const Memory&) = delete;
+        Memory(Memory&&) = delete;
+        Memory& operator=(const Memory&) = delete;
+        Memory& operator=(Memory&&) = delete;
 
-        void init();
+        void init(platforms::Platform* platformP);
         void close();
 
         GAPI void* allocate(u64 size, MemoryTag tag);
@@ -57,14 +62,21 @@ namespace engine {
         GAPI void* set(void* dest, i32 value, u64 size);
         GAPI void logMemoryUsage();
 
+        /**
+         * Used to count memory that was not allocated through allocate function.
+         * Example: count game instance memory.
+         * @param size Size on the allocated memory
+         * @param tag Tag of the allocated memory
+         */
+        void addAllocated(u64 size, MemoryTag tag);
+
     private:
         platforms::Platform* platform { nullptr };
         u64 totalAllocated { 0 };
         array<u64, MEMORY_TAG_MAX> taggedAllocations {};
 
-        Memory() = default;
-
         std::string memoryTagToString(i32 i);
+        MemoryQuantity computeUnitAndAmount(u64 size);
     };
 
 }
