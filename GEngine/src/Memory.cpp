@@ -56,11 +56,11 @@ void *Memory::set(void *dest, i32 value, u64 size) {
 
 void Memory::logMemoryUsage() {
     MemoryQuantity totalMem = computeUnitAndAmount(totalAllocated);
-    LOG(LogLevel::Info) << "Memory allocation: " << totalMem.amount << " " << totalMem.unit.data();
+    LOG(LogLevel::Info) << "Total memory allocations: " << totalMem.amount << " " << totalMem.unit.data();
     for(i32 i = 0; i < MEMORY_TAG_MAX; ++i) {
         if(taggedAllocations[i] > 0) {
             MemoryQuantity taggedMem = computeUnitAndAmount(taggedAllocations[i]);
-            LOG(LogLevel::Info) << memoryTagToString(i) << ": " << taggedMem.amount << " " << taggedMem.unit.data();
+            LOG(LogLevel::Trace) << memoryTagToString(i) << ": " << taggedMem.amount << " " << taggedMem.unit.data();
         }
     }
 }

@@ -17,23 +17,23 @@ namespace engine {
         GAPI virtual ~Timer();
 
         // Compute delta time as the number of milliseconds since last frame
-        GAPI unsigned int computeDeltaTime(u32 absoluteTime);
+        GAPI u32 computeDeltaTime(u64 absoluteTime);
 
         // Wait if the game run faster than the decided FPS
-        void delayTime(const Engine& engine, u32 absoluteTime);
+        void delayTime(const Engine& engine, u64 absoluteTime);
 
     private:
-        const static int FPS = 60;
-        const static int frameDelay = 1000 / FPS;
+        const static u32 FPS = 60;
+        const static u32 frameDelay = 1000 / FPS;
 
         // Time in milliseconds when frame starts
-        unsigned int frameStart;
+        u64 frameStart;
 
         // Last frame start time in milliseconds
-        unsigned int lastFrame;
+        u64 lastFrame;
 
         // Time it tooks to run the loop. Used to cap framerate.
-        unsigned int frameTime;
+        u32 frameTime;
     };
 }
 #endif

@@ -20,7 +20,7 @@ public:
     virtual ~Platform() = default;
 
     virtual bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) = 0;
-    GAPI virtual void update(u64 dt) = 0;
+    GAPI virtual void update(u32 dt) = 0;
     virtual void shutdown() = 0;
     virtual bool pumpMessages() = 0;
     virtual void* getScreenSurface() = 0;
@@ -36,9 +36,9 @@ public:
     virtual void consoleWrite(const string& message, u8 color) = 0;
     virtual void consoleWriteError(const string& message, u8 color) = 0;
 
-    virtual u32 getAbsoluteTimeMs() = 0;
+    virtual u64 getAbsoluteTimeMs() = 0;
     virtual f64 getAbsoluteTimeSeconds() = 0;
-    virtual void sleep(u64 ms) = 0;
+    virtual void sleep(u32 ms) = 0;
     virtual array<char, 19> getDate() = 0;
 };
 

@@ -57,7 +57,7 @@ void Engine::run() {
     Timer timer;
     state.game->load();
     while (state.isRunning) {
-        u32 time = getAbsoluteTime();
+        u64 time = getAbsoluteTime();
         u32 dt = timer.computeDeltaTime(time);
 
         // Input
@@ -97,7 +97,6 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     loadImages();
     initScene();
 
-    state.game->load();
     state.isRunning = true;
     state.isPaused = false;
 }
@@ -122,12 +121,12 @@ InputState engine::Engine::processInputs() {
     return inputSystem.getInputState();
 }
 
-void Engine::update(u64 dt) {
+void Engine::update(u32 dt) {
     state.platform->update(dt);
     state.game->update(dt);
 }
 
-u32 Engine::getAbsoluteTime() const {
+u64 Engine::getAbsoluteTime() const {
     return state.platform->getAbsoluteTimeMs();
 }
 

@@ -19,7 +19,7 @@ public:
     ~PlatformWin() override;
 
     bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) override;
-    void update(u64 dt) override;
+    void update(u32 dt) override;
     void shutdown() override;
     bool pumpMessages() override;
     void* getScreenSurface() override;
@@ -33,9 +33,9 @@ public:
     void consoleWrite(const string& message, u8 color) override;
     void consoleWriteError(const string& message, u8 color) override;
 
-    u32 getAbsoluteTimeMs() override;
+    u64 getAbsoluteTimeMs() override;
     f64 getAbsoluteTimeSeconds() override;
-    void sleep(u64 ms) override;
+    void sleep(u32 ms) override;
     array<char, 19> getDate() override;
 
 protected:

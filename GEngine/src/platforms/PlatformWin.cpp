@@ -15,7 +15,7 @@ bool PlatformWin::init(const string& applicationName, i32 x, i32 y, i32 width, i
     return window.init(x, y, width, height, false);
 }
 
-void PlatformWin::update(u64 dt) {
+void PlatformWin::update(u32 dt) {
     window.updateFpsCounter(dt);
 }
 
@@ -73,15 +73,15 @@ void PlatformWin::consoleWriteError(const string& message, u8 color) {
     WriteConsoleA(consoleHandle, message.c_str(), (DWORD)message.length(), numberWritten, 0);
 }
 
-u32 PlatformWin::getAbsoluteTimeMs() {
-    return SDL_GetTicks();
+u64 PlatformWin::getAbsoluteTimeMs() {
+    return static_cast<u64>(SDL_GetTicks());
 }
 
 f64 PlatformWin::getAbsoluteTimeSeconds() {
     return static_cast<f64>(SDL_GetTicks()) / 1000.0f;
 }
 
-void PlatformWin::sleep(u64 ms) {
+void PlatformWin::sleep(u32 ms) {
     SDL_Delay(ms);
 }
 

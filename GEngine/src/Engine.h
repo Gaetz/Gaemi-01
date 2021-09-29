@@ -109,13 +109,13 @@ public:
     input::InputState processInputs();
 
     // Update loop
-    void update(u64 dt);
+    void update(u32 dt);
 
     // Draw loop
     void draw();
 
     // Get time since game started in milliseconds
-    GAPI u32 getAbsoluteTime() const;
+    GAPI u64 getAbsoluteTime() const;
 
     // Get time since game started in seconds
     GAPI f64 getAbsoluteTimeSeconds() const;

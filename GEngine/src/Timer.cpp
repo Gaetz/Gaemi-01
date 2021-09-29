@@ -11,19 +11,19 @@ Timer::~Timer()
 {
 }
 
-unsigned int Timer::computeDeltaTime(u32 absoluteTime)
+u32 Timer::computeDeltaTime(u64 absoluteTime)
 {
     frameStart = absoluteTime;
-    unsigned int dt = frameStart - lastFrame;
+    u32 dt = static_cast<u32>(frameStart - lastFrame);
     lastFrame = frameStart;
     return dt;
 }
 
-void Timer::delayTime(const Engine& engine, u32 absoluteTime)
+void Timer::delayTime(const Engine& engine, u64 absoluteTime)
 {
-    frameTime = absoluteTime - frameStart;
+    frameTime = static_cast<u32>(absoluteTime - frameStart);
     if (frameTime < frameDelay) {
-        engine.sleep(frameDelay - frameTime);
+        engine.sleep(static_cast<u32>(frameDelay - frameTime));
     }
 }
 
