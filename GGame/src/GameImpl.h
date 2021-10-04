@@ -21,7 +21,7 @@ namespace game {
         void load() override;
         void update(u32 dt) override;
         void draw() override;
-        void cleanup() override;
+        void close() override;
 
     private:
         GameImpl() = default;

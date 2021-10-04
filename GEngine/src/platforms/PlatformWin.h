@@ -20,7 +20,7 @@ public:
 
     bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) override;
     void update(u32 dt) override;
-    void shutdown() override;
+    void close() override;
     bool pumpMessages() override;
     void* getScreenSurface() override;
 

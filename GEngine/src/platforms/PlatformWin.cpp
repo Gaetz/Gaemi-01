@@ -19,7 +19,7 @@ void PlatformWin::update(u32 dt) {
     window.updateFpsCounter(dt);
 }
 
-void PlatformWin::shutdown() {
+void PlatformWin::close() {
     window.cleanup();
     SDL_Quit();
 }

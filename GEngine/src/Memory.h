@@ -32,10 +32,10 @@ namespace engine {
         EntityNode,
         Scene,
 
-        MaxNumber
+        MaxMemoryTag
     };
 
-    constexpr u8 MEMORY_TAG_MAX = static_cast<u8>(MemoryTag::MaxNumber);
+    constexpr u8 MEMORY_TAG_MAX = static_cast<u8>(MemoryTag::MaxMemoryTag);
 
     struct MemoryQuantity {
         float amount { 1.0f };

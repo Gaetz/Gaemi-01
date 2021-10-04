@@ -14,6 +14,6 @@ int Entry::start(EngineConfig& config, game::Game& game, u64 sizeOfGameClass) {
     Engine engine{config};
     engine.init(game, sizeOfGameClass);
     engine.run();
-    engine.cleanup();
+    engine.close();
     return 0;
 }

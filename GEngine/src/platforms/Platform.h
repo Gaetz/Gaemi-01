@@ -21,7 +21,7 @@ public:
 
     virtual bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) = 0;
     GAPI virtual void update(u32 dt) = 0;
-    virtual void shutdown() = 0;
+    virtual void close() = 0;
     virtual bool pumpMessages() = 0;
     virtual void* getScreenSurface() = 0;
 

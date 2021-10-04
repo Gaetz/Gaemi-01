@@ -19,6 +19,7 @@
 #include "vk/DeletionQueue.h"
 #include "../../GTestBed/src/GameImpl.h"
 #include "Memory.h"
+#include "EventSystem.h"
 
 using std::vector;
 using std::unordered_map;
@@ -34,6 +35,7 @@ using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
 using engine::Memory;
+using engine::EventSystem;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -79,6 +81,7 @@ public:
     GAPI static EngineState& getState();
 
     VkExtent2D windowExtent;
+    EventSystem eventSystem;
     InputSystem inputSystem;
 
     /*
@@ -103,7 +106,7 @@ public:
     void run();
 
     // Shuts down the engine
-    void cleanup();
+    void close();
 
     // Process engine inputs
     input::InputState processInputs();

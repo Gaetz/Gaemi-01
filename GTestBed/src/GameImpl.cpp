@@ -19,6 +19,6 @@ void GameImpl::draw() {
 
 }
 
-void GameImpl::cleanup() {
+void GameImpl::close() {
 
 }

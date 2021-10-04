@@ -17,7 +17,7 @@ namespace game {
         virtual void load() = 0;
         virtual void update(u32 dt) = 0;
         virtual void draw() = 0;
-        virtual void cleanup() = 0;
+        virtual void close() = 0;
 
         void setInputState(const InputState& inputStateP) {
             // Implicit copy

@@ -82,6 +82,7 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     state.platform->init(config.name, config.startPositionX, config.startPositionY, config.startWidth, config.startHeight);
     state.memoryManager.init(state.platform);
     state.memoryManager.addAllocated(sizeOfGameClass, MemoryTag::Game);
+    eventSystem.init();
     inputSystem.init();
     state.isInitialized = true;
 
@@ -101,11 +102,12 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     state.isPaused = false;
 }
 
-void Engine::cleanup() {
+void Engine::close() {
     if (state.isInitialized) {
         cleanupVulkan();
-        state.game->cleanup();
-        state.platform->shutdown();
+        state.game->close();
+        eventSystem.close();
+        state.platform->close();
         state.memoryManager.close();
     }
 }
