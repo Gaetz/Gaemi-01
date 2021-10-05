@@ -82,8 +82,11 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     state.platform->init(config.name, config.startPositionX, config.startPositionY, config.startWidth, config.startHeight);
     state.memoryManager.init(state.platform);
     state.memoryManager.addAllocated(sizeOfGameClass, MemoryTag::Game);
-    eventSystem.init();
+    state.eventSystem.init();
     inputSystem.init();
+
+    state.eventSystem.subscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
+
     state.isInitialized = true;
 
     initVulkan();
@@ -106,7 +109,7 @@ void Engine::close() {
     if (state.isInitialized) {
         cleanupVulkan();
         state.game->close();
-        eventSystem.close();
+        state.eventSystem.close();
         state.platform->close();
         state.memoryManager.close();
     }
@@ -116,7 +119,7 @@ InputState engine::Engine::processInputs() {
     inputSystem.preUpdate();
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        state.isRunning = inputSystem.processEvent(event);
+        inputSystem.processEvent(event);
     }
     inputSystem.update();
 
@@ -138,6 +141,23 @@ f64 Engine::getAbsoluteTimeSeconds() const {
 
 void Engine::sleep(u64 ms) const {
     state.platform->sleep(ms);
+}
+
+
+std::array<char, 19> engine::Engine::getDate() {
+    return state.platform->getDate();
+}
+
+bool engine::Engine::handleEngineEvent(EventCode code, void* sender, void* listenerInstance, EventContext context) {
+    switch (code) {
+        case EventCode::ApplicationQuit:
+            LOG(LogLevel::Trace) << "EventCode::ApplicationQuit received, closing application.";
+            state.isRunning = false;
+            return true;
+        default:
+            break;
+    }
+    return false;
 }
 
 void Engine::draw() {
@@ -1238,8 +1258,4 @@ bool engine::Engine::loadImageFromFile(const string& path, vk::AllocatedImage& o
     LOG(LogLevel::Info) << "Texture loaded successfully " << path;
     outImage = newImage;
     return true;
-}
-
-std::array<char, 19> engine::Engine::getDate() {
-    return state.platform->getDate();
 }

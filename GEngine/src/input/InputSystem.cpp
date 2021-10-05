@@ -5,6 +5,7 @@
 #include "InputSystem.h"
 #include "../math/Functions.h"
 #include "../Engine.h"
+#include "../Log.h"
 
 using engine::input::InputSystem;
 
@@ -31,7 +32,7 @@ bool InputSystem::init() {
     controllerPtr = engineState.platform->inputControllerOpen(0);
     // Initialize controllerPtr state
     inputState.controller.isConnected = (controllerPtr != nullptr);
-    u16 maxControllerButton = static_cast<u16>(ControllerButton::Max);
+    i16 maxControllerButton = static_cast<i16>(ControllerButton::Max);
     engineState.memoryManager.set(inputState.controller.currentButtons, 0, maxControllerButton);
     engineState.memoryManager.set(inputState.controller.previousButtons, 0, maxControllerButton);
 
@@ -44,11 +45,10 @@ void InputSystem::cleanup() {
     }
 }
 
-bool InputSystem::processEvent(SDL_Event& event) {
-    bool isRunning = true;
+void InputSystem::processEvent(SDL_Event& event) {
     switch (event.type) {
         case SDL_QUIT:
-            isRunning = false;
+            Engine::getState().eventSystem.fire(EventCode::ApplicationQuit, nullptr, {});
             break;
         case SDL_MOUSEWHEEL:
             inputState.mouse.scrollWheel = Vec2(
@@ -58,7 +58,6 @@ bool InputSystem::processEvent(SDL_Event& event) {
         default:
             break;
     }
-    return isRunning;
 }
 
 void InputSystem::preUpdate() {
@@ -71,7 +70,7 @@ void InputSystem::preUpdate() {
     inputState.mouse.previousButtons = inputState.mouse.currentButtons;
     inputState.mouse.scrollWheel = Vec2(0, 0);
     // Controller
-    u16 maxControllerButton = static_cast<u16>(ControllerButton::Max);
+    i16 maxControllerButton = static_cast<i16>(ControllerButton::Max);
     engineState.memoryManager.copy(inputState.controller.previousButtons, inputState.controller.currentButtons, maxControllerButton);
 }
 
@@ -95,7 +94,7 @@ void InputSystem::update() {
 
     // Controller
     // Buttons
-    u16 controllerMaxButton = static_cast<u16>(ControllerButton::Max);
+    i16 controllerMaxButton = static_cast<i16>(ControllerButton::Max);
     for (i32 i = 0; i < controllerMaxButton; i++) {
         inputState.controller.currentButtons[i] = engineState.platform->inputControllerGetButton(controllerPtr, SDL_GameControllerButton(i));
     }

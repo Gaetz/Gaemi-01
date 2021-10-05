@@ -58,6 +58,7 @@ struct EngineState {
     u64 frameNumber { 0 };
     Game* game;
     Memory memoryManager;
+    EventSystem eventSystem;
 
     // Platform
     #ifdef GPLATFORM_WINDOWS
@@ -80,7 +81,6 @@ public:
     GAPI static EngineState& getState();
 
     VkExtent2D windowExtent;
-    EventSystem eventSystem;
     InputSystem inputSystem;
 
     // Initializes everything in the engine
@@ -113,8 +113,11 @@ public:
     // Get a formatted date
     GAPI std::array<char, 19> getDate();
 
+    bool handleEngineEvent(EventCode code, void* sender, void* listenerInstance, EventContext context);
 
-
+    EventCallback onEngineEvent = [this](EventCode code, void* sender, void* listInst, EventContext context) {
+        return this->handleEngineEvent(code, sender, listInst, context);
+    };
 
     // VULKAN
 

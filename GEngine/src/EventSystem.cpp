@@ -26,7 +26,6 @@ void EventSystem::close() {
 }
 
 bool engine::EventSystem::subscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
-    if (!isInitialized) return false;
     u16 eventCode = static_cast<u16>(code);
     auto& subscriptions = state[eventCode].subscriptions;
 
@@ -46,7 +45,6 @@ bool engine::EventSystem::subscribe(engine::EventCode code, void *listener, engi
 }
 
 bool engine::EventSystem::unsubscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
-    if (!isInitialized) return false;
     u16 eventCode = static_cast<u16>(code);
     auto& subs = state[eventCode].subscriptions;
     if (subs.empty()) return false;
@@ -63,7 +61,6 @@ bool engine::EventSystem::unsubscribe(engine::EventCode code, void *listener, en
 }
 
 bool engine::EventSystem::fire(engine::EventCode code, void *sender, engine::EventContext context) {
-    if (!isInitialized) return false;
     u16 eventCode = static_cast<u16>(code);
     auto& subs = state[eventCode].subscriptions;
     if (subs.empty()) return false;
