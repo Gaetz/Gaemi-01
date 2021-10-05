@@ -27,10 +27,9 @@ void EventSystem::close() {
 
 bool engine::EventSystem::subscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
     u16 eventCode = static_cast<u16>(code);
-    auto& subscriptions = state[eventCode].subscriptions;
 
     // Check for duplicates
-    for (auto& subscription : subscriptions) {
+    for (auto& subscription : state[eventCode].subscriptions) {
         if (subscription.listener == listener) {
             return false;
         }
@@ -40,7 +39,7 @@ bool engine::EventSystem::subscribe(engine::EventCode code, void *listener, engi
     Subscription subscription;
     subscription.listener = listener;
     subscription.callback = onEvent;
-    subscriptions.push_back(subscription);
+    state[eventCode].subscriptions.push_back(subscription);
     return true;
 }
 
@@ -50,13 +49,21 @@ bool engine::EventSystem::unsubscribe(engine::EventCode code, void *listener, en
     if (subs.empty()) return false;
 
     bool isRemoved = false;
-    subs.erase(std::remove_if(subs.begin(), subs.end(), [=, &isRemoved](const auto& sub){
-        if(sub.listener == listener && sub.callback == onEvent) {
+    auto i = 0;
+    while(i < subs.size()) {
+        if (subs[i].listener != listener || subs[i].callback != onEvent) {
+            ++i;
+            continue;
+        } else {
             isRemoved = true;
-            return true;
+            break;
         }
-        return false;
-    }), subs.end());
+    }
+
+    if(isRemoved) {
+        auto unused = std::remove(subs.begin(), subs.end(), subs[i]);
+    }
+
     return isRemoved;
 }
 

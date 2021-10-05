@@ -39,7 +39,7 @@ bool InputSystem::init() {
     return true;
 }
 
-void InputSystem::cleanup() {
+void InputSystem::close() {
     if (controllerPtr != nullptr) {
         Engine::getState().platform->inputControllerClose(controllerPtr);
     }

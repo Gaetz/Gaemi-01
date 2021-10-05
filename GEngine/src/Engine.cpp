@@ -108,7 +108,10 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
 void Engine::close() {
     if (state.isInitialized) {
         cleanupVulkan();
+        state.eventSystem.unsubscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
+
         state.game->close();
+        inputSystem.close();
         state.eventSystem.close();
         state.platform->close();
         state.memoryManager.close();

@@ -35,7 +35,7 @@ public:
 
     bool init();
 
-    void cleanup();
+    void close();
 
     const InputState& getInputState() const { return inputState; }
 

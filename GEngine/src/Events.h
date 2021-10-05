@@ -45,6 +45,10 @@ namespace engine {
     struct Subscription {
         void* listener { nullptr };
         EventCallback* callback { nullptr };
+
+        bool operator==(const Subscription& other) {
+            return listener == other.listener && callback == other.callback;
+        }
     };
 
     struct EventCodeEntry {

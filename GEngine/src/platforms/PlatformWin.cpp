@@ -1,5 +1,6 @@
 #include "PlatformWin.h"
 #include "../input/ControllerState.h"
+#include "../Log.h"
 #include <array>
 #include <time.h>
 
@@ -22,6 +23,7 @@ void PlatformWin::update(u32 dt) {
 
 void PlatformWin::close() {
     window.cleanup();
+    LOG(LogLevel::Trace) << "Bye :)";
     SDL_Quit();
 }
 
