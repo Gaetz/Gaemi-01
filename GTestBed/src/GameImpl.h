@@ -1,8 +1,8 @@
 //
 // Created by gaetz on 08/06/2021.
 //
-#include <Defines.h>
-#include <Game.h>
+#include "Defines.h"
+#include "Game.h"
 
 #ifndef GAMEIMPL_H
 #define GAMEIMPL_H

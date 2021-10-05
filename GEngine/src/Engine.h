@@ -17,7 +17,6 @@
 #include "platforms/PlatformWin.h"
 #include "input/InputSystem.h"
 #include "vk/DeletionQueue.h"
-#include "../../GTestBed/src/GameImpl.h"
 #include "Memory.h"
 #include "EventSystem.h"
 
@@ -83,21 +82,6 @@ public:
     VkExtent2D windowExtent;
     EventSystem eventSystem;
     InputSystem inputSystem;
-
-    /*
-    bool isInitialized { false };
-    int frameNumber { 0 };
-    bool isRunning { false };
-
-    // Platform
-    #ifdef GPLATFORM_WINDOWS
-    unique_ptr<PlatformWin> platform = make_unique<PlatformWin>();
-    #else
-    Platform* platform = nullptr;
-    // No implementation, won't compile
-    #endif
-    */
-
 
     // Initializes everything in the engine
     void init(Game& game, u64 sizeOfGameClass);

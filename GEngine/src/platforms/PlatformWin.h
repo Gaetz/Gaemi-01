@@ -38,8 +38,21 @@ public:
     void sleep(u32 ms) override;
     array<char, 19> getDate() override;
 
+    const u8* inputKeyboardGetState(i32* keys) override;
+    i32 inputMouseGetButtonMask(i32 button) override;
+    i32 inputControllerGetButton(void* controllerPtr, i32 button) override;
+    i32 inputControllerGetAxis(void* controllerPtr, input::ControllerAxis axis) override;
+    void* inputControllerOpen(i32 controllerIndex) override;
+    void inputControllerClose(void* controllerPtr) override;
+    u16 inputKeyboardGetMaxScancode() override;
+    u32 inputMouseGetRelativeState(i32& x, i32& y) override;
+    u32 inputMouseGetState(i32& x, i32& y) override;
+    void inputMouseShowCursor(bool show) override;
+    void inputMouseSetRelativeMode(bool isRelative) override;
+
 protected:
     Window window { "Gaemi-01" };
+
 };
 
 }

@@ -5,15 +5,18 @@
 #include "MouseState.h"
 #include <SDL2/SDL_mouse.h>
 #include "InputSystem.h"
+#include "../Engine.h"
 
 using engine::input::MouseState;
+using engine::Engine;
 
-bool MouseState::getButtonValue(int button) const {
-    return (SDL_BUTTON(button) & currentButtons) == 1;
+bool MouseState::getButtonValue(i32 button) const {
+    i32 mask = Engine::getState().platform->inputMouseGetButtonMask(button);
+    return (mask & currentButtons) == 1;
 }
 
-ButtonState MouseState::getButtonState(int button) const {
-    i32 mask = SDL_BUTTON(button);
+ButtonState MouseState::getButtonState(i32 button) const {
+    i32 mask = Engine::getState().platform->inputMouseGetButtonMask(button);
     if ((mask & previousButtons) == 0) {
         if ((mask & currentButtons) == 0) {
             return ButtonState::None;

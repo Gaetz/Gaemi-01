@@ -9,9 +9,11 @@
 using std::string;
 
 #include <array>
-using std::array;
+    using std::array;
 
 #include "../Defines.h"
+#include "../input/KeyboardState.h"
+#include "../input/ControllerState.h"
 
 namespace engine::platforms {
 
@@ -40,6 +42,19 @@ public:
     virtual f64 getAbsoluteTimeSeconds() = 0;
     virtual void sleep(u32 ms) = 0;
     virtual array<char, 19> getDate() = 0;
+
+    virtual const u8* inputKeyboardGetState(i32* keys) = 0;
+    virtual i32 inputMouseGetButtonMask(i32 button) = 0;
+    virtual i32 inputControllerGetButton(void* controllerPtr, i32 button) = 0;
+    virtual i32 inputControllerGetAxis(void* controllerPtr, engine::input::ControllerAxis axis) = 0;
+    virtual void* inputControllerOpen(i32 controllerIndex) = 0;
+    virtual void inputControllerClose(void* controllerPtr) = 0;
+    virtual u16 inputKeyboardGetMaxScancode() = 0;
+    virtual u32 inputMouseGetRelativeState(i32& x, i32& y) = 0;
+    virtual u32 inputMouseGetState(i32& x, i32& y) = 0;
+    virtual void inputMouseShowCursor(bool show) = 0;
+    virtual void inputMouseSetRelativeMode(bool show) = 0;
+
 };
 
 }

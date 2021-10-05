@@ -7,29 +7,21 @@
 
 using engine::input::ControllerState;
 
-ControllerState::ControllerState() :
-        leftStick(Vec2()),
-        rightStick(Vec2()),
-        leftTrigger(0.0f),
-        rightTrigger(0.0f),
-        isConnected(false) {
-
+bool ControllerState::getButtonValue(ControllerButton button) const {
+    i32 buttonIndex = static_cast<i32>(button);
+    return currentButtons[buttonIndex] == 1;
 }
 
-
-bool ControllerState::getButtonValue(SDL_GameControllerButton button) const {
-    return currentButtons[button] == 1;
-}
-
-ButtonState ControllerState::getButtonState(SDL_GameControllerButton button) const {
-    if (previousButtons[button] == 0) {
-        if (currentButtons[button] == 0) {
+ButtonState ControllerState::getButtonState(ControllerButton button) const {
+    i32 buttonIndex = static_cast<i32>(button);
+    if (previousButtons[buttonIndex] == 0) {
+        if (currentButtons[buttonIndex] == 0) {
             return ButtonState::None;
         } else {
             return ButtonState::Pressed;
         }
     } else {
-        if (currentButtons[button] == 0) {
+        if (currentButtons[buttonIndex] == 0) {
             return ButtonState::Released;
         } else {
             return ButtonState::Held;

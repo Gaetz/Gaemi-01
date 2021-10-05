@@ -1,4 +1,5 @@
 #include "PlatformWin.h"
+#include "../input/ControllerState.h"
 #include <array>
 #include <time.h>
 
@@ -35,7 +36,6 @@ void* PlatformWin::getScreenSurface() {
 void* PlatformWin::allocate(u64 size, bool aligned) {
     return malloc(size);
 }
-
 
 void PlatformWin::free(void* block, bool aligned) {
     ::free(block);
@@ -100,3 +100,58 @@ array<char, 19> engine::platforms::PlatformWin::getDate() {
     strftime(date, 19, "%y-%m-%d %H:%M:%S", timeInfo);
     */
 }
+
+const u8 *engine::platforms::PlatformWin::inputKeyboardGetState(i32 *keys) {
+    return SDL_GetKeyboardState(keys);
+}
+
+i32 engine::platforms::PlatformWin::inputMouseGetButtonMask(i32 button) {
+    return SDL_BUTTON(button);
+}
+
+i32 engine::platforms::PlatformWin::inputControllerGetButton(void *controllerPtr, i32 button) {
+    return SDL_GameControllerGetButton(static_cast<SDL_GameController*>(controllerPtr),
+                                     static_cast<SDL_GameControllerButton>(button));
+}
+
+i32 engine::platforms::PlatformWin::inputControllerGetAxis(void *controllerPtr, engine::input::ControllerAxis axis) {
+    return SDL_GameControllerGetAxis(static_cast<SDL_GameController*>(controllerPtr),
+                                     static_cast<SDL_GameControllerAxis>(axis));
+}
+
+void* engine::platforms::PlatformWin::inputControllerOpen(i32 controllerIndex) {
+    return SDL_GameControllerOpen(controllerIndex);
+}
+
+void engine::platforms::PlatformWin::inputControllerClose(void *controllerPtr) {
+    SDL_GameControllerClose(static_cast<SDL_GameController*>(controllerPtr));
+}
+
+u16 engine::platforms::PlatformWin::inputKeyboardGetMaxScancode() {
+    return SDL_NUM_SCANCODES;
+}
+
+u32 engine::platforms::PlatformWin::inputMouseGetRelativeState(i32 &x, i32 &y) {
+    return SDL_GetRelativeMouseState(&x, &y);;
+}
+
+u32 engine::platforms::PlatformWin::inputMouseGetState(i32 &x, i32 &y) {
+    return SDL_GetMouseState(&x, &y);;
+}
+
+void engine::platforms::PlatformWin::inputMouseShowCursor(bool show) {
+    if (show) {
+        SDL_ShowCursor(SDL_TRUE);
+    } else {
+        SDL_ShowCursor(SDL_FALSE);
+    }
+}
+
+void engine::platforms::PlatformWin::inputMouseSetRelativeMode(bool isRelative) {
+    if (isRelative) {
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    } else {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+    }
+}
+

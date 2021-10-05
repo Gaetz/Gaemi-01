@@ -30,7 +30,7 @@ struct InputState {
 
 class InputSystem {
 public:
-    InputSystem(uint32_t windowWidthP, uint32_t windowHeightP);
+    InputSystem(u32 windowWidthP, u32 windowHeightP);
     InputSystem() = delete;
 
     bool init();
@@ -53,14 +53,13 @@ public:
     void setMouseRelativeMode(bool isMouseRelativeOnP);
 
 private:
-    u32 windowWidth;
-    u32 windowHeight;
-    InputState inputState;
-    bool isCursorDisplayed;
-    SDL_GameController* controllerPtr;
+    u32 windowWidth { 1280 };
+    u32 windowHeight { 720 };
+    InputState inputState {};
+    bool isCursorDisplayed { false };
+    void* controllerPtr { nullptr };
 
     f32 filter1D(int input);
-
     Vec2 filter2D(int inputX, int inputY);
 };
 

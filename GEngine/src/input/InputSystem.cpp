@@ -3,46 +3,44 @@
 //
 
 #include "InputSystem.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_keyboard.h>
-#include <cstring>
-#include <SDL2/SDL_mouse.h>
 #include "../math/Functions.h"
+#include "../Engine.h"
 
 using engine::input::InputSystem;
 
-InputSystem::InputSystem(uint32_t windowWidthP, uint32_t windowHeightP) :
+InputSystem::InputSystem(u32 windowWidthP, u32 windowHeightP) :
         windowWidth {windowWidthP},
-        windowHeight {windowHeightP},
-        inputState {},
-        isCursorDisplayed {false},
-        controllerPtr {nullptr} {
+        windowHeight {windowHeightP} {
+
 }
 
 bool InputSystem::init() {
+    EngineState& engineState = Engine::getState();
     // Keyboard
     // Assign current state pointer
-    inputState.keyboard.currentState = SDL_GetKeyboardState(nullptr);
+    inputState.keyboard.currentState = engineState.platform->inputKeyboardGetState(nullptr);
     // Clear previous state memory
-    memset(inputState.keyboard.previousState, 0, SDL_NUM_SCANCODES);
+    u16 maxScancode = engineState.platform->inputKeyboardGetMaxScancode();
+    engineState.memoryManager.set(inputState.keyboard.previousState, 0, maxScancode);
 
     // Mouse (just set everything to 0)
     inputState.mouse.currentButtons = 0;
     inputState.mouse.previousButtons = 0;
 
     // Get the connected controllerPtr, if it exists
-    controllerPtr = SDL_GameControllerOpen(0);
+    controllerPtr = engineState.platform->inputControllerOpen(0);
     // Initialize controllerPtr state
     inputState.controller.isConnected = (controllerPtr != nullptr);
-    memset(inputState.controller.currentButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
-    memset(inputState.controller.previousButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
+    u16 maxControllerButton = static_cast<u16>(ControllerButton::Max);
+    engineState.memoryManager.set(inputState.controller.currentButtons, 0, maxControllerButton);
+    engineState.memoryManager.set(inputState.controller.previousButtons, 0, maxControllerButton);
 
     return true;
 }
 
 void InputSystem::cleanup() {
     if (controllerPtr != nullptr) {
-        SDL_GameControllerClose(controllerPtr);
+        Engine::getState().platform->inputControllerClose(controllerPtr);
     }
 }
 
@@ -64,23 +62,27 @@ bool InputSystem::processEvent(SDL_Event& event) {
 }
 
 void InputSystem::preUpdate() {
+    EngineState& engineState = Engine::getState();
     // Copy current state to previous
     // Keyboard
-    memcpy(inputState.keyboard.previousState, inputState.keyboard.currentState, SDL_NUM_SCANCODES);
+    u16 maxScancode = engineState.platform->inputKeyboardGetMaxScancode();
+    engineState.memoryManager.copy(inputState.keyboard.previousState, inputState.keyboard.currentState, maxScancode);
     // Mouse
     inputState.mouse.previousButtons = inputState.mouse.currentButtons;
     inputState.mouse.scrollWheel = Vec2(0, 0);
     // Controller
-    memcpy(inputState.controller.previousButtons, inputState.controller.currentButtons, SDL_CONTROLLER_BUTTON_MAX);
+    u16 maxControllerButton = static_cast<u16>(ControllerButton::Max);
+    engineState.memoryManager.copy(inputState.controller.previousButtons, inputState.controller.currentButtons, maxControllerButton);
 }
 
 void InputSystem::update() {
+    EngineState& engineState = Engine::getState();
     // Mouse
     i32 x = 0, y = 0;
     if (inputState.mouse.isRelativeMode) {
-        inputState.mouse.currentButtons = SDL_GetRelativeMouseState(&x, &y);
+        inputState.mouse.currentButtons = engineState.platform->inputMouseGetRelativeState(x, y);
     } else {
-        inputState.mouse.currentButtons = SDL_GetMouseState(&x, &y);
+        inputState.mouse.currentButtons = engineState.platform->inputMouseGetState(x, y);
     }
 
     inputState.mouse.position.x = static_cast<float>(x);
@@ -93,39 +95,34 @@ void InputSystem::update() {
 
     // Controller
     // Buttons
-    for (i32 i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
-        inputState.controller.currentButtons[i] = SDL_GameControllerGetButton(controllerPtr, SDL_GameControllerButton(i));
+    u16 controllerMaxButton = static_cast<u16>(ControllerButton::Max);
+    for (i32 i = 0; i < controllerMaxButton; i++) {
+        inputState.controller.currentButtons[i] = engineState.platform->inputControllerGetButton(controllerPtr, SDL_GameControllerButton(i));
     }
 
     // Triggers
     inputState.controller.leftTrigger = filter1D(
-            SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_TRIGGERLEFT));
+            engineState.platform->inputControllerGetAxis(controllerPtr, ControllerAxis::TriggerLeft));
     inputState.controller.rightTrigger = filter1D(
-            SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+            engineState.platform->inputControllerGetAxis(controllerPtr, ControllerAxis::TriggerRight));
 
     // Sticks
-    x = SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_LEFTX);
-    y = -SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_LEFTY);
+    x = engineState.platform->inputControllerGetAxis(controllerPtr, ControllerAxis::LeftX);
+    y = -engineState.platform->inputControllerGetAxis(controllerPtr, ControllerAxis::LeftY);
     inputState.controller.leftStick = filter2D(x, y);
 
-    x = SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_RIGHTX);
-    y = -SDL_GameControllerGetAxis(controllerPtr, SDL_CONTROLLER_AXIS_RIGHTY);
+    x = engineState.platform->inputControllerGetAxis(controllerPtr, ControllerAxis::RightX);
+    y = -engineState.platform->inputControllerGetAxis(controllerPtr, ControllerAxis::RightY);
     inputState.controller.rightStick = filter2D(x, y);
 }
 
 void InputSystem::setMouseCursor(bool isCursorDisplayedP) {
     isCursorDisplayed = isCursorDisplayedP;
-    if (isCursorDisplayedP) {
-        SDL_ShowCursor(SDL_TRUE);
-    } else {
-        SDL_ShowCursor(SDL_FALSE);
-    }
+    Engine::getState().platform->inputMouseShowCursor(isCursorDisplayed);
 }
 
 void InputSystem::setMouseRelativeMode(bool isMouseRelativeOnP) {
-    SDL_bool set = isMouseRelativeOnP ? SDL_TRUE : SDL_FALSE;
-    SDL_SetRelativeMouseMode(set);
-
+    Engine::getState().platform->inputMouseSetRelativeMode(isMouseRelativeOnP);
     inputState.mouse.isRelativeMode = isMouseRelativeOnP;
 }
 

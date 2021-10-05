@@ -18,9 +18,9 @@ class MouseState {
 public:
     const Vec2 &getPosition() const { return position; }
 
-    bool getButtonValue(int button) const;
+    bool getButtonValue(i32 button) const;
 
-    ButtonState getButtonState(int button) const;
+    ButtonState getButtonState(i32 button) const;
 
     const Vec2 &getScrollWheel() const { return scrollWheel; }
 
