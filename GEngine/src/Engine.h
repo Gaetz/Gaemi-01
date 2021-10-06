@@ -13,11 +13,11 @@
 
 #include "Defines.h"
 #include "Game.h"
-#include "vk/RenderObject.h"
+#include "renderer/vk/RenderObject.h"
 #include "platforms/PlatformWin.h"
 #include "input/InputSystem.h"
-#include "vk/DeletionQueue.h"
-#include "Memory.h"
+#include "renderer/vk/DeletionQueue.h"
+#include "MemoryManager.h"
 #include "EventSystem.h"
 
 using std::vector;
@@ -27,13 +27,13 @@ using std::unique_ptr;
 using std::make_unique;
 
 using engine::input::InputSystem;
-using engine::vk::DeletionQueue;
-using engine::vk::Mesh;
-using engine::vk::RenderObject;
+using engine::renderer::vk::DeletionQueue;
+using engine::renderer::vk::Mesh;
+using engine::renderer::vk::RenderObject;
 using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
-using engine::Memory;
+using engine::MemoryManager;
 using engine::EventSystem;
 
 // Buffer this number of frames when rendering
@@ -57,7 +57,7 @@ struct EngineState {
     bool isPaused { false };
     u64 frameNumber { 0 };
     Game* game;
-    Memory memoryManager;
+    MemoryManager memoryManager;
     EventSystem eventSystem;
 
     // Platform
@@ -146,7 +146,7 @@ public:
 
     VkRenderPass renderPass;
     vector<VkFramebuffer> framebuffers;
-    array<vk::FrameData, FRAME_OVERLAP> frames;
+    array<renderer::vk::FrameData, FRAME_OVERLAP> frames;
 
     // Pipeline
 
@@ -161,13 +161,13 @@ public:
     // Meshes
 
     vector<RenderObject> renderables;
-    unordered_map<string, vk::Material> materials;
+    unordered_map<string, renderer::vk::Material> materials;
     unordered_map<string, Mesh> meshes;
 
     // Depth
 
     VkImageView depthImageView;
-    vk::AllocatedImage depthImage;
+    renderer::vk::AllocatedImage depthImage;
     VkFormat depthFormat;
 
     // Descriptor sets
@@ -179,16 +179,16 @@ public:
 
     // Scene data
 
-    vk::GPUSceneData sceneParams;
+    renderer::vk::GPUSceneData sceneParams;
     AllocatedBuffer sceneParamsBuffer;
 
     // Transfer and textures
 
-    vk::UploadContext uploadContext;
-    unordered_map<string, vk::Texture> textures;
+    renderer::vk::UploadContext uploadContext;
+    unordered_map<string, renderer::vk::Texture> textures;
 
     // Get the frame we are rendering right now
-    vk::FrameData& getCurrentFrame() { return frames[state.frameNumber % FRAME_OVERLAP]; }
+    renderer::vk::FrameData& getCurrentFrame() { return frames[state.frameNumber % FRAME_OVERLAP]; }
 
     // Create a vulkan buffer
     AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
@@ -221,11 +221,11 @@ private:
 
     void loadMeshes();
     void uploadMesh(Mesh& mesh);
-    vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
-    vk::Material* getMaterial(const string& name);
+    renderer::vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
+    renderer::vk::Material* getMaterial(const string& name);
     Mesh* getMesh(const string& name);
     void loadImages();
-    bool loadImageFromFile(const string& path, vk::AllocatedImage& outImage);
+    bool loadImageFromFile(const string& path, renderer::vk::AllocatedImage& outImage);
 
     // Draw & commands
 

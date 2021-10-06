@@ -11,7 +11,7 @@
 
 using std::vector;
 
-namespace engine::vk {
+namespace engine::renderer::vk {
 
     class PipelineBuilder {
     public:

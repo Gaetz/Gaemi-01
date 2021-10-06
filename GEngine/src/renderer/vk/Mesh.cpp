@@ -5,10 +5,11 @@
 
 #include <tiny_obj_loader.h>
 #include "Mesh.h"
-#include "../Log.h"
+#include "../../Log.h"
 
-using engine::vk::VertexInputDescription;
-using engine::vk::Vertex;
+using engine::renderer::vk::VertexInputDescription;
+using engine::renderer::vk::Vertex;
+using engine::renderer::vk::Mesh;
 
 VertexInputDescription Vertex::getVertexDescription() {
     VertexInputDescription description;
@@ -56,7 +57,7 @@ VertexInputDescription Vertex::getVertexDescription() {
     return description;
 }
 
-bool engine::vk::Mesh::loadFromObj(const string& filename) {
+bool Mesh::loadFromObj(const string& filename) {
     tinyobj::ObjReaderConfig readerConfig;
     //readerConfig.mtl_search_path = "./"; // Path to material files
     tinyobj::ObjReader reader;

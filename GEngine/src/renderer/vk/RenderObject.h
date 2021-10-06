@@ -7,7 +7,7 @@
 
 #include "Mesh.h"
 
-namespace engine::vk {
+namespace engine::renderer::vk {
 
 struct Material {
     VkPipeline pipeline;

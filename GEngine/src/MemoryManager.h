@@ -42,15 +42,15 @@ namespace engine {
         array<char, 3> unit {' ', 'B', '\0'};
     };
 
-    class Memory {
+    class MemoryManager {
     public:
 
-        Memory() = default;
-        ~Memory() = default;
-        Memory(const Memory&) = delete;
-        Memory(Memory&&) = delete;
-        Memory& operator=(const Memory&) = delete;
-        Memory& operator=(Memory&&) = delete;
+        MemoryManager() = default;
+        ~MemoryManager() = default;
+        MemoryManager(const MemoryManager&) = delete;
+        MemoryManager(MemoryManager&&) = delete;
+        MemoryManager& operator=(const MemoryManager&) = delete;
+        MemoryManager& operator=(MemoryManager&&) = delete;
 
         void init(platforms::Platform* platformP);
         void close();

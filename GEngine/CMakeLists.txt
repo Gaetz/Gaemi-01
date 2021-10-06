@@ -1,5 +1,5 @@
 add_subdirectory( src/input )
-add_subdirectory( src/vk )
+add_subdirectory(src/renderer/vk)
 add_subdirectory( src/math )
 add_subdirectory( src/platforms )
 

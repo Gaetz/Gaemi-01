@@ -8,16 +8,15 @@
 #include <vector>
 #include <string>
 
-#include "../math/Types.h"
 #include "Types.h"
 
 using std::string;
 using std::vector;
-using engine::vk::AllocatedBuffer;
+using engine::renderer::vk::AllocatedBuffer;
 using engine::math::Vec3;
 using engine::math::Vec2;
 
-namespace engine::vk {
+namespace engine::renderer::vk {
 
 struct VertexInputDescription {
     vector<VkVertexInputBindingDescription> bindings;

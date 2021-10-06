@@ -2,21 +2,21 @@
 // Created by gaetz on 26/09/2021.
 //
 
-#include "Memory.h"
+#include "MemoryManager.h"
 #include "Log.h"
 #include "Engine.h"
 
-using engine::Memory;
+using engine::MemoryManager;
 
-void Memory::init(Platform* platformP) {
+void MemoryManager::init(Platform* platformP) {
     platform = platformP;
 }
 
-void Memory::close() {
+void MemoryManager::close() {
 
 }
 
-void *Memory::allocate(u64 size, MemoryTag tag) {
+void *MemoryManager::allocate(u64 size, MemoryTag tag) {
     // Warn in case of unknown tag
     if (tag == MemoryTag::Unknown) {
         LOG(LogLevel::Warning) << "Allocate used with MemoryTag::Unknown. Please reclass this allocation.";
@@ -30,7 +30,7 @@ void *Memory::allocate(u64 size, MemoryTag tag) {
     return block;
 }
 
-void Memory::free(void *block, u64 size, MemoryTag tag) {
+void MemoryManager::free(void *block, u64 size, MemoryTag tag) {
     // Warn in case of unknown tag
     if (tag == MemoryTag::Unknown) {
         LOG(LogLevel::Warning) << "Allocate used with MemoryTag::Unknown. Please reclass this allocation.";
@@ -42,19 +42,19 @@ void Memory::free(void *block, u64 size, MemoryTag tag) {
     Engine::getState().platform->free(block, false);
 }
 
-void *Memory::zero(void *block, u64 size) {
+void *MemoryManager::zero(void *block, u64 size) {
     return platform->zeroMemory(block, size);
 }
 
-void *Memory::copy(void *dest, const void *source, u64 size) {
+void *MemoryManager::copy(void *dest, const void *source, u64 size) {
     return platform->copyMemory(dest, source, size);
 }
 
-void *Memory::set(void *dest, i32 value, u64 size) {
+void *MemoryManager::set(void *dest, i32 value, u64 size) {
     return platform->setMemory(dest, value, size);
 }
 
-void Memory::logMemoryUsage() {
+void MemoryManager::logMemoryUsage() {
     MemoryQuantity totalMem = computeUnitAndAmount(totalAllocated);
     LOG(LogLevel::Info) << "Total memory allocations: " << totalMem.amount << " " << totalMem.unit.data();
     for(i32 i = 0; i < MEMORY_TAG_MAX; ++i) {
@@ -65,7 +65,7 @@ void Memory::logMemoryUsage() {
     }
 }
 
-std::string Memory::memoryTagToString(i32 i) {
+std::string MemoryManager::memoryTagToString(i32 i) {
     switch(i) {
         case 0: return "Unknown";
         case 1: return "Array";
@@ -84,16 +84,16 @@ std::string Memory::memoryTagToString(i32 i) {
         case 14: return "Entity";
         case 15: return "EntityNode";
         case 16: return "Scene";
-        default: return "ERROR Memory tag not set";
+        default: return "ERROR MemoryManager tag not set";
     }
 }
 
-void Memory::addAllocated(u64 size, engine::MemoryTag tag) {
+void MemoryManager::addAllocated(u64 size, engine::MemoryTag tag) {
     totalAllocated += size;
     taggedAllocations[static_cast<i32>(tag)] += size;
 }
 
-engine::MemoryQuantity engine::Memory::computeUnitAndAmount(u64 size) {
+engine::MemoryQuantity engine::MemoryManager::computeUnitAndAmount(u64 size) {
     const u64 gb = 1024 * 1024 * 1024;
     const u64 mb = 1024 * 1024;
     const u64 kb = 1024;

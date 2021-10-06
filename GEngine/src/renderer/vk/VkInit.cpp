@@ -4,9 +4,8 @@
 
 #include "VkInit.h"
 
-#include "../Log.h"
 
-VkCommandPoolCreateInfo engine::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
+VkCommandPoolCreateInfo engine::renderer::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
                                                   VkCommandPoolCreateFlags flags) {
     VkCommandPoolCreateInfo commandPoolInfo {};
     commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -17,7 +16,7 @@ VkCommandPoolCreateInfo engine::vk::commandPoolCreateInfo(uint32_t queueFamilyIn
     return commandPoolInfo;
 }
 
-VkCommandBufferAllocateInfo engine::vk::commandBufferAllocateInfo(VkCommandPool pool,
+VkCommandBufferAllocateInfo engine::renderer::vk::commandBufferAllocateInfo(VkCommandPool pool,
                                                           uint32_t count,
                                                           VkCommandBufferLevel level) {
     VkCommandBufferAllocateInfo cmdAllocInfo {};
@@ -30,7 +29,7 @@ VkCommandBufferAllocateInfo engine::vk::commandBufferAllocateInfo(VkCommandPool 
     return cmdAllocInfo;
 }
 
-VkPipelineShaderStageCreateInfo engine::vk::pipelineShaderStageCreateInfo(VkShaderStageFlagBits shaderStage,
+VkPipelineShaderStageCreateInfo engine::renderer::vk::pipelineShaderStageCreateInfo(VkShaderStageFlagBits shaderStage,
                                                                   VkShaderModule shaderModule) {
     VkPipelineShaderStageCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -43,7 +42,7 @@ VkPipelineShaderStageCreateInfo engine::vk::pipelineShaderStageCreateInfo(VkShad
     return info;
 }
 
-VkPipelineVertexInputStateCreateInfo engine::vk::vertexInputStateCreateInfo() {
+VkPipelineVertexInputStateCreateInfo engine::renderer::vk::vertexInputStateCreateInfo() {
     VkPipelineVertexInputStateCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     info.pNext = nullptr;
@@ -54,7 +53,7 @@ VkPipelineVertexInputStateCreateInfo engine::vk::vertexInputStateCreateInfo() {
     return info;
 }
 
-VkPipelineInputAssemblyStateCreateInfo engine::vk::inputAssemblyCreateInfo(VkPrimitiveTopology topology) {
+VkPipelineInputAssemblyStateCreateInfo engine::renderer::vk::inputAssemblyCreateInfo(VkPrimitiveTopology topology) {
     VkPipelineInputAssemblyStateCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     info.pNext = nullptr;
@@ -65,7 +64,7 @@ VkPipelineInputAssemblyStateCreateInfo engine::vk::inputAssemblyCreateInfo(VkPri
     return info;
 }
 
-VkPipelineRasterizationStateCreateInfo engine::vk::rasterizationStateCreateInfo(VkPolygonMode polygonMode)
+VkPipelineRasterizationStateCreateInfo engine::renderer::vk::rasterizationStateCreateInfo(VkPolygonMode polygonMode)
 {
     VkPipelineRasterizationStateCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -90,7 +89,7 @@ VkPipelineRasterizationStateCreateInfo engine::vk::rasterizationStateCreateInfo(
     return info;
 }
 
-VkPipelineMultisampleStateCreateInfo engine::vk::multisamplingStateCreateInfo()
+VkPipelineMultisampleStateCreateInfo engine::renderer::vk::multisamplingStateCreateInfo()
 {
     VkPipelineMultisampleStateCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -106,7 +105,7 @@ VkPipelineMultisampleStateCreateInfo engine::vk::multisamplingStateCreateInfo()
     return info;
 }
 
-VkPipelineColorBlendAttachmentState engine::vk::colorBlendAttachmentState() {
+VkPipelineColorBlendAttachmentState engine::renderer::vk::colorBlendAttachmentState() {
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -114,7 +113,7 @@ VkPipelineColorBlendAttachmentState engine::vk::colorBlendAttachmentState() {
     return colorBlendAttachment;
 }
 
-VkPipelineLayoutCreateInfo engine::vk::pipelineLayoutCreateInfo() {
+VkPipelineLayoutCreateInfo engine::renderer::vk::pipelineLayoutCreateInfo() {
     VkPipelineLayoutCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     info.pNext = nullptr;
@@ -128,7 +127,7 @@ VkPipelineLayoutCreateInfo engine::vk::pipelineLayoutCreateInfo() {
     return info;
 }
 
-VkImageCreateInfo engine::vk::imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {
+VkImageCreateInfo engine::renderer::vk::imageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {
     VkImageCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     info.pNext = nullptr;
@@ -146,7 +145,7 @@ VkImageCreateInfo engine::vk::imageCreateInfo(VkFormat format, VkImageUsageFlags
     return info;
 }
 
-VkImageViewCreateInfo engine::vk::imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags) {
+VkImageViewCreateInfo engine::renderer::vk::imageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags) {
     VkImageViewCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.pNext = nullptr;
@@ -163,7 +162,7 @@ VkImageViewCreateInfo engine::vk::imageViewCreateInfo(VkFormat format, VkImage i
     return info;
 }
 
-VkPipelineDepthStencilStateCreateInfo engine::vk::depthStencilCreateInfo(bool depthTest,
+VkPipelineDepthStencilStateCreateInfo engine::renderer::vk::depthStencilCreateInfo(bool depthTest,
                                                                          bool depthWrite,
                                                                          VkCompareOp compareOp) {
     VkPipelineDepthStencilStateCreateInfo info {};
@@ -181,7 +180,7 @@ VkPipelineDepthStencilStateCreateInfo engine::vk::depthStencilCreateInfo(bool de
     return info;
 }
 
-VkSemaphoreCreateInfo engine::vk::semaphoreCreateInfo() {
+VkSemaphoreCreateInfo engine::renderer::vk::semaphoreCreateInfo() {
     // For the semaphores we don't need any flags
     VkSemaphoreCreateInfo semaphoreCreateInfo = {};
     semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -190,7 +189,7 @@ VkSemaphoreCreateInfo engine::vk::semaphoreCreateInfo() {
     return semaphoreCreateInfo;
 }
 
-VkFenceCreateInfo engine::vk::fenceCreateInfo(VkFenceCreateFlagBits flags) {
+VkFenceCreateInfo engine::renderer::vk::fenceCreateInfo(VkFenceCreateFlagBits flags) {
     VkFenceCreateInfo fenceCreateInfo {};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.pNext = nullptr;
@@ -198,7 +197,7 @@ VkFenceCreateInfo engine::vk::fenceCreateInfo(VkFenceCreateFlagBits flags) {
     return fenceCreateInfo;
 }
 
-VkDescriptorSetLayoutBinding engine::vk::descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding) {
+VkDescriptorSetLayoutBinding engine::renderer::vk::descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding) {
 	VkDescriptorSetLayoutBinding setBind {};
 	setBind.binding = binding;
 	setBind.descriptorCount = 1;
@@ -209,7 +208,7 @@ VkDescriptorSetLayoutBinding engine::vk::descriptorSetLayoutBinding(VkDescriptor
 	return setBind;
 }
 
-VkWriteDescriptorSet engine::vk::writeDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo , uint32_t binding) {
+VkWriteDescriptorSet engine::renderer::vk::writeDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo , uint32_t binding) {
 	VkWriteDescriptorSet write {};
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	write.pNext = nullptr;
@@ -223,7 +222,7 @@ VkWriteDescriptorSet engine::vk::writeDescriptorBuffer(VkDescriptorType type, Vk
 	return write;
 }
 
-VkCommandBufferBeginInfo engine::vk::commandBufferBeginInfo(VkCommandBufferUsageFlagBits flags) {
+VkCommandBufferBeginInfo engine::renderer::vk::commandBufferBeginInfo(VkCommandBufferUsageFlagBits flags) {
     VkCommandBufferBeginInfo cmdBeginInfo {};
     cmdBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     cmdBeginInfo.pNext = nullptr;
@@ -232,7 +231,7 @@ VkCommandBufferBeginInfo engine::vk::commandBufferBeginInfo(VkCommandBufferUsage
     return cmdBeginInfo;
 }
 
-VkSamplerCreateInfo engine::vk::samplerCreateInfo(VkFilter filters, VkSamplerAddressMode samplerAddressMode) {
+VkSamplerCreateInfo engine::renderer::vk::samplerCreateInfo(VkFilter filters, VkSamplerAddressMode samplerAddressMode) {
     VkSamplerCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     info.pNext = nullptr;
@@ -245,7 +244,7 @@ VkSamplerCreateInfo engine::vk::samplerCreateInfo(VkFilter filters, VkSamplerAdd
     return info;
 }
 
-VkWriteDescriptorSet engine::vk::writeDescriptorImage(VkDescriptorType type,
+VkWriteDescriptorSet engine::renderer::vk::writeDescriptorImage(VkDescriptorType type,
                                                       VkDescriptorSet dstSet,
                                                       VkDescriptorImageInfo* imageInfo,
                                                       uint32_t binding) {

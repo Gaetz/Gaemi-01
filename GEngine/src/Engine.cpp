@@ -7,13 +7,13 @@
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 #include <array>
 
-#include "vk/VkInit.h"
+#include "renderer/vk/VkInit.h"
 #include "Timer.h"
 #include "../Log.h"
-#include "vk/PipelineBuilder.h"
+#include "renderer/vk/PipelineBuilder.h"
 #include "math/Transformations.h"
 #include "math/Functions.h"
-#include "Memory.h"
+#include "MemoryManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -35,11 +35,11 @@
 #endif
 
 using engine::Engine;
-using engine::vk::PipelineBuilder;
+using engine::renderer::vk::PipelineBuilder;
 using engine::input::InputState;
-using engine::vk::Vertex;
+using engine::renderer::vk::Vertex;
 using std::array;
-using engine::Memory;
+using engine::MemoryManager;
 
 engine::EngineState Engine::state {};
 
@@ -181,7 +181,7 @@ void Engine::draw() {
 
     // Begin the command buffer recording. We will use this command buffer exactly once,
     // so we want to let Vulkan know that
-    VkCommandBufferBeginInfo cmdBeginInfo = vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    VkCommandBufferBeginInfo cmdBeginInfo = renderer::vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
@@ -374,7 +374,7 @@ void Engine::initSwapchain() {
     // Hardcode depth format to 32 bits float
     depthFormat = VK_FORMAT_D32_SFLOAT;
 
-    VkImageCreateInfo depthImageInfo = vk::imageCreateInfo(depthFormat,
+    VkImageCreateInfo depthImageInfo = renderer::vk::imageCreateInfo(depthFormat,
                                                             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                                                             depthImageExtent);
     // Allocate depth image from local GPU memory
@@ -386,7 +386,7 @@ void Engine::initSwapchain() {
     vmaCreateImage(allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation, nullptr);
 
     // Build an image-view for the depth image to use for rendering
-    VkImageViewCreateInfo depthImageViewInfo = vk::imageViewCreateInfo(depthFormat,
+    VkImageViewCreateInfo depthImageViewInfo = renderer::vk::imageViewCreateInfo(depthFormat,
                                                                        depthImage.image,
                                                                        VK_IMAGE_ASPECT_DEPTH_BIT);
     VK_CHECK(vkCreateImageView(device, &depthImageViewInfo, nullptr, &depthImageView));
@@ -400,14 +400,14 @@ void Engine::initSwapchain() {
 
 void Engine::initCommands() {
     // Command pool
-    auto commandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily,
+    auto commandPoolInfo = renderer::vk::commandPoolCreateInfo(graphicsQueueFamily,
                                                      VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
     for(int i = 0; i < FRAME_OVERLAP; ++i) {
         VK_CHECK(vkCreateCommandPool(device, &commandPoolInfo, nullptr, &frames[i].commandPool));
 
         // Command buffer
-        auto cmdAllocInfo = vk::commandBufferAllocateInfo(frames[i].commandPool, 1);
+        auto cmdAllocInfo = renderer::vk::commandBufferAllocateInfo(frames[i].commandPool, 1);
         VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocInfo, &frames[i].mainCommandBuffer));
         // Cleanup callback
         mainDeletionQueue.pushFunction([=]() {
@@ -416,7 +416,7 @@ void Engine::initCommands() {
     }
 
     // Upload command pool
-    auto uploadCommandPoolInfo = vk::commandPoolCreateInfo(graphicsQueueFamily);
+    auto uploadCommandPoolInfo = renderer::vk::commandPoolCreateInfo(graphicsQueueFamily);
     VK_CHECK(vkCreateCommandPool(device, &uploadCommandPoolInfo, nullptr, &uploadContext.commandPool));
     mainDeletionQueue.pushFunction([=]() {
         vkDestroyCommandPool(device, uploadContext.commandPool, nullptr);
@@ -530,8 +530,8 @@ void Engine::initFramebuffers() {
 
 void Engine::initSyncStructures() {
     // Image fence and semaphores
-    VkFenceCreateInfo fenceCreateInfo = vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
-    VkSemaphoreCreateInfo semaphoreCreateInfo = vk::semaphoreCreateInfo();
+    VkFenceCreateInfo fenceCreateInfo = renderer::vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+    VkSemaphoreCreateInfo semaphoreCreateInfo = renderer::vk::semaphoreCreateInfo();
 
 	for (int i = 0; i < FRAME_OVERLAP; ++i) {
         VK_CHECK(vkCreateFence(device, &fenceCreateInfo, nullptr, &frames[i].renderFence));
@@ -551,7 +551,7 @@ void Engine::initSyncStructures() {
     }
 
 	// Upload fence
-    VkFenceCreateInfo uploadFenceCreateInfo = vk::fenceCreateInfo();
+    VkFenceCreateInfo uploadFenceCreateInfo = renderer::vk::fenceCreateInfo();
     VK_CHECK(vkCreateFence(device, &uploadFenceCreateInfo, nullptr, &uploadContext.uploadFence));
     mainDeletionQueue.pushFunction([=]() {
         vkDestroyFence(device, uploadContext.uploadFence, nullptr);
@@ -651,9 +651,9 @@ void Engine::initDescriptors() {
     // -- UNIFORM BUFFERS for camera and scene --
 
     // Binding for camera data at 0
-    VkDescriptorSetLayoutBinding cameraBufferBinding = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,VK_SHADER_STAGE_VERTEX_BIT, 0);
+    VkDescriptorSetLayoutBinding cameraBufferBinding = renderer::vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,VK_SHADER_STAGE_VERTEX_BIT, 0);
 	// Binding for scene data at 1
-	VkDescriptorSetLayoutBinding sceneBufferBinding = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+	VkDescriptorSetLayoutBinding sceneBufferBinding = renderer::vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 1);
 
     array<VkDescriptorSetLayoutBinding, 2> bindings { cameraBufferBinding, sceneBufferBinding };
 
@@ -670,11 +670,11 @@ void Engine::initDescriptors() {
     });
 
     // Uniform buffer for scene data: two scene params (one for each frame) in same buffer
-    const size_t sceneParamBufferSize = FRAME_OVERLAP * padUniformBufferSize(sizeof(vk::GPUSceneData));
+    const size_t sceneParamBufferSize = FRAME_OVERLAP * padUniformBufferSize(sizeof(renderer::vk::GPUSceneData));
     sceneParamsBuffer = createBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     // -- STORAGE BUFFER for objects --
-    VkDescriptorSetLayoutBinding objectBind = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+    VkDescriptorSetLayoutBinding objectBind = renderer::vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
     VkDescriptorSetLayoutCreateInfo set2Info;
     set2Info.bindingCount = 1;
     set2Info.flags = 0;
@@ -687,7 +687,7 @@ void Engine::initDescriptors() {
     });
 
     // -- SAMPLER for single texture --
-    VkDescriptorSetLayoutBinding textureBind = vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+    VkDescriptorSetLayoutBinding textureBind = renderer::vk::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
     VkDescriptorSetLayoutCreateInfo set3info {};
     set3info.bindingCount = 1;
     set3info.flags = 0;
@@ -701,11 +701,11 @@ void Engine::initDescriptors() {
 
     // -- CREATE BUFFERS FOR EACH FRAMES --
     for(int i = 0; i < FRAME_OVERLAP; ++i) {
-        frames[i].cameraBuffer = createBuffer(sizeof(vk::GPUCameraData),
+        frames[i].cameraBuffer = createBuffer(sizeof(renderer::vk::GPUCameraData),
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
             VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-        frames[i].objectBuffer = createBuffer(sizeof(vk::GPUObjectData) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+        frames[i].objectBuffer = createBuffer(sizeof(renderer::vk::GPUObjectData) * MAX_OBJECTS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
         // Allocate one descriptor for each frame, global set layout
         VkDescriptorSetAllocateInfo allocInfo {};
@@ -732,24 +732,24 @@ void Engine::initDescriptors() {
         // ...at 0 offset
         cameraInfo.offset = 0;
         // ...of the size of camera data struct
-        cameraInfo.range = sizeof(vk::GPUCameraData);
+        cameraInfo.range = sizeof(renderer::vk::GPUCameraData);
 
         // Make the descriptor point into the scene buffer
         VkDescriptorBufferInfo sceneInfo {};
         sceneInfo.buffer = sceneParamsBuffer.buffer;
-        sceneInfo.offset = 0; // For non dynamic buffer, would be: padUniformBufferSize(sizeof(vk::GPUSceneData)) * i;
-        sceneInfo.range = sizeof(vk::GPUSceneData);
+        sceneInfo.offset = 0; // For non dynamic buffer, would be: padUniformBufferSize(sizeof(renderer::vk::GPUSceneData)) * i;
+        sceneInfo.range = sizeof(renderer::vk::GPUSceneData);
 
         // Make the object descriptor point to the object storage buffer
         VkDescriptorBufferInfo objectBufferInfo {};
         objectBufferInfo.buffer = frames[i].objectBuffer.buffer;
         objectBufferInfo.offset = 0;
-        objectBufferInfo.range = sizeof(vk::GPUObjectData) * MAX_OBJECTS;
+        objectBufferInfo.range = sizeof(renderer::vk::GPUObjectData) * MAX_OBJECTS;
 
         // Writes
-        VkWriteDescriptorSet cameraWrite = vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frames[i].globalDescriptor, &cameraInfo, 0);
-        VkWriteDescriptorSet sceneWrite = vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, frames[i].globalDescriptor, &sceneInfo, 1);
-        VkWriteDescriptorSet objectWrite = vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, frames[i].objectDescriptor, &objectBufferInfo, 0);
+        VkWriteDescriptorSet cameraWrite = renderer::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frames[i].globalDescriptor, &cameraInfo, 0);
+        VkWriteDescriptorSet sceneWrite = renderer::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, frames[i].globalDescriptor, &sceneInfo, 1);
+        VkWriteDescriptorSet objectWrite = renderer::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, frames[i].objectDescriptor, &objectBufferInfo, 0);
         array<VkWriteDescriptorSet, 3> setWrites { cameraWrite, sceneWrite, objectWrite };
 
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);
@@ -779,12 +779,12 @@ void Engine::initPipelines() {
     // The pipeline layout that controls the inputs/outputs of the shader
     // We are not using descriptor sets or other systems yet, so no need to use anything other than empty default
     // Pipeline layout for push constants
-    VkPipelineLayoutCreateInfo texturedMeshPipelineLayoutInfo = vk::pipelineLayoutCreateInfo();
+    VkPipelineLayoutCreateInfo texturedMeshPipelineLayoutInfo = renderer::vk::pipelineLayoutCreateInfo();
 
     // Setup push constants
     VkPushConstantRange pushConstant;
     pushConstant.offset = 0;
-    pushConstant.size = sizeof(vk::MeshPushConstants);
+    pushConstant.size = sizeof(renderer::vk::MeshPushConstants);
     pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     texturedMeshPipelineLayoutInfo.pushConstantRangeCount = 1;
@@ -805,13 +805,13 @@ void Engine::initPipelines() {
 
     // Shader stage
     pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
+            renderer::vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
     pipelineBuilder.shaderStages.push_back(
-            vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, defaultLitFragShader));
+            renderer::vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, defaultLitFragShader));
 
     // Vertex input controls how to read vertices from vertex buffers.
-    pipelineBuilder.vertexInputInfo = vk::vertexInputStateCreateInfo();
-    vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
+    pipelineBuilder.vertexInputInfo = renderer::vk::vertexInputStateCreateInfo();
+    renderer::vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
 
     // Connect the pipeline builder vertex input info to the one we get from Vertex
     pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
@@ -820,7 +820,7 @@ void Engine::initPipelines() {
     pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
 
     // Input assembly is the configuration for drawing triangle lists, strips, or individual points.
-    pipelineBuilder.inputAssembly = vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    pipelineBuilder.inputAssembly = renderer::vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
     // Build viewport and scissor from the swapchain extents
     pipelineBuilder.viewport.x = 0.0f;
@@ -834,16 +834,16 @@ void Engine::initPipelines() {
     pipelineBuilder.scissor.extent = windowExtent;
 
     // Configure the rasterizer to draw filled triangles
-    pipelineBuilder.rasterizer = vk::rasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+    pipelineBuilder.rasterizer = renderer::vk::rasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
 
     // Multisampling
-    pipelineBuilder.multisampling = vk::multisamplingStateCreateInfo();
+    pipelineBuilder.multisampling = renderer::vk::multisamplingStateCreateInfo();
 
     // Blend attachments
-    pipelineBuilder.colorBlendAttachment = vk::colorBlendAttachmentState();
+    pipelineBuilder.colorBlendAttachment = renderer::vk::colorBlendAttachmentState();
 
     // Depth Stencil
-    pipelineBuilder.depthStencil = vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+    pipelineBuilder.depthStencil = renderer::vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     // Build pipeline & material
     pipelineBuilder.pipelineLayout = texturedMeshPipelineLayout;
@@ -892,13 +892,13 @@ void Engine::initScene() {
     renderables.push_back(map);
 
     // Textures for lost empire
-    VkSamplerCreateInfo samplerInfo = vk::samplerCreateInfo(VK_FILTER_NEAREST);
+    VkSamplerCreateInfo samplerInfo = renderer::vk::samplerCreateInfo(VK_FILTER_NEAREST);
     VkSampler texSampler;
     vkCreateSampler(device, &samplerInfo, nullptr, &texSampler);
     mainDeletionQueue.pushFunction([=]() {
         vkDestroySampler(device, texSampler, nullptr);
     });
-    vk::Material* texturedMat =	getMaterial("defaultMesh");
+    renderer::vk::Material* texturedMat =	getMaterial("defaultMesh");
 
     // Allocate the descriptor set for single-texture to use on the material
     VkDescriptorSetAllocateInfo allocInfo {};
@@ -914,7 +914,7 @@ void Engine::initScene() {
     imageBufferInfo.sampler = texSampler;
     imageBufferInfo.imageView = textures["empire_diffuse"].imageView;
     imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    VkWriteDescriptorSet texture1 = vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
+    VkWriteDescriptorSet texture1 = renderer::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
     vkUpdateDescriptorSets(device, 1, &texture1, 0, nullptr);
 }
 
@@ -1011,16 +1011,16 @@ void engine::Engine::uploadMesh(Mesh& mesh) {
     vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 }
 
-engine::vk::Material*
+engine::renderer::vk::Material*
 engine::Engine::createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) {
-    engine::vk::Material material {};
+    engine::renderer::vk::Material material {};
     material.pipeline = pipelineP;
     material.pipelineLayout = pipelineLayoutP;
     materials[name] = material;
     return &materials[name];
 }
 
-engine::vk::Material* Engine::getMaterial(const string& name) {
+engine::renderer::vk::Material* Engine::getMaterial(const string& name) {
     auto it = materials.find(name);
     if (it == end(materials)) {
         return nullptr;
@@ -1048,13 +1048,13 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     projection[1][1] *= -1;
 
     // Fill GPUCamera data struct and copy it to the buffer
-    vk::GPUCameraData cameraData {};
+    renderer::vk::GPUCameraData cameraData {};
     cameraData.projection = projection;
     cameraData.view = view;
     cameraData.viewProj = projection * view;
     void* data;
     vmaMapMemory(allocator, getCurrentFrame().cameraBuffer.allocation, &data);
-    memcpy(data, &cameraData, sizeof(vk::GPUCameraData));
+    memcpy(data, &cameraData, sizeof(renderer::vk::GPUCameraData));
     vmaUnmapMemory(allocator, getCurrentFrame().cameraBuffer.allocation);
 
     // Fill GPUSceneData with random ambient color
@@ -1064,14 +1064,14 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
     char* sceneData;
     vmaMapMemory(allocator, sceneParamsBuffer.allocation, (void**)&sceneData);
     unsigned int frameIndex = state.frameNumber % FRAME_OVERLAP;
-	sceneData += padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
-	memcpy(sceneData, &sceneParams, sizeof(vk::GPUSceneData));
+	sceneData += padUniformBufferSize(sizeof(renderer::vk::GPUSceneData)) * frameIndex;
+	memcpy(sceneData, &sceneParams, sizeof(renderer::vk::GPUSceneData));
 	vmaUnmapMemory(allocator, sceneParamsBuffer.allocation);
 
     // Fill storage buffer with object model matrices
     void* objectData;
     vmaMapMemory(allocator, getCurrentFrame().objectBuffer.allocation, &objectData);
-    vk::GPUObjectData* objectSSBO = (vk::GPUObjectData*)objectData;
+    renderer::vk::GPUObjectData* objectSSBO = (renderer::vk::GPUObjectData*)objectData;
     for (int i = 0; i < count; ++i) {
         RenderObject& object = first[i];
         objectSSBO[i].modelMatrix = object.transform;
@@ -1080,7 +1080,7 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
 
     // Draw with push constants
     Mesh* lastMesh = nullptr;
-    vk::Material* lastMaterial = nullptr;
+    renderer::vk::Material* lastMaterial = nullptr;
     for (int i = 0; i < count; ++i) {
         RenderObject& object = first[i];
 
@@ -1091,7 +1091,7 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
 
             // -- CAMERA DESCRIPTOR --
             // Offset for scene data dynamic buffer
-            uint32_t uniformOffset = padUniformBufferSize(sizeof(vk::GPUSceneData)) * frameIndex;
+            uint32_t uniformOffset = padUniformBufferSize(sizeof(renderer::vk::GPUSceneData)) * frameIndex;
             // Bind descriptor set when changing pipeline
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 1, &uniformOffset);
 
@@ -1110,12 +1110,12 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
         }
 
         // Push transform
-        vk::MeshPushConstants constants {};
+        renderer::vk::MeshPushConstants constants {};
         constants.renderMatrix = object.transform;
         vkCmdPushConstants(cmd,
                            object.material->pipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT,
-                           0, sizeof(vk::MeshPushConstants),
+                           0, sizeof(renderer::vk::MeshPushConstants),
                            &constants);
 
         // Bind mesh if mesh is different
@@ -1131,11 +1131,11 @@ void Engine::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count)
 }
 
 void engine::Engine::immediateSubmit(std::function<void(VkCommandBuffer)>&& submittedFunc) {
-    VkCommandBufferAllocateInfo cmdAllocateInfo = vk::commandBufferAllocateInfo(uploadContext.commandPool, 1);
+    VkCommandBufferAllocateInfo cmdAllocateInfo = renderer::vk::commandBufferAllocateInfo(uploadContext.commandPool, 1);
     VkCommandBuffer cmd;
     VK_CHECK(vkAllocateCommandBuffers(device, &cmdAllocateInfo, &cmd));
 
-    VkCommandBufferBeginInfo cmdBeginInfo = vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    VkCommandBufferBeginInfo cmdBeginInfo = renderer::vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
     VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
 
     // Execute function
@@ -1164,10 +1164,10 @@ void engine::Engine::immediateSubmit(std::function<void(VkCommandBuffer)>&& subm
 }
 
 void engine::Engine::loadImages() {
-    vk::Texture lostEmpire {};
+    renderer::vk::Texture lostEmpire {};
     loadImageFromFile("../../assets/lost_empire-RGBA.png", lostEmpire.image);
 
-    VkImageViewCreateInfo imageViewInfo = vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, lostEmpire.image.image, VK_IMAGE_ASPECT_COLOR_BIT);
+    VkImageViewCreateInfo imageViewInfo = renderer::vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, lostEmpire.image.image, VK_IMAGE_ASPECT_COLOR_BIT);
     vkCreateImageView(device, &imageViewInfo, nullptr, &lostEmpire.imageView);
     mainDeletionQueue.pushFunction([=]() {
         vkDestroyImageView(device, lostEmpire.imageView, nullptr);
@@ -1176,7 +1176,7 @@ void engine::Engine::loadImages() {
     textures["empire_diffuse"] = lostEmpire;
 }
 
-bool engine::Engine::loadImageFromFile(const string& path, vk::AllocatedImage& outImage)
+bool engine::Engine::loadImageFromFile(const string& path, renderer::vk::AllocatedImage& outImage)
 {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -1201,8 +1201,8 @@ bool engine::Engine::loadImageFromFile(const string& path, vk::AllocatedImage& o
     imageExtent.height = static_cast<uint32_t>(texHeight);
     imageExtent.depth = 1;
 
-    vk::AllocatedImage newImage {};
-    VkImageCreateInfo imageCreateInfo = vk::imageCreateInfo(imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, imageExtent);
+    renderer::vk::AllocatedImage newImage {};
+    VkImageCreateInfo imageCreateInfo = renderer::vk::imageCreateInfo(imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, imageExtent);
     VmaAllocationCreateInfo imageAllocInfo {};
     imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
