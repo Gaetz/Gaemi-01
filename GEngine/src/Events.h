@@ -11,6 +11,8 @@ using std::array;
 #include <vector>
 using std::vector;
 
+#include "Log.h"
+
 namespace engine {
 
     enum class EventCode {
@@ -19,6 +21,8 @@ namespace engine {
 
         MaxEventCode
     };
+
+    constexpr u16 MAX_EVENT_CODE = 16384;
 
     struct EventContext {
         union {
@@ -55,7 +59,51 @@ namespace engine {
         vector<Subscription> subscriptions {};
     };
 
-    constexpr u16 MAX_EVENT_CODE = 16384;
+    class Events {
+    public:
+        /**
+         * Subscribe to listen events with the provided code.
+         * Events with duplicate listener/callback combo will not be subscribed
+         * and cause this function to return false.
+         * @param code Event code to listen for.
+         * @param listener Listener instance reference.
+         * @param onEvent Callback function to be invoked when the event code is fired.
+         * @returns true when the event is successfully subscribed, false otherwise.
+         */
+        GAPI virtual bool subscribe(EventCode code, void *listener, EventCallback* onEvent) = 0;
+
+        /**
+         * Unsubscribe from to listening to events with the provided code.
+         * If no subscription is found, this function to return false.
+         * @param code Event code to listen for.
+         * @param listener Listener instance reference.
+         * @param onEvent Callback function to be unregistred from.
+         * @returns true when the event is successfully unsubscribed, false otherwise.
+         */
+        GAPI virtual bool unsubscribe(EventCode code, void *listener, EventCallback* onEvent) = 0;
+
+        /**
+         * Fire an event to listeners of the given code. If an event handler returns true,
+         * the event is considered handled and is not passed on to any more listeners.
+         * @param code Code of the event to fire.
+         * @param sender Reference to the sender.
+         * @param context Event data
+         * @return True if handled, otherwise false.
+         */
+        GAPI virtual bool fire(EventCode code, void *sender, EventContext context) = 0;
+    };
+
+    class NullEvents : public Events {
+    private:
+        void placeholderMessage() {
+            LOG(LogLevel::Warning) << "Usage of placeholder memory service.";
+        }
+
+    public:
+        GAPI bool subscribe(EventCode code, void *listener, EventCallback* onEvent) override { placeholderMessage(); return false; }
+        GAPI bool unsubscribe(EventCode code, void *listener, EventCallback* onEvent) override { placeholderMessage(); return false; }
+        GAPI bool fire(EventCode code, void *sender, EventContext context) override { placeholderMessage(); return false; }
+    };
 }
 
 #endif //EVENTS_H

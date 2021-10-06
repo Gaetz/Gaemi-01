@@ -18,7 +18,7 @@
 #include "input/InputSystem.h"
 #include "renderer/vk/DeletionQueue.h"
 #include "MemoryManager.h"
-#include "EventSystem.h"
+#include "EventManager.h"
 
 using std::vector;
 using std::unordered_map;
@@ -34,7 +34,7 @@ using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
 using engine::MemoryManager;
-using engine::EventSystem;
+using engine::EventManager;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -58,7 +58,7 @@ struct EngineState {
     u64 frameNumber { 0 };
     Game* game;
     MemoryManager memoryManager;
-    EventSystem eventSystem;
+    EventManager eventSystem;
 
     // Platform
     #ifdef GPLATFORM_WINDOWS

@@ -3,12 +3,12 @@
 //
 
 #include "GameImpl.h"
-#include <Engine.h>
+#include <Locator.h>
 
 using game::GameImpl;
 
 void GameImpl::load() {
-    engine::Engine::getState().memoryManager.logMemoryUsage();
+    Locator::memory().logMemoryUsage();
 }
 
 void GameImpl::update(u32 dt) {

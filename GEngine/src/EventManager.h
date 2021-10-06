@@ -2,8 +2,8 @@
 // Created by gaetz on 04/10/2021.
 //
 
-#ifndef EVENTSYSTEM_H
-#define EVENTSYSTEM_H
+#ifndef EVENTMANAGER_H
+#define EVENTMANAGER_H
 
 #include "Defines.h"
 #include "Events.h"
@@ -11,10 +11,10 @@
 namespace engine {
 
     // Not multithreaded yet, no priority system yet
-    class EventSystem {
+    class EventManager : public Events {
     public:
-        EventSystem() = default;
-        ~EventSystem() = default;
+        EventManager() = default;
+        ~EventManager() = default;
 
         bool init();
         void close();
@@ -57,4 +57,4 @@ namespace engine {
     };
 }
 
-#endif //EVENTSYSTEM_H
+#endif //EVENTMANAGER_H

@@ -3,21 +3,23 @@
 //
 
 #include <algorithm>
-#include "EventSystem.h"
+#include "EventManager.h"
 #include "Engine.h"
+#include "Locator.h"
 
-using engine::EventSystem;
+using engine::EventManager;
 
-array<engine::EventCodeEntry, engine::MAX_EVENT_CODE> EventSystem::state {};
+array<engine::EventCodeEntry, engine::MAX_EVENT_CODE> EventManager::state {};
 
-bool EventSystem::init() {
+bool EventManager::init() {
     if (isInitialized) return false;
-    Engine::getState().memoryManager.zero(&state, sizeof(state));
+    Locator::memory().zero(&state, sizeof(state));
     isInitialized = true;
+    Locator::provide(this);
     return true;
 }
 
-void EventSystem::close() {
+void EventManager::close() {
     for (u16 i = 0; i < MAX_EVENT_CODE; ++i) {
         if(!state[i].subscriptions.empty()) {
             state[i].subscriptions.clear();
@@ -25,7 +27,7 @@ void EventSystem::close() {
     }
 }
 
-bool engine::EventSystem::subscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
+bool engine::EventManager::subscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
     u16 eventCode = static_cast<u16>(code);
 
     // Check for duplicates
@@ -43,7 +45,7 @@ bool engine::EventSystem::subscribe(engine::EventCode code, void *listener, engi
     return true;
 }
 
-bool engine::EventSystem::unsubscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
+bool engine::EventManager::unsubscribe(engine::EventCode code, void *listener, engine::EventCallback* onEvent) {
     u16 eventCode = static_cast<u16>(code);
     auto& subs = state[eventCode].subscriptions;
     if (subs.empty()) return false;
@@ -67,7 +69,7 @@ bool engine::EventSystem::unsubscribe(engine::EventCode code, void *listener, en
     return isRemoved;
 }
 
-bool engine::EventSystem::fire(engine::EventCode code, void *sender, engine::EventContext context) {
+bool engine::EventManager::fire(engine::EventCode code, void *sender, engine::EventContext context) {
     u16 eventCode = static_cast<u16>(code);
     auto& subs = state[eventCode].subscriptions;
     if (subs.empty()) return false;

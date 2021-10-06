@@ -3,7 +3,7 @@
 #include <iostream>
 #include "Defines.h"
 #include "Asserts.h"
-#include "Engine.h"
+#include "Locator.h"
 
 using engine::Log;
 
@@ -14,7 +14,7 @@ Log::Log() {
 Log::~Log() {
     os << std::endl;
     file << os.str();
-    Engine::getState().platform->consoleWrite(os.str(), logLevel);
+    Locator::platform().consoleWrite(os.str(), logLevel);
     os.clear();
     file.close();
 }
@@ -32,7 +32,7 @@ std::ostringstream& Log::get(LogLevel level) {
     logLevel = static_cast<u32>(level);
 
     char date[19];
-    auto isoDate = Engine::getState().platform->getDate();
+    auto isoDate = Locator::platform().getDate();
     for (int i = 0; i < 19; ++i) {
         date[i] = isoDate[i];
     }

@@ -3,13 +3,13 @@
 //
 
 #include "MemoryManager.h"
-#include "Log.h"
-#include "Engine.h"
+#include "Locator.h"
 
 using engine::MemoryManager;
 
 void MemoryManager::init(Platform* platformP) {
     platform = platformP;
+    Locator::provide(this);
 }
 
 void MemoryManager::close() {
@@ -39,7 +39,7 @@ void MemoryManager::free(void *block, u64 size, MemoryTag tag) {
     totalAllocated -= size;
     taggedAllocations[static_cast<i32>(tag)] -= size;
     // Free memory
-    Engine::getState().platform->free(block, false);
+    Locator::platform().free(block, false);
 }
 
 void *MemoryManager::zero(void *block, u64 size) {

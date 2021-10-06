@@ -2,18 +2,15 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
-#include <SDL2/SDL.h>
 #include <fstream>
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 #include <array>
 
 #include "renderer/vk/VkInit.h"
 #include "Timer.h"
-#include "../Log.h"
 #include "renderer/vk/PipelineBuilder.h"
 #include "math/Transformations.h"
 #include "math/Functions.h"
-#include "MemoryManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -42,10 +39,6 @@ using std::array;
 using engine::MemoryManager;
 
 engine::EngineState Engine::state {};
-
-engine::EngineState& Engine::getState() {
-    return state;
-}
 
 GAPI Engine::Engine(const EngineConfig& configP) :
     config { configP },
@@ -84,9 +77,7 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     state.memoryManager.addAllocated(sizeOfGameClass, MemoryTag::Game);
     state.eventSystem.init();
     inputSystem.init();
-
     state.eventSystem.subscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
-
     state.isInitialized = true;
 
     initVulkan();

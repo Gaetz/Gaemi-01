@@ -1,6 +1,7 @@
 #include "PlatformWin.h"
 #include "../input/ControllerState.h"
 #include "../Log.h"
+#include "../Locator.h"
 #include <array>
 #include <time.h>
 
@@ -14,6 +15,7 @@ PlatformWin::~PlatformWin() {
 
 bool PlatformWin::init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) {
     SDL_Init(SDL_INIT_VIDEO);
+    Locator::provide(this);
     return window.init(x, y, width, height, false);
 }
 
