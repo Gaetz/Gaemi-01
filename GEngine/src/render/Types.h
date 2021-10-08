@@ -7,7 +7,7 @@
 
 #include "../Defines.h"
 
-namespace engine::renderer {
+namespace engine::render {
 
     enum class RendererBackendType {
         Vulkan,
@@ -16,11 +16,8 @@ namespace engine::renderer {
         DirectX11
     };
 
-    class RendererBackend {
-    public:
-
-    private:
-        Platform* platform;
+    struct RenderPacket {
+        u32 dt;
     };
 
 }

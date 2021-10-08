@@ -5,7 +5,7 @@
 #include "PipelineBuilder.h"
 #include "../../Log.h"
 
-using engine::renderer::vk::PipelineBuilder;
+using engine::render::vk::PipelineBuilder;
 
 VkPipeline PipelineBuilder::buildPipeline(VkDevice device, VkRenderPass pass) {
     // Make viewport state from our stored viewport and scissor.

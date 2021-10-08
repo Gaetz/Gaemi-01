@@ -9,13 +9,14 @@
 using std::string;
 
 #include <array>
-#include "../Log.h"
-
 using std::array;
 
 #include "../Defines.h"
-#include "../input/KeyboardState.h"
-#include "../input/ControllerState.h"
+#include "../Log.h"
+
+namespace engine::input {
+    enum class ControllerAxis;
+}
 
 namespace engine::platforms {
 

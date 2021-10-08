@@ -13,12 +13,13 @@
 
 #include "Defines.h"
 #include "Game.h"
-#include "renderer/vk/RenderObject.h"
+#include "render/vk/RenderObject.h"
 #include "platforms/PlatformWin.h"
 #include "input/InputSystem.h"
-#include "renderer/vk/DeletionQueue.h"
+#include "render/vk/DeletionQueue.h"
 #include "MemoryManager.h"
 #include "EventManager.h"
+#include "render/RendererFrontEnd.h"
 
 using std::vector;
 using std::unordered_map;
@@ -27,14 +28,15 @@ using std::unique_ptr;
 using std::make_unique;
 
 using engine::input::InputSystem;
-using engine::renderer::vk::DeletionQueue;
-using engine::renderer::vk::Mesh;
-using engine::renderer::vk::RenderObject;
+using engine::render::vk::DeletionQueue;
+using engine::render::vk::Mesh;
+using engine::render::vk::RenderObject;
 using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
 using engine::MemoryManager;
 using engine::EventManager;
+using engine::render::RendererFrontEnd;
 
 // Buffer this number of frames when rendering
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -71,14 +73,13 @@ struct EngineState {
 
 class Engine {
 private:
-    static EngineState state;
+    EngineState state;
     EngineConfig config;
+    RendererFrontEnd renderer;
 
 public:
     GAPI explicit Engine(const EngineConfig& configP);
     GAPI ~Engine() = default;
-
-    GAPI static EngineState& getState();
 
     VkExtent2D windowExtent;
     InputSystem inputSystem;
@@ -146,7 +147,7 @@ public:
 
     VkRenderPass renderPass;
     vector<VkFramebuffer> framebuffers;
-    array<renderer::vk::FrameData, FRAME_OVERLAP> frames;
+    array<render::vk::FrameData, FRAME_OVERLAP> frames;
 
     // Pipeline
 
@@ -161,13 +162,13 @@ public:
     // Meshes
 
     vector<RenderObject> renderables;
-    unordered_map<string, renderer::vk::Material> materials;
+    unordered_map<string, render::vk::Material> materials;
     unordered_map<string, Mesh> meshes;
 
     // Depth
 
     VkImageView depthImageView;
-    renderer::vk::AllocatedImage depthImage;
+    render::vk::AllocatedImage depthImage;
     VkFormat depthFormat;
 
     // Descriptor sets
@@ -179,16 +180,16 @@ public:
 
     // Scene data
 
-    renderer::vk::GPUSceneData sceneParams;
+    render::vk::GPUSceneData sceneParams;
     AllocatedBuffer sceneParamsBuffer;
 
     // Transfer and textures
 
-    renderer::vk::UploadContext uploadContext;
-    unordered_map<string, renderer::vk::Texture> textures;
+    render::vk::UploadContext uploadContext;
+    unordered_map<string, render::vk::Texture> textures;
 
     // Get the frame we are rendering right now
-    renderer::vk::FrameData& getCurrentFrame() { return frames[state.frameNumber % FRAME_OVERLAP]; }
+    render::vk::FrameData& getCurrentFrame() { return frames[state.frameNumber % FRAME_OVERLAP]; }
 
     // Create a vulkan buffer
     AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
@@ -221,11 +222,11 @@ private:
 
     void loadMeshes();
     void uploadMesh(Mesh& mesh);
-    renderer::vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
-    renderer::vk::Material* getMaterial(const string& name);
+    render::vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
+    render::vk::Material* getMaterial(const string& name);
     Mesh* getMesh(const string& name);
     void loadImages();
-    bool loadImageFromFile(const string& path, renderer::vk::AllocatedImage& outImage);
+    bool loadImageFromFile(const string& path, render::vk::AllocatedImage& outImage);
 
     // Draw & commands
 

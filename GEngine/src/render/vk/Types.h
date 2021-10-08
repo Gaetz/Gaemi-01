@@ -12,7 +12,7 @@
 using engine::math::Vec4;
 using engine::math::Mat4;
 
-namespace engine::renderer::vk {
+namespace engine::render::vk {
 
 struct AllocatedBuffer {
     VkBuffer buffer;

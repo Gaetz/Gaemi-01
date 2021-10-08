@@ -16,7 +16,7 @@ namespace engine::platforms {
 class PlatformWin : public Platform {
 public:
     PlatformWin() = default;
-    ~PlatformWin() override;
+    ~PlatformWin() override = default;
 
     bool init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) override;
     void update(u32 dt) override;

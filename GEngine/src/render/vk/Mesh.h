@@ -12,11 +12,11 @@
 
 using std::string;
 using std::vector;
-using engine::renderer::vk::AllocatedBuffer;
+using engine::render::vk::AllocatedBuffer;
 using engine::math::Vec3;
 using engine::math::Vec2;
 
-namespace engine::renderer::vk {
+namespace engine::render::vk {
 
 struct VertexInputDescription {
     vector<VkVertexInputBindingDescription> bindings;

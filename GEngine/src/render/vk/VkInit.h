@@ -14,7 +14,7 @@ namespace engine {
 class Engine;
 }
 
-namespace engine::renderer::vk {
+namespace engine::render::vk {
 
     // Create a command pool for commands submitted to the graphics queue.
     VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex,

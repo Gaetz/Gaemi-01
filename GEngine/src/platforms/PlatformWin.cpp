@@ -1,6 +1,5 @@
 #include "PlatformWin.h"
 #include "../input/ControllerState.h"
-#include "../Log.h"
 #include "../Locator.h"
 #include <array>
 #include <time.h>
@@ -8,10 +7,6 @@
 using std::array;
 
 using engine::platforms::PlatformWin;
-
-PlatformWin::~PlatformWin() {
-
-}
 
 bool PlatformWin::init(const string& applicationName, i32 x, i32 y, i32 width, i32 height) {
     SDL_Init(SDL_INIT_VIDEO);

@@ -8,7 +8,7 @@
 #include <functional>
 #include <deque>
 
-namespace engine::renderer::vk {
+namespace engine::render::vk {
     struct DeletionQueue {
         std::deque<std::function<void()>> deletors;
 

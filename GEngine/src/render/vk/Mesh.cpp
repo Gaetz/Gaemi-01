@@ -7,9 +7,9 @@
 #include "Mesh.h"
 #include "../../Log.h"
 
-using engine::renderer::vk::VertexInputDescription;
-using engine::renderer::vk::Vertex;
-using engine::renderer::vk::Mesh;
+using engine::render::vk::VertexInputDescription;
+using engine::render::vk::Vertex;
+using engine::render::vk::Mesh;
 
 VertexInputDescription Vertex::getVertexDescription() {
     VertexInputDescription description;
