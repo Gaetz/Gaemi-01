@@ -12,7 +12,7 @@ enum class ButtonState;
 
 namespace engine::input {
 class KeyboardState {
-    friend class InputSystem;
+    friend class InputManager;
 
 public:
     bool getKeyValue(SDL_Scancode key) const;

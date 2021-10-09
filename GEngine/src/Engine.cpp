@@ -11,6 +11,7 @@
 #include "render/vk/PipelineBuilder.h"
 #include "math/Transformations.h"
 #include "math/Functions.h"
+#include "mem/MemoryManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -36,7 +37,8 @@ using engine::render::vk::PipelineBuilder;
 using engine::input::InputState;
 using engine::render::vk::Vertex;
 using std::array;
-using engine::MemoryManager;
+using engine::mem::MemoryManager;
+using engine::mem::MemoryTag;
 
 GAPI Engine::Engine(const EngineConfig& configP) :
     config { configP },
@@ -70,18 +72,36 @@ void Engine::run() {
 
 void Engine::init(Game& game, u64 sizeOfGameClass) {
     state.game = &game;
+
     bool platformIgnited = state.platform->init(config.name, config.startPositionX, config.startPositionY, config.startWidth, config.startHeight);
+    if (platformIgnited) {
+        LOG(LogLevel::Trace) << "Platform initialized";
+    }
+
     state.memoryManager.init(state.platform);
     state.memoryManager.addAllocated(sizeOfGameClass, MemoryTag::Game);
+
     bool rendererIgnited = renderer.init(config.name);
+    if (rendererIgnited) {
+        LOG(LogLevel::Trace) << "Renderer initialized";
+    }
+
     bool eventsIgnited = state.eventSystem.init();
-    bool inputsIngnited = inputSystem.init();
+    if (eventsIgnited) {
+        LOG(LogLevel::Trace) << "Events initialized";
+    }
     state.eventSystem.subscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
-    state.isInitialized = true;//platformIgnited && rendererIgnited && eventsIgnited && inputsIngnited;
+
+    bool inputsIngnited = inputSystem.init();
+    if (inputsIngnited) {
+        LOG(LogLevel::Trace) << "Inputs initialized";
+    }
+
+    state.isInitialized = platformIgnited && rendererIgnited && eventsIgnited && inputsIngnited;
 
     if(!state.isInitialized) {
         LOG(LogLevel::Fatal) << "Subsystem not initialized. Application will shut down.";
-        //renderer.close();
+        renderer.close();
         state.eventSystem.unsubscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
         state.game->close();
         inputSystem.close();
@@ -110,7 +130,7 @@ void Engine::close() {
     if (state.isInitialized) {
         cleanupVulkan();
 
-        //renderer.close();
+        renderer.close();
         state.eventSystem.unsubscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
         state.game->close();
         inputSystem.close();
@@ -120,6 +140,7 @@ void Engine::close() {
     }
 }
 
+// TODO Get rid of SDL for inputs, move it to platform
 InputState engine::Engine::processInputs() {
     inputSystem.preUpdate();
     SDL_Event event;

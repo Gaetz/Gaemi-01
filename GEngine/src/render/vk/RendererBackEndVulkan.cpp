@@ -7,7 +7,7 @@
 using engine::render::RendererBackEndVulkan;
 
 bool RendererBackEndVulkan::init(const string& appName) {
-    return false;
+    return true;
 }
 
 void RendererBackEndVulkan::close() {
@@ -15,9 +15,9 @@ void RendererBackEndVulkan::close() {
 }
 
 bool RendererBackEndVulkan::beginFrame(u32 dt) {
-    return false;
+    return true;
 }
 
 bool RendererBackEndVulkan::endFrame(u32 dt) {
-    return false;
+    return true;
 }

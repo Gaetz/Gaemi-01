@@ -3,7 +3,7 @@
 //
 
 #include "KeyboardState.h"
-#include "InputSystem.h"
+#include "InputManager.h"
 
 using engine::input::KeyboardState;
 

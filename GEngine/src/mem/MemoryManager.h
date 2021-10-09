@@ -8,12 +8,14 @@
 #include <array>
 using std::array;
 
-#include "platforms/Platform.h"
-#include "Defines.h"
+#include "../platforms/Platform.h"
+#include "../Defines.h"
 #include "MemoryTag.h"
 #include "Memory.h"
 
-namespace engine {
+// TODO Replace with C++ custom allocator and heap management system
+
+namespace engine::mem {
 
     struct MemoryQuantity {
         float amount { 1.0f };
@@ -51,13 +53,13 @@ namespace engine {
     private:
         platforms::Platform* platform { nullptr };
         u64 totalAllocated { 0 };
-        array<u64, MEMORY_TAG_MAX> taggedAllocations {};
+        std::array<u64, MEMORY_TAG_MAX> taggedAllocations {};
 
         std::string memoryTagToString(i32 i);
         MemoryQuantity computeUnitAndAmount(u64 size);
     };
-
 }
+
 
 
 #endif //MEMORY_MANAGER_H

@@ -3,7 +3,7 @@
 //
 
 #include "ControllerState.h"
-#include "InputSystem.h"
+#include "InputManager.h"
 
 using engine::input::ControllerState;
 

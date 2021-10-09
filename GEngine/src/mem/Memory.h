@@ -7,7 +7,8 @@
 
 #include "MemoryTag.h"
 
-namespace engine {
+
+namespace engine::mem {
 
     class Memory {
     public:
@@ -56,9 +57,11 @@ namespace engine {
 
     private:
         void placeholderMessage() {
-            LOG(LogLevel::Warning) << "Usage of placeholder memory service.";
+            LOG(Warning) << "Usage of placeholder memory service.";
         }
     };
 }
+
+
 
 #endif //MEMORY_H

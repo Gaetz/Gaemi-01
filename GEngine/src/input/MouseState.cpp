@@ -4,7 +4,7 @@
 
 #include "MouseState.h"
 #include <SDL2/SDL_mouse.h>
-#include "InputSystem.h"
+#include "InputManager.h"
 #include "../Locator.h"
 
 using engine::input::MouseState;

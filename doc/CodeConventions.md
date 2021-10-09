@@ -21,7 +21,7 @@ Implement const-correctness.
 ## Code
 ### Names
 - namespaces use a single word in minus. E.g.: `engine`
-- Classes use PascalCasing. E.g.: `InputSystem`
+- Classes use PascalCasing. E.g.: `InputManager`
 - functions use camelCasing. E.g.: `processInput()`
 - variables and function parameters use camelCasing. E.g.: `isCursorDisplayed`
 - Let libraries break code name conventions. No need to wrap them.

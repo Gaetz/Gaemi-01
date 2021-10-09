@@ -3,9 +3,9 @@
 //
 
 #include "MemoryManager.h"
-#include "Locator.h"
+#include "../Locator.h"
 
-using engine::MemoryManager;
+using engine::mem::MemoryManager;
 
 void MemoryManager::init(Platform* platformP) {
     platform = platformP;
@@ -88,17 +88,17 @@ std::string MemoryManager::memoryTagToString(i32 i) {
     }
 }
 
-void MemoryManager::addAllocated(u64 size, engine::MemoryTag tag) {
+void MemoryManager::addAllocated(u64 size, MemoryTag tag) {
     totalAllocated += size;
     taggedAllocations[static_cast<i32>(tag)] += size;
 }
 
-engine::MemoryQuantity engine::MemoryManager::computeUnitAndAmount(u64 size) {
+engine::mem::MemoryQuantity MemoryManager::computeUnitAndAmount(u64 size) {
     const u64 gb = 1024 * 1024 * 1024;
     const u64 mb = 1024 * 1024;
     const u64 kb = 1024;
 
-    MemoryQuantity mem;
+    engine::mem::MemoryQuantity mem;
     if (size >= gb) {
         mem.unit[0] = 'G';
         mem.amount = (float)size / (float)gb;

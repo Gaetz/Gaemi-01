@@ -6,7 +6,7 @@
 #define GAME_H
 
 #include "Defines.h"
-#include "input/InputSystem.h"
+#include "input/InputManager.h"
 
 using engine::input::InputState;
 

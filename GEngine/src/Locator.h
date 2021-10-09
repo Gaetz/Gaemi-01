@@ -6,11 +6,12 @@
 #define LOCATOR_H
 
 #include "platforms/Platform.h"
-#include "Memory.h"
+#include "mem/Memory.h"
 #include "Events.h"
+#include "Memory.h"
 
-using engine::Memory;
-using engine::NullMemory;
+using engine::mem::Memory;
+using engine::mem::NullMemory;
 using engine::platforms::Platform;
 using engine::platforms::NullPlatform;
 using engine::Events;
@@ -27,10 +28,10 @@ public:
     static void init();
 
     GAPI static Platform& platform() { return *platformService; };
-    GAPI static Memory& memory() { return *memoryService; };
+    GAPI static engine::mem::Memory& memory() { return *memoryService; };
     GAPI static Events& events() { return *eventsService; };
 
-    static void provide(Memory* service);
+    static void provide(engine::mem::Memory* service);
     static void provide(Platform* service);
     static void provide(Events* service);
 
@@ -38,8 +39,8 @@ private:
     static Platform* platformService;
     static NullPlatform nullPlatformService;
 
-    static Memory* memoryService;
-    static NullMemory nullMemoryService;
+    static engine::mem::Memory* memoryService;
+    static engine::mem::NullMemory nullMemoryService;
 
     static Events* eventsService;
     static NullEvents nullEventsService;

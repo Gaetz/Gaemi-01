@@ -15,9 +15,9 @@
 #include "Game.h"
 #include "render/vk/RenderObject.h"
 #include "platforms/PlatformWin.h"
-#include "input/InputSystem.h"
+#include "input/InputManager.h"
 #include "render/vk/DeletionQueue.h"
-#include "MemoryManager.h"
+#include "mem/MemoryManager.h"
 #include "EventManager.h"
 #include "render/RendererFrontEnd.h"
 
@@ -27,14 +27,14 @@ using std::array;
 using std::unique_ptr;
 using std::make_unique;
 
-using engine::input::InputSystem;
+using engine::input::InputManager;
 using engine::render::vk::DeletionQueue;
 using engine::render::vk::Mesh;
 using engine::render::vk::RenderObject;
 using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
-using engine::MemoryManager;
+using engine::mem::MemoryManager;
 using engine::EventManager;
 using engine::render::RendererFrontEnd;
 
@@ -82,7 +82,7 @@ public:
     GAPI ~Engine() = default;
 
     VkExtent2D windowExtent;
-    InputSystem inputSystem;
+    InputManager inputSystem;
 
     // Initializes everything in the engine
     void init(Game& game, u64 sizeOfGameClass);

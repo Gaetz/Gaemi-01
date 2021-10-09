@@ -28,10 +28,10 @@ struct InputState {
     ControllerState controller;
 };
 
-class InputSystem {
+class InputManager {
 public:
-    InputSystem(u32 windowWidthP, u32 windowHeightP);
-    InputSystem() = delete;
+    InputManager(u32 windowWidthP, u32 windowHeightP);
+    InputManager() = delete;
 
     bool init();
 

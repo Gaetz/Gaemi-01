@@ -5,7 +5,7 @@
 #ifndef MEMORYTAG_H
 #define MEMORYTAG_H
 
-namespace engine {
+namespace engine::mem {
 
     enum class MemoryTag {
         Unknown,

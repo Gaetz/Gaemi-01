@@ -2,21 +2,20 @@
 // Created by gaetz on 12/06/2021.
 //
 
-#include "InputSystem.h"
+#include "InputManager.h"
 #include "../math/Functions.h"
 #include "../Engine.h"
-#include "../Log.h"
 #include "../Locator.h"
 
-using engine::input::InputSystem;
+using engine::input::InputManager;
 
-InputSystem::InputSystem(u32 windowWidthP, u32 windowHeightP) :
+InputManager::InputManager(u32 windowWidthP, u32 windowHeightP) :
         windowWidth {windowWidthP},
         windowHeight {windowHeightP} {
 
 }
 
-bool InputSystem::init() {
+bool InputManager::init() {
     auto& memory = Locator::memory();
     auto& platform = Locator::platform();
     // Keyboard
@@ -41,13 +40,13 @@ bool InputSystem::init() {
     return true;
 }
 
-void InputSystem::close() {
+void InputManager::close() {
     if (controllerPtr != nullptr) {
         Locator::platform().inputControllerClose(controllerPtr);
     }
 }
 
-void InputSystem::processEvent(SDL_Event& event) {
+void InputManager::processEvent(SDL_Event& event) {
     switch (event.type) {
         case SDL_QUIT:
             Locator::events().fire(EventCode::ApplicationQuit, nullptr, {});
@@ -62,7 +61,7 @@ void InputSystem::processEvent(SDL_Event& event) {
     }
 }
 
-void InputSystem::preUpdate() {
+void InputManager::preUpdate() {
     auto& platform = Locator::platform();
     auto& memory = Locator::memory();
     // Copy current state to previous
@@ -77,7 +76,7 @@ void InputSystem::preUpdate() {
     memory.copy(inputState.controller.previousButtons, inputState.controller.currentButtons, maxControllerButton);
 }
 
-void InputSystem::update() {
+void InputManager::update() {
     auto& platform = Locator::platform();
     // Mouse
     i32 x = 0, y = 0;
@@ -118,17 +117,17 @@ void InputSystem::update() {
     inputState.controller.rightStick = filter2D(x, y);
 }
 
-void InputSystem::setMouseCursor(bool isCursorDisplayedP) {
+void InputManager::setMouseCursor(bool isCursorDisplayedP) {
     isCursorDisplayed = isCursorDisplayedP;
     Locator::platform().inputMouseShowCursor(isCursorDisplayed);
 }
 
-void InputSystem::setMouseRelativeMode(bool isMouseRelativeOnP) {
+void InputManager::setMouseRelativeMode(bool isMouseRelativeOnP) {
     Locator::platform().inputMouseSetRelativeMode(isMouseRelativeOnP);
     inputState.mouse.isRelativeMode = isMouseRelativeOnP;
 }
 
-float InputSystem::filter1D(i32 input) {
+float InputManager::filter1D(i32 input) {
     const i32 deadZone = CONTROLLER_DEAD_ZONE_1D;
     const i32 maxValue = CONTROLLER_MAX_VALUE;
     f32 retVal = 0.0f;
@@ -146,7 +145,7 @@ float InputSystem::filter1D(i32 input) {
     return retVal;
 }
 
-Vec2 InputSystem::filter2D(i32 inputX, i32 inputY) {
+Vec2 InputManager::filter2D(i32 inputX, i32 inputY) {
     const float deadZone = CONTROLLER_DEAD_ZONE_2D;
     const float maxValue = CONTROLLER_MAX_VALUE;
 

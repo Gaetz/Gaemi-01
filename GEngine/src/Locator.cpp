@@ -3,6 +3,7 @@
 //
 
 #include "Locator.h"
+#include "Memory.h"
 
 Memory* Locator::memoryService {nullptr};
 Platform* Locator::platformService {nullptr};

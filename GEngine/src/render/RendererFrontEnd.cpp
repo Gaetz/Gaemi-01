@@ -3,14 +3,17 @@
 //
 
 #include "RendererFrontEnd.h"
-#include "../Locator.h"
 #include "vk/RendererBackEndVulkan.h"
+#include "../Locator.h"
+
 
 using engine::render::RendererFrontEnd;
+using engine::mem::MemoryTag;
 
 bool RendererFrontEnd::init(const string &appName) {
     // TODO Make the renderer type configurable
-    backEnd = static_cast<RendererBackEndVulkan*>(Locator::memory().allocate(sizeof(RendererBackEndVulkan), engine::MemoryTag::Renderer));
+    //backEnd = static_cast<RendererBackEndVulkan*>(Locator::memory().allocate(sizeof(RendererBackEndVulkan), MemoryTag::Renderer));
+    backEnd = new RendererBackEndVulkan();
 
     if (!backEnd->init(appName)) {
         LOG(engine::LogLevel::Fatal) << "Renderer backend failed to initialize, shutting down.";
@@ -22,7 +25,8 @@ bool RendererFrontEnd::init(const string &appName) {
 void RendererFrontEnd::close() {
     backEnd->close();
     // TODO Make the renderer type configurable
-    Locator::memory().free(backEnd, sizeof(RendererBackEndVulkan), engine::MemoryTag::Renderer);
+    //Locator::memory().free(backEnd, sizeof(RendererBackEndVulkan), MemoryTag::Renderer);
+    delete backEnd;
 }
 
 bool RendererFrontEnd::beginFrame(u32 dt) {

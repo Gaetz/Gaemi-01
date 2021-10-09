@@ -13,7 +13,7 @@ enum class ButtonState;
 
 namespace engine::input {
 class MouseState {
-    friend class InputSystem;
+    friend class InputManager;
 
 public:
     const Vec2 &getPosition() const { return position; }

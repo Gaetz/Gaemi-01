@@ -58,7 +58,7 @@ namespace engine::input {
 
     class ControllerState {
     public:
-        friend class InputSystem;
+        friend class InputManager;
 
         ControllerState() = default;
 
