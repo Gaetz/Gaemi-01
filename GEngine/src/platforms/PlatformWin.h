@@ -50,6 +50,8 @@ public:
     void inputMouseShowCursor(bool show) override;
     void inputMouseSetRelativeMode(bool isRelative) override;
 
+    void rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR* surface) override;
+
 protected:
     Window window { "Gaemi-01" };
 

@@ -52,7 +52,7 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     windowExtent.width = width;
     windowExtent.height = height;
 
-    initVulkan();
+    initVulkan(appName);
     initSwapchain();
     initCommands();
     initDefaultRenderpass();
@@ -118,7 +118,6 @@ bool RendererBackEndVulkan::beginFrame(u32 dt) {
     vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // -- DRAW HERE --
-    //game.draw();
     drawObjects(cmd, renderables.data(), renderables.size());
 
     // Finalize the render pass
@@ -168,17 +167,43 @@ void RendererBackEndVulkan::resize() {
 
 }
 
+engine::LogLevel vkSeverityToLogLevel(VkDebugUtilsMessageSeverityFlagBitsEXT severity) {
+    switch (severity) {
+        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+            return engine::LogLevel::Trace;
+        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            return engine::LogLevel::Error;
+        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            return engine::LogLevel::Warning;
+        case VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            return engine::LogLevel::Info;
+        default:
+            return engine::LogLevel::Trace;
+    }
+}
 
-void RendererBackEndVulkan::initVulkan() {
+void RendererBackEndVulkan::initVulkan(const string& appName) {
     // -- INSTANCE --
     vkb::InstanceBuilder builder;
 
 #ifdef _DEBUG
     // Make vulkan instance with basic debug features
-    auto instanceResult = builder.set_app_name("Gaemi")
+    auto instanceResult = builder.set_app_name(appName.c_str())
             .request_validation_layers(true)
             .require_api_version(1, 1, 0)
-            .use_default_debug_messenger()
+            .set_debug_callback (
+                    [] (VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                        VkDebugUtilsMessageTypeFlagsEXT messageType,
+                        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                        void *pUserData)
+                            -> VkBool32 {
+                        auto severity = vkb::to_string_message_severity (messageSeverity);
+                        auto type = vkb::to_string_message_type (messageType);
+                        LOG(vkSeverityToLogLevel(messageSeverity)) << "VK[" << type << "] " << pCallbackData->pMessage;
+                        //printf ("[%s: %s] %s\n", severity, type, pCallbackData->pMessage);
+                        return VK_FALSE;
+                    }
+            )
             .build();
     vkb::Instance vkbInstance = instanceResult.value();
     instance = vkbInstance.instance;
@@ -195,8 +220,8 @@ void RendererBackEndVulkan::initVulkan() {
 #endif
 
     // -- DEVICE --
-    // get the surface of the window we opened with SDL
-    SDL_Vulkan_CreateSurface((SDL_Window*)platform->getScreenSurface(), instance, &surface);
+    // Setup the surface
+    platform->rendererSetupVulkanSurface(instance, &surface);
 
     // Use VkBootstrap to select a GPU.
     // We want a GPU that can write to the SDL surface and supports Vulkan 1.1
@@ -204,6 +229,7 @@ void RendererBackEndVulkan::initVulkan() {
     vkb::PhysicalDevice physicalDevice = selector
             .set_minimum_version(1, 1)
             .set_surface(surface)
+            .prefer_gpu_device_type(vkb::PreferredDeviceType::discrete)
             .select()
             .value();
 

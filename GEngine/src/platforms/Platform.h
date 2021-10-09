@@ -9,6 +9,8 @@
 using std::string;
 
 #include <array>
+#include <vulkan/vulkan_core.h>
+
 using std::array;
 
 #include "../Defines.h"
@@ -55,6 +57,8 @@ namespace engine::platforms {
         virtual u32 inputMouseGetState(i32& x, i32& y) = 0;
         virtual void inputMouseShowCursor(bool show) = 0;
         virtual void inputMouseSetRelativeMode(bool show) = 0;
+
+        virtual void rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR* surface) = 0;
     };
 
     class NullPlatform : public Platform {
@@ -89,6 +93,8 @@ namespace engine::platforms {
         u32 inputMouseGetState(i32& x, i32& y) override { placeholderMessage(); return 0; }
         void inputMouseShowCursor(bool show) override { placeholderMessage(); }
         void inputMouseSetRelativeMode(bool show) override { placeholderMessage(); }
+
+        void rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR *surface) override { placeholderMessage(); }
 
     private:
         void placeholderMessage() {

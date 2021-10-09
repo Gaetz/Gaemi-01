@@ -3,6 +3,7 @@
 #include "../Locator.h"
 #include <array>
 #include <time.h>
+#include <SDL2/SDL_vulkan.h>
 
 using std::array;
 
@@ -152,5 +153,9 @@ void engine::platforms::PlatformWin::inputMouseSetRelativeMode(bool isRelative) 
     } else {
         SDL_SetRelativeMouseMode(SDL_FALSE);
     }
+}
+
+void engine::platforms::PlatformWin::rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR *surface) {
+    SDL_Vulkan_CreateSurface((SDL_Window*)getScreenSurface(), instance, surface);
 }
 
