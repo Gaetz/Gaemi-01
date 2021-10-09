@@ -41,7 +41,7 @@ namespace engine::platforms {
 
         virtual u64 getAbsoluteTimeMs() = 0;
         virtual f64 getAbsoluteTimeSeconds() = 0;
-        virtual void sleep(u32 ms) = 0;
+        virtual void sleep(u64 ms) = 0;
         virtual array<char, 19> getDate() = 0;
 
         virtual const u8* inputKeyboardGetState(i32* keys) = 0;
@@ -75,7 +75,7 @@ namespace engine::platforms {
 
         u64 getAbsoluteTimeMs() override { placeholderMessage(); return 0; }
         f64 getAbsoluteTimeSeconds() override { placeholderMessage(); return 0; }
-        void sleep(u32 ms) override { placeholderMessage(); }
+        void sleep(u64 ms) override { placeholderMessage(); }
         array<char, 19> getDate() override { placeholderMessage(); return {}; }
 
         const u8* inputKeyboardGetState(i32* keys) override { placeholderMessage(); return nullptr; }

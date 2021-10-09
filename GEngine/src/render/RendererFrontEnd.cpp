@@ -10,12 +10,12 @@
 using engine::render::RendererFrontEnd;
 using engine::mem::MemoryTag;
 
-bool RendererFrontEnd::init(const string &appName) {
+bool RendererFrontEnd::init(const string &appName, u16 width, u16 height) {
     // TODO Make the renderer type configurable
     //backEnd = static_cast<RendererBackEndVulkan*>(Locator::memory().allocate(sizeof(RendererBackEndVulkan), MemoryTag::Renderer));
-    backEnd = new RendererBackEndVulkan();
+    backEnd = static_cast<RendererBackEnd *>(new vk::RendererBackEndVulkan());
 
-    if (!backEnd->init(appName)) {
+    if (!backEnd->init(appName, width, height)) {
         LOG(engine::LogLevel::Fatal) << "Renderer backend failed to initialize, shutting down.";
         return false;
     }

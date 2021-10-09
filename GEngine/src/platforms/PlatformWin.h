@@ -35,7 +35,7 @@ public:
 
     u64 getAbsoluteTimeMs() override;
     f64 getAbsoluteTimeSeconds() override;
-    void sleep(u32 ms) override;
+    void sleep(u64 ms) override;
     array<char, 19> getDate() override;
 
     const u8* inputKeyboardGetState(i32* keys) override;

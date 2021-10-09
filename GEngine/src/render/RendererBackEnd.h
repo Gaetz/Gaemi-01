@@ -8,13 +8,17 @@
 #include "Types.h"
 #include "../platforms/Platform.h"
 
+// Buffer this number of frames when rendering
+constexpr unsigned int FRAME_OVERLAP = 2;
+constexpr unsigned int MAX_OBJECTS = 10000;
+
 namespace engine::render {
 
     class RendererBackEnd {
     public:
-        virtual ~RendererBackEnd() {};
+        virtual ~RendererBackEnd() = default;
 
-        virtual bool init(const string& appName) = 0;
+        virtual bool init(const string &appName, u16 width, u16 height) = 0;
 
         virtual void close() = 0;
 
@@ -22,10 +26,13 @@ namespace engine::render {
 
         virtual bool endFrame(u32 dt) = 0;
 
+        virtual void resize() = 0;
+
+
         void incrementFrame() { ++frameNumber; }
 
-    private:
-        engine::platforms::Platform *platform{nullptr};
+    protected:
+        engine::platforms::Platform *platform {nullptr};
         u64 frameNumber{0};
     };
 }

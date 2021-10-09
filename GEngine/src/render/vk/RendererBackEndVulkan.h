@@ -5,23 +5,159 @@
 #ifndef RENDERER_VK_RENDERERBACKENDVULKAN_H
 #define RENDERER_VK_RENDERERBACKENDVULKAN_H
 
+#include <vk_mem_alloc.h>
+
 #include <string>
 using std::string;
+#include <vector>
+using std::vector;
+#include <unordered_map>
+using std::unordered_map;
 
 #include "../RendererBackEnd.h"
-namespace engine::render {
+#include "Types.h"
+#include "RenderObject.h"
+#include "DeletionQueue.h"
 
-    class RendererBackEndVulkan : public RendererBackEnd {
+using engine::render::vk::DeletionQueue;
+using engine::render::vk::Mesh;
+using engine::render::vk::RenderObject;
+
+namespace engine::render::vk {
+
+class RendererBackEndVulkan : public RendererBackEnd {
     public:
+        RendererBackEndVulkan();
         ~RendererBackEndVulkan() override = default;
 
-        bool init(const string& appName) override;
-
+        bool init(const string& appName, u16 width, u16 height) override;
         void close() override;
-
         bool beginFrame(u32 dt) override;
-
         bool endFrame(u32 dt) override;
+        void resize() override;
+
+
+
+        // Instance and devices
+
+        VkInstance instance;
+        VkDebugUtilsMessengerEXT debugMessenger;
+        VkPhysicalDevice chosenGPU;
+        VkDevice device;
+        VkPhysicalDeviceProperties gpuProperties;
+
+        // Swapchain
+
+        VkSurfaceKHR surface;
+        VkSwapchainKHR swapchain;
+        VkFormat swapchainImageFormat;
+        vector<VkImage> swapchainImages;
+        vector<VkImageView> swapchainImageViews;
+
+        // Queues and commands
+
+        VkQueue graphicsQueue;
+        uint32_t graphicsQueueFamily;
+
+        // Render pass and synchronisation
+
+        VkRenderPass renderPass;
+        vector<VkFramebuffer> framebuffers;
+        array<FrameData, FRAME_OVERLAP> frames;
+
+        // Pipeline
+
+        VkPipeline meshPipeline;
+        VkPipelineLayout texturedMeshPipelineLayout;
+        DeletionQueue mainDeletionQueue;
+
+        // Allocator
+
+        VmaAllocator allocator;
+
+        // Meshes
+
+        vector<RenderObject> renderables;
+        unordered_map<string, render::vk::Material> materials;
+        unordered_map<string, Mesh> meshes;
+
+        // Depth
+
+        VkImageView depthImageView;
+        render::vk::AllocatedImage depthImage;
+        VkFormat depthFormat;
+
+        // Descriptor sets
+
+        VkDescriptorSetLayout globalSetLayout;
+        VkDescriptorPool descriptorPool;
+        VkDescriptorSetLayout objectSetLayout;
+        VkDescriptorSetLayout singleTextureSetLayout;
+
+        // Scene data
+
+        render::vk::GPUSceneData sceneParams;
+        AllocatedBuffer sceneParamsBuffer;
+
+        // Transfer and textures
+
+        render::vk::UploadContext uploadContext;
+        unordered_map<string, render::vk::Texture> textures;
+
+        // Get the frame we are rendering right now
+        render::vk::FrameData& getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
+
+        // Create a vulkan buffer
+        AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+
+
+
+    private:
+        VkExtent2D windowExtent;
+        uint32_t swapchainImageIndex { 0 };
+
+        void initVulkan();
+
+        void initSwapchain();
+
+        void initCommands();
+
+        void initDefaultRenderpass();
+
+        void initFramebuffers();
+
+        void initSyncStructures();
+
+        void initDescriptors();
+
+        void initPipelines();
+
+        void initScene();
+
+        // Shaders and buffers
+
+        bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
+        size_t padUniformBufferSize(size_t originalSize) const;
+
+        // Meshes
+
+        void loadMeshes();
+        void uploadMesh(Mesh& mesh);
+        render::vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
+        render::vk::Material* getMaterial(const string& name);
+        Mesh* getMesh(const string& name);
+        void loadImages();
+        bool loadImageFromFile(const string& path, render::vk::AllocatedImage& outImage);
+
+        // Draw & commands
+
+        void drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
+        void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& submittedFunc);
+
+        // Clean
+
+        void cleanupVulkan();
+
     };
 
 }

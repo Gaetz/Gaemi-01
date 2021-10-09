@@ -80,8 +80,8 @@ f64 PlatformWin::getAbsoluteTimeSeconds() {
     return static_cast<f64>(SDL_GetTicks()) / 1000.0f;
 }
 
-void PlatformWin::sleep(u32 ms) {
-    SDL_Delay(ms);
+void PlatformWin::sleep(u64 ms) {
+    SDL_Delay(static_cast<u32>(ms));
 }
 
 array<char, 19> engine::platforms::PlatformWin::getDate() {

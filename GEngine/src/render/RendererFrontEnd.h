@@ -17,7 +17,7 @@ namespace engine::render {
         RendererFrontEnd() = default;
         ~RendererFrontEnd() = default;
 
-        bool init(const string& appName);
+        bool init(const string &appName, u16 width, u16 height);
         void close();
         void onRezise(u16 width, u16 height);
         bool beginFrame(u32 dt);

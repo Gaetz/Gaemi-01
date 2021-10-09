@@ -14,6 +14,10 @@ using engine::math::Mat4;
 
 namespace engine::render::vk {
 
+struct VkContext {
+
+};
+
 struct AllocatedBuffer {
     VkBuffer buffer;
     VmaAllocation allocation;

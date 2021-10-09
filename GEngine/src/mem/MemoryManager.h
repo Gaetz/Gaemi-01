@@ -35,12 +35,12 @@ namespace engine::mem {
         void init(platforms::Platform* platformP);
         void close();
 
-        GAPI void* allocate(u64 size, MemoryTag tag) override;
-        GAPI void free(void* block, u64 size, MemoryTag tag) override;
-        GAPI void* zero(void* block, u64 size) override;
-        GAPI void* copy(void* dest, const void* source, u64 size) override;
-        GAPI void* set(void* dest, i32 value, u64 size) override;
-        GAPI void logMemoryUsage() override;
+        void* allocate(u64 size, MemoryTag tag) override;
+        void free(void* block, u64 size, MemoryTag tag) override;
+        void* zero(void* block, u64 size) override;
+        void* copy(void* dest, const void* source, u64 size) override;
+        void* set(void* dest, i32 value, u64 size) override;
+        void logMemoryUsage() override;
 
         /**
          * Used to count memory that was not allocated through allocate function.

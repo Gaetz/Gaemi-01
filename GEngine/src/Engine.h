@@ -8,15 +8,12 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
-#include <vk_mem_alloc.h>
 #include <functional>
 
 #include "Defines.h"
 #include "Game.h"
-#include "render/vk/RenderObject.h"
 #include "platforms/PlatformWin.h"
 #include "input/InputManager.h"
-#include "render/vk/DeletionQueue.h"
 #include "mem/MemoryManager.h"
 #include "EventManager.h"
 #include "render/RendererFrontEnd.h"
@@ -28,19 +25,12 @@ using std::unique_ptr;
 using std::make_unique;
 
 using engine::input::InputManager;
-using engine::render::vk::DeletionQueue;
-using engine::render::vk::Mesh;
-using engine::render::vk::RenderObject;
 using engine::platforms::Platform;
 using engine::platforms::PlatformWin;
 using game::Game;
 using engine::mem::MemoryManager;
 using engine::EventManager;
 using engine::render::RendererFrontEnd;
-
-// Buffer this number of frames when rendering
-constexpr unsigned int FRAME_OVERLAP = 2;
-constexpr unsigned int MAX_OBJECTS = 10000;
 
 namespace engine {
 
@@ -57,10 +47,9 @@ struct EngineState {
     bool isInitialized { false };
     bool isRunning { false };
     bool isPaused { false };
-    u64 frameNumber { 0 };
     Game* game;
     MemoryManager memoryManager;
-    EventManager eventSystem;
+    EventManager eventManager;
 
     // Platform
     #ifdef GPLATFORM_WINDOWS
@@ -81,7 +70,6 @@ public:
     GAPI explicit Engine(const EngineConfig& configP);
     GAPI ~Engine() = default;
 
-    VkExtent2D windowExtent;
     InputManager inputSystem;
 
     // Initializes everything in the engine
@@ -100,7 +88,7 @@ public:
     void update(u32 dt);
 
     // Draw loop
-    void draw();
+    void draw(u32 dt);
 
     // Get time since game started in milliseconds
     GAPI u64 getAbsoluteTime() const;
@@ -119,123 +107,6 @@ public:
     EventCallback onEngineEvent = [this](EventCode code, void* sender, void* listInst, EventContext context) {
         return this->handleEngineEvent(code, sender, listInst, context);
     };
-
-    // VULKAN
-
-    // Instance and devices
-
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkPhysicalDevice chosenGPU;
-    VkDevice device;
-    VkPhysicalDeviceProperties gpuProperties;
-
-    // Swapchain
-
-    VkSurfaceKHR surface;
-    VkSwapchainKHR swapchain;
-    VkFormat swapchainImageFormat;
-    vector<VkImage> swapchainImages;
-    vector<VkImageView> swapchainImageViews;
-
-    // Queues and commands
-
-    VkQueue graphicsQueue;
-    uint32_t graphicsQueueFamily;
-
-    // Render pass and synchronisation
-
-    VkRenderPass renderPass;
-    vector<VkFramebuffer> framebuffers;
-    array<render::vk::FrameData, FRAME_OVERLAP> frames;
-
-    // Pipeline
-
-    VkPipeline meshPipeline;
-    VkPipelineLayout texturedMeshPipelineLayout;
-    DeletionQueue mainDeletionQueue;
-
-    // Allocator
-
-    VmaAllocator allocator;
-
-    // Meshes
-
-    vector<RenderObject> renderables;
-    unordered_map<string, render::vk::Material> materials;
-    unordered_map<string, Mesh> meshes;
-
-    // Depth
-
-    VkImageView depthImageView;
-    render::vk::AllocatedImage depthImage;
-    VkFormat depthFormat;
-
-    // Descriptor sets
-
-    VkDescriptorSetLayout globalSetLayout;
-    VkDescriptorPool descriptorPool;
-    VkDescriptorSetLayout objectSetLayout;
-    VkDescriptorSetLayout singleTextureSetLayout;
-
-    // Scene data
-
-    render::vk::GPUSceneData sceneParams;
-    AllocatedBuffer sceneParamsBuffer;
-
-    // Transfer and textures
-
-    render::vk::UploadContext uploadContext;
-    unordered_map<string, render::vk::Texture> textures;
-
-    // Get the frame we are rendering right now
-    render::vk::FrameData& getCurrentFrame() { return frames[state.frameNumber % FRAME_OVERLAP]; }
-
-    // Create a vulkan buffer
-    AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-
-private:
-    void initVulkan();
-
-    void initSwapchain();
-
-    void initCommands();
-
-    void initDefaultRenderpass();
-
-    void initFramebuffers();
-
-    void initSyncStructures();
-
-    void initDescriptors();
-
-    void initPipelines();
-
-    void initScene();
-
-    // Shaders and buffers
-
-    bool loadShaderModule(const char* path, VkShaderModule* outShaderModule);
-    size_t padUniformBufferSize(size_t originalSize) const;
-
-    // Meshes
-
-    void loadMeshes();
-    void uploadMesh(Mesh& mesh);
-    render::vk::Material* createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name);
-    render::vk::Material* getMaterial(const string& name);
-    Mesh* getMesh(const string& name);
-    void loadImages();
-    bool loadImageFromFile(const string& path, render::vk::AllocatedImage& outImage);
-
-    // Draw & commands
-
-    void drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count);
-    void immediateSubmit(std::function<void(VkCommandBuffer cmd)>&& submittedFunc);
-
-    // Clean
-
-    void cleanupVulkan();
 };
 
 }
