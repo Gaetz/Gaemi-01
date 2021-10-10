@@ -8,15 +8,12 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include "../../math/Types.h"
+#include "DeletionQueue.h"
 
 using engine::math::Vec4;
 using engine::math::Mat4;
 
 namespace engine::render::vk {
-
-struct VkContext {
-
-};
 
 struct AllocatedBuffer {
     VkBuffer buffer;

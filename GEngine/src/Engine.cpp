@@ -27,7 +27,6 @@ void Engine::run() {
 
         // Update loop
         update(dt);
-        state.game->update(dt);
 
         // Render
         draw(dt);
@@ -76,7 +75,6 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
         state.platform->close();
         state.memoryManager.close();
     } else {
-
         state.isRunning = true;
         state.isPaused = false;
     }

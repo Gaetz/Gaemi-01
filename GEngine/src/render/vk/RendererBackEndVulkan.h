@@ -20,19 +20,15 @@ using std::vector;
 using std::unordered_map;
 
 #include "../RendererBackEnd.h"
-#include "Types.h"
 #include "RenderObject.h"
 #include "DeletionQueue.h"
-
-using engine::render::vk::DeletionQueue;
-using engine::render::vk::Mesh;
-using engine::render::vk::RenderObject;
+#include "VkContext.h"
 
 namespace engine::render::vk {
 
     class RendererBackEndVulkan : public RendererBackEnd {
     public:
-        RendererBackEndVulkan();
+        RendererBackEndVulkan() = default;
 
         ~RendererBackEndVulkan() override = default;
 
@@ -54,30 +50,15 @@ namespace engine::render::vk {
 
 
     private:
-        VkExtent2D windowExtent;
-
-
-        // Instance and devices
-
-        VkInstance instance;
-        VkDebugUtilsMessengerEXT debugMessenger;
-        VkPhysicalDevice chosenGPU;
-        VkDevice device;
-        VkPhysicalDeviceProperties gpuProperties;
+        VkContext context;
 
         // Swapchain
 
-        uint32_t swapchainImageIndex{0};
-        VkSurfaceKHR surface;
+        uint32_t swapchainImageIndex { 0 };
         VkSwapchainKHR swapchain;
         VkFormat swapchainImageFormat;
         vector<VkImage> swapchainImages;
         vector<VkImageView> swapchainImageViews;
-
-        // Queues and commands
-
-        VkQueue graphicsQueue;
-        uint32_t graphicsQueueFamily;
 
         // Render pass and synchronisation
 
@@ -89,17 +70,6 @@ namespace engine::render::vk {
 
         VkPipeline meshPipeline;
         VkPipelineLayout texturedMeshPipelineLayout;
-        DeletionQueue mainDeletionQueue;
-
-        // Allocator
-
-        VmaAllocator allocator;
-
-        // Meshes
-
-        vector<RenderObject> renderables;
-        unordered_map<string, render::vk::Material> materials;
-        unordered_map<string, Mesh> meshes;
 
         // Depth
 
@@ -114,6 +84,12 @@ namespace engine::render::vk {
         VkDescriptorSetLayout objectSetLayout;
         VkDescriptorSetLayout singleTextureSetLayout;
 
+        // Meshes
+
+        vector<RenderObject> renderables;
+        unordered_map<string, render::vk::Material> materials;
+        unordered_map<string, Mesh> meshes;
+
         // Scene data
 
         render::vk::GPUSceneData sceneParams;
@@ -123,8 +99,6 @@ namespace engine::render::vk {
 
         render::vk::UploadContext uploadContext;
         unordered_map<string, render::vk::Texture> textures;
-
-        void initVulkan(const string& appName);
 
         void initSwapchain();
 
