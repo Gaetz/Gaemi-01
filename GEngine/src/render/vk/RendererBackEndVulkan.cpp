@@ -14,7 +14,7 @@
 
 
 #include "../../externals/vkbootstrap/VkBootstrap.h"
-#include "VkInit.h"
+#include "Init.h"
 #include "PipelineBuilder.h"
 #include "../../math/Transformations.h"
 #include "../../math/Functions.h"

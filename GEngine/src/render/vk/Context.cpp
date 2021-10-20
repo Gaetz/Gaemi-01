@@ -1,16 +1,16 @@
 //
 // Created by gaetz on 10/10/2021.
 //
-#include "VkContext.h"
+#include "Context.h"
 #include <vk_mem_alloc.h>
 
-#include "VkInit.h"
+#include "Init.h"
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 #include "../../Locator.h"
 
 using engine::LogLevel;
 
-void engine::render::vk::VkContext::init(const string& appName) {
+void engine::render::vk::Context::init(const string& appName) {
     // -- INSTANCE --
     vkb::InstanceBuilder builder;
 
@@ -87,7 +87,7 @@ void engine::render::vk::VkContext::init(const string& appName) {
     });
 }
 
-void engine::render::vk::VkContext::close() {
+void engine::render::vk::Context::close() {
     mainDeletionQueue.flush();
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyDevice(device, nullptr);

@@ -12,7 +12,7 @@ using std::string;
 #include "../../Log.h"
 
 namespace engine::render::vk {
-    class VkContext {
+    class Context {
     public:
         void init(const string& appName);
         void close();
