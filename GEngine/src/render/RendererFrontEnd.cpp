@@ -43,6 +43,8 @@ bool RendererFrontEnd::drawFrame(const RenderPacket &packet) {
     // If begin frame return successfully, mid-frame operations can continue
     if (backEnd->beginFrame(packet.dt)) {
 
+        backEnd->draw();
+
         bool frameResult = backEnd->endFrame(packet.dt);
         if (!frameResult) {
             LOG(LogLevel::Error) << "Renderer end frame failed. Application shutting down.";

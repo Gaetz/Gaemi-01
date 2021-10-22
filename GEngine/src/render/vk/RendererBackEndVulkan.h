@@ -22,6 +22,7 @@ using std::unordered_map;
 #include "../RendererBackEnd.h"
 #include "RenderObject.h"
 #include "DeletionQueue.h"
+#include "VkSwapchain.h"
 #include "Context.h"
 
 namespace engine::render::vk {
@@ -38,6 +39,8 @@ namespace engine::render::vk {
 
         bool beginFrame(u32 dt) override;
 
+        void draw() override;
+
         bool endFrame(u32 dt) override;
 
         void resize() override;
@@ -51,14 +54,7 @@ namespace engine::render::vk {
 
     private:
         Context context;
-
-        // Swapchain
-
-        uint32_t swapchainImageIndex { 0 };
-        VkSwapchainKHR swapchain;
-        VkFormat swapchainImageFormat;
-        vector<VkImage> swapchainImages;
-        vector<VkImageView> swapchainImageViews;
+        VkSwapchain swapchain { context };
 
         // Render pass and synchronisation
 
@@ -70,12 +66,6 @@ namespace engine::render::vk {
 
         VkPipeline meshPipeline;
         VkPipelineLayout texturedMeshPipelineLayout;
-
-        // Depth
-
-        VkImageView depthImageView;
-        render::vk::AllocatedImage depthImage;
-        VkFormat depthFormat;
 
         // Descriptor sets
 

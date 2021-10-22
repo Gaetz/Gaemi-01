@@ -24,6 +24,8 @@ namespace engine::render {
 
         virtual bool beginFrame(u32 dt) = 0;
 
+        virtual void draw() = 0;
+
         virtual bool endFrame(u32 dt) = 0;
 
         virtual void resize() = 0;

@@ -12,7 +12,6 @@
 
 #include <SDL2/SDL_vulkan.h>
 
-
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 #include "Init.h"
 #include "PipelineBuilder.h"
@@ -20,27 +19,8 @@
 #include "../../math/Functions.h"
 #include "../../Locator.h"
 
-
-
 using engine::render::vk::PipelineBuilder;
 using engine::render::vk::Vertex;
-
-#ifdef _DEBUG
-#define VK_CHECK(x)                                                             \
-    do                                                                          \
-    {                                                                           \
-        VkResult err = x;                                                       \
-        if (err)                                                                \
-        {                                                                       \
-            LOG(LogLevel::Error) << "Detected Vulkan error: " << err;           \
-            abort();                                                            \
-        }                                                                       \
-    } while (0)
-#else
-#define VK_CHECK(x) \
-        x
-#endif
-
 using engine::render::vk::RendererBackEndVulkan;
 
 bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
@@ -48,8 +28,8 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     context.windowExtent.height = height;
 
     context.init(appName);
+    swapchain.init();
 
-    initSwapchain();
     initCommands();
     initDefaultRenderpass();
     initFramebuffers();
@@ -77,65 +57,6 @@ void RendererBackEndVulkan::cleanupVulkan() {
     ++frameNumber;
 
     context.close();
-}
-
-void RendererBackEndVulkan::initSwapchain() {
-
-    // -- SWAPCHAIN INIT --
-
-    vkb::SwapchainBuilder swapchainBuilder {context.chosenGPU, context.device, context.surface};
-    vkb::Swapchain vkbSwapchain = swapchainBuilder.use_default_format_selection()
-            .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-            .set_desired_extent(context.windowExtent.width, context.windowExtent.height)
-            .build()
-            .value();
-    // We use VK_PRESENT_MODE_FIFO_KHR for hard Vsync: the FPS fo the RendererBackEndVulkan will
-    // be limited to the refresh speed of the monitor.
-    swapchain = vkbSwapchain.swapchain;
-    swapchainImages = vkbSwapchain.get_images().value();
-    swapchainImageViews = vkbSwapchain.get_image_views().value();
-    swapchainImageFormat = vkbSwapchain.image_format;
-
-    // Cleanup callback
-    context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroySwapchainKHR(context.device, swapchain, nullptr);
-    });
-
-
-    // -- DEPTH BUFFER INIT --
-
-    // Depth size matches window size
-    VkExtent3D depthImageExtent {
-            context.windowExtent.width,
-            context.windowExtent.height,
-            1
-    };
-
-    // Hardcode depth format to 32 bits float
-    depthFormat = VK_FORMAT_D32_SFLOAT;
-
-    VkImageCreateInfo depthImageInfo = render::vk::imageCreateInfo(depthFormat,
-                                                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                                                                   depthImageExtent);
-    // Allocate depth image from local GPU memory
-    VmaAllocationCreateInfo depthImageAllocInfo {};
-    depthImageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-    depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    // Allocate and create the image
-    vmaCreateImage(context.allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation, nullptr);
-
-    // Build an image-view for the depth image to use for rendering
-    VkImageViewCreateInfo depthImageViewInfo = render::vk::imageViewCreateInfo(depthFormat,
-                                                                               depthImage.image,
-                                                                               VK_IMAGE_ASPECT_DEPTH_BIT);
-    VK_CHECK(vkCreateImageView(context.device, &depthImageViewInfo, nullptr, &depthImageView));
-
-    // Cleanup callback
-    context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroyImageView(context.device, depthImageView, nullptr);
-        vmaDestroyImage(context.allocator, depthImage.image, depthImage.allocation);
-    });
 }
 
 void RendererBackEndVulkan::initCommands() {
@@ -169,7 +90,7 @@ void RendererBackEndVulkan::initDefaultRenderpass() {
     // The renderpass will use this color attachment.
     VkAttachmentDescription colorAttachment {};
     // The attachment will have the format needed by the swapchain
-    colorAttachment.format = swapchainImageFormat;
+    colorAttachment.format = swapchain.imageFormat;
     // 1 sample, we won't be doing MSAA
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     // We Clear when this attachment is loaded
@@ -193,7 +114,7 @@ void RendererBackEndVulkan::initDefaultRenderpass() {
     // -- DEPTH ATTACHMENT --
     VkAttachmentDescription depthAttachment {};
     depthAttachment.flags = 0;
-    depthAttachment.format = depthFormat;
+    depthAttachment.format = swapchain.depthFormat;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -247,13 +168,13 @@ void RendererBackEndVulkan::initFramebuffers() {
     framebufferCreateInfo.layers = 1;
 
     // Grab how many images we have in the swapchain
-    const uint32_t swapchainImageCount = swapchainImages.size();
+    const uint32_t swapchainImageCount = swapchain.images.size();
     framebuffers = vector<VkFramebuffer>(swapchainImageCount);
 
     // Create framebuffers for each of the swapchain image views
     for (size_t i = 0; i < swapchainImageCount; ++i) {
         // Prepare attachments
-        array<VkImageView, 2> attachments { swapchainImageViews[i], depthImageView };
+        array<VkImageView, 2> attachments { swapchain.imageViews[i], swapchain.depthImageView };
 
         // Create framebuffer
         framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -263,7 +184,7 @@ void RendererBackEndVulkan::initFramebuffers() {
         // Cleanup callback
         context.mainDeletionQueue.pushFunction([=]() {
             vkDestroyFramebuffer(context.device, framebuffers[i], nullptr);
-            vkDestroyImageView(context.device, swapchainImageViews[i], nullptr);
+            vkDestroyImageView(context.device, swapchain.imageViews[i], nullptr);
         });
     }
 }
@@ -279,7 +200,6 @@ void RendererBackEndVulkan::initSyncStructures() {
         context.mainDeletionQueue.pushFunction([=]() {
             vkDestroyFence(context.device, frames[i].renderFence, nullptr);
         });
-
 
         VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore));
         VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore));
@@ -305,8 +225,7 @@ bool RendererBackEndVulkan::beginFrame(u32 dt) {
     VK_CHECK(vkResetFences(context.device, 1, &getCurrentFrame().renderFence));
 
     // Request image from the swapchain, one second timeout
-    swapchainImageIndex = 0;
-    VK_CHECK(vkAcquireNextImageKHR(context.device, swapchain, 1000000000, getCurrentFrame().presentSemaphore, nullptr, &swapchainImageIndex));
+    swapchain.acquireNextImage(1000000000, getCurrentFrame().presentSemaphore, nullptr, swapchain.imageIndex);
 
     // Now that we are sure that the commands finished executing,
     // we can safely reset the command buffer to begin recording again.
@@ -341,13 +260,22 @@ bool RendererBackEndVulkan::beginFrame(u32 dt) {
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent = context.windowExtent;
-    renderPassBeginInfo.framebuffer = framebuffers[swapchainImageIndex];
+    renderPassBeginInfo.framebuffer = framebuffers[swapchain.imageIndex];
     renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassBeginInfo.pClearValues = clearValues.data();
     vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+    return true;
+}
+
+void RendererBackEndVulkan::draw() {
     // -- DRAW HERE --
+    VkCommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
     drawObjects(cmd, renderables.data(), renderables.size());
+}
+
+bool RendererBackEndVulkan::endFrame(u32 dt) {
+    VkCommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
 
     // Finalize the render pass
     vkCmdEndRenderPass(cmd);
@@ -373,24 +301,8 @@ bool RendererBackEndVulkan::beginFrame(u32 dt) {
     // renderFence will now block until the graphic commands finish execution
     VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, getCurrentFrame().renderFence));
 
-    // This will put the image we just rendered into the visible window.
-    // We want to wait on the renderSemaphore for that,
-    // as it's necessary that drawing commands have finished before the image is displayed to the user.
-    VkPresentInfoKHR presentInfo {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.pNext = nullptr;
-    presentInfo.pSwapchains = &swapchain;
-    presentInfo.swapchainCount = 1;
-    presentInfo.pWaitSemaphores = &getCurrentFrame().renderSemaphore;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pImageIndices = &swapchainImageIndex;
-
-    VK_CHECK(vkQueuePresentKHR(context.graphicsQueue, &presentInfo));
-    return true;
-}
-
-bool RendererBackEndVulkan::endFrame(u32 dt) {
-
+    // Present the rendered image into the visible window
+    swapchain.present(getCurrentFrame().renderSemaphore, swapchain.imageIndex);
     return true;
 }
 

@@ -13,6 +13,39 @@
 using engine::math::Vec4;
 using engine::math::Mat4;
 
+#ifdef _DEBUG
+#define VK_CHECK(x)                                                             \
+    do                                                                          \
+    {                                                                           \
+        VkResult err = x;                                                       \
+        if (err)                                                                \
+        {                                                                       \
+            LOG(LogLevel::Error) << "Detected Vulkan error: " << err;           \
+            abort();                                                            \
+        }                                                                       \
+    } while (0)
+#else
+#define VK_CHECK(x) \
+        x
+#endif
+
+#ifdef _DEBUG
+#define VK_SWAP_CHECK(x)                                                        \
+        VkResult res = x;                                                       \
+        if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR) {      \
+            reinit();                                                           \
+        } else if (res != VK_SUCCESS) {                                          \
+            LOG(LogLevel::Error) << "Detected Swapchain error: " << res;        \
+            abort();                                                                                                                                     \
+        }
+#else
+#define VK_CHECK(x)                                                             \
+        VkResult res = x;                                                       \
+        if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR) {      \
+            reinit();                                                           \
+        }
+#endif
+
 namespace engine::render::vk {
 
 struct AllocatedBuffer {
