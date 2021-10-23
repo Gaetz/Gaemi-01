@@ -2,28 +2,23 @@
 // Created by gaetz on 08/10/2021.
 //
 
-#ifndef RENDERER_VK_RENDERERBACKENDVULKAN_H
-#define RENDERER_VK_RENDERERBACKENDVULKAN_H
+#ifndef RENDER_VK_RENDERERBACKENDVULKAN_H
+#define RENDER_VK_RENDERERBACKENDVULKAN_H
 
 #include <vk_mem_alloc.h>
-
 #include <string>
-
-using std::string;
-
 #include <vector>
-
-using std::vector;
-
 #include <unordered_map>
-
-using std::unordered_map;
-
 #include "../RendererBackEnd.h"
 #include "RenderObject.h"
 #include "DeletionQueue.h"
 #include "Swapchain.h"
 #include "Context.h"
+#include "RenderPass.h"
+
+using std::string;
+using std::vector;
+using std::unordered_map;
 
 namespace engine::render::vk {
 
@@ -57,8 +52,8 @@ namespace engine::render::vk {
         Swapchain swapchain { context };
 
         // Render pass and synchronisation
-
-        VkRenderPass renderPass;
+        RenderPass renderPass { context, { 0, 0, context.windowExtent.width, context.windowExtent.height },
+                                { 0, 0, 0, 0 }, 1.0f, 0 };
         vector<VkFramebuffer> framebuffers;
         array<FrameData, FRAME_OVERLAP> frames;
 
@@ -90,11 +85,8 @@ namespace engine::render::vk {
         render::vk::UploadContext uploadContext;
         unordered_map<string, render::vk::Texture> textures;
 
-        void initSwapchain();
 
         void initCommands();
-
-        void initDefaultRenderpass();
 
         void initFramebuffers();
 
@@ -131,7 +123,7 @@ namespace engine::render::vk {
 
         // Draw & commands
 
-        void drawObjects(VkCommandBuffer cmd, RenderObject *first, size_t count);
+        void drawObjects(CommandBuffer& commandBuffer, RenderObject *first, size_t count);
 
         void immediateSubmit(std::function<void(VkCommandBuffer cmd)> &&submittedFunc);
 
@@ -143,4 +135,4 @@ namespace engine::render::vk {
 
 }
 
-#endif //RENDERER_VK_RENDERERBACKENDVULKAN_H
+#endif //RENDER_VK_RENDERERBACKENDVULKAN_H

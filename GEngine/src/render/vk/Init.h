@@ -2,8 +2,8 @@
 // Created by gaetz on 08/06/2021.
 //
 
-#ifndef RENDERER_VK_INIT_H
-#define RENDERER_VK_INIT_H
+#ifndef RENDER_VK_INIT_H
+#define RENDER_VK_INIT_H
 
 #include "Types.h"
 
@@ -82,4 +82,4 @@ namespace engine::render::vk {
 
 
 
-#endif //RENDERER_VK_INIT_H
+#endif //RENDER_VK_INIT_H

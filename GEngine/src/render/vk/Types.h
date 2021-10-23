@@ -2,13 +2,14 @@
 // Created by gaetz on 08/06/2021.
 //
 
-#ifndef RENDERER_VK_TYPES_H
-#define RENDERER_VK_TYPES_H
+#ifndef RENDER_VK_TYPES_H
+#define RENDER_VK_TYPES_H
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include "../../math/Types.h"
 #include "DeletionQueue.h"
+#include "CommandBuffer.h"
 
 using engine::math::Vec4;
 using engine::math::Mat4;
@@ -68,7 +69,7 @@ struct FrameData {
     VkFence renderFence;
 
     VkCommandPool commandPool;
-    VkCommandBuffer mainCommandBuffer;
+    CommandBuffer mainCommandBuffer;
     AllocatedBuffer cameraBuffer;
     VkDescriptorSet globalDescriptor;
 
@@ -106,4 +107,4 @@ public:
 };
 }
 
-#endif //RENDERER_VK_TYPES_H
+#endif //RENDER_VK_TYPES_H

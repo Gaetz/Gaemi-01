@@ -2,8 +2,8 @@
 // Created by gaetz on 12/06/2021.
 //
 
-#ifndef RENDERER_VK_DELETIONQUEUE_H
-#define RENDERER_VK_DELETIONQUEUE_H
+#ifndef RENDER_VK_DELETIONQUEUE_H
+#define RENDER_VK_DELETIONQUEUE_H
 
 #include <functional>
 #include <deque>
@@ -27,4 +27,4 @@ namespace engine::render::vk {
 }
 
 
-#endif //RENDERER_VK_DELETIONQUEUE_H
+#endif //RENDER_VK_DELETIONQUEUE_H

@@ -2,8 +2,8 @@
 // Created by gaetz on 15/06/2021.
 //
 
-#ifndef RENDERER_VK_RENDEROBJECT_H
-#define RENDERER_VK_RENDEROBJECT_H
+#ifndef RENDER_VK_RENDEROBJECT_H
+#define RENDER_VK_RENDEROBJECT_H
 
 #include "Mesh.h"
 
@@ -23,4 +23,4 @@ struct RenderObject {
 
 }
 
-#endif //RENDERER_VK_RENDEROBJECT_H
+#endif //RENDER_VK_RENDEROBJECT_H

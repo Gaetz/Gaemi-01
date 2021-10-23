@@ -2,8 +2,8 @@
 // Created by gaetz on 13/06/2021.
 //
 
-#ifndef RENDERER_VK_MESH_H
-#define RENDERER_VK_MESH_H
+#ifndef RENDER_VK_MESH_H
+#define RENDER_VK_MESH_H
 
 #include <vector>
 #include <string>
@@ -39,4 +39,4 @@ struct Mesh {
 };
 
 }
-#endif //RENDERER_VK_MESH_H
+#endif //RENDER_VK_MESH_H

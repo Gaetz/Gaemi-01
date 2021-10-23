@@ -29,9 +29,8 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
 
     context.init(appName);
     swapchain.init();
-
     initCommands();
-    initDefaultRenderpass();
+    renderPass.init(swapchain);
     initFramebuffers();
     initSyncStructures();
     initDescriptors();
@@ -65,14 +64,15 @@ void RendererBackEndVulkan::initCommands() {
                                                              VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
     for(int i = 0; i < FRAME_OVERLAP; ++i) {
-        VK_CHECK(vkCreateCommandPool(context.device, &commandPoolInfo, nullptr, &frames[i].commandPool));
+        FrameData& frame = frames[i];
+        VK_CHECK(vkCreateCommandPool(context.device, &commandPoolInfo, nullptr, &frame.commandPool));
 
         // Command buffer
-        auto cmdAllocInfo = render::vk::commandBufferAllocateInfo(frames[i].commandPool, 1);
-        VK_CHECK(vkAllocateCommandBuffers(context.device, &cmdAllocInfo, &frames[i].mainCommandBuffer));
+        frame.mainCommandBuffer.allocate(context, frame.commandPool, true, true);
+
         // Cleanup callback
         context.mainDeletionQueue.pushFunction([=]() {
-            vkDestroyCommandPool(context.device, frames[i].commandPool, nullptr);
+            vkDestroyCommandPool(context.device, frame.commandPool, nullptr);
         });
     }
 
@@ -84,85 +84,13 @@ void RendererBackEndVulkan::initCommands() {
     });
 }
 
-void RendererBackEndVulkan::initDefaultRenderpass() {
-
-    // -- COLOR ATTACHMENT --
-    // The renderpass will use this color attachment.
-    VkAttachmentDescription colorAttachment {};
-    // The attachment will have the format needed by the swapchain
-    colorAttachment.format = swapchain.imageFormat;
-    // 1 sample, we won't be doing MSAA
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    // We Clear when this attachment is loaded
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    // We keep the attachment stored when the renderpass ends
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    // We don't care about stencil
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    // We don't know or care about the starting layout of the attachment
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // After the renderpass ends, the image has to be on a layout ready for display
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    // -- COLOR ATTACHMENT REFERENCE --
-    VkAttachmentReference colorAttachmentRef {};
-    // Attachment number will index into the pAttachments array in the parent renderpass itself
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    // -- DEPTH ATTACHMENT --
-    VkAttachmentDescription depthAttachment {};
-    depthAttachment.flags = 0;
-    depthAttachment.format = swapchain.depthFormat;
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    // -- DEPTH ATTACHMENT REFERENCE --
-    VkAttachmentReference depthAttachmentRef {};
-    depthAttachmentRef.attachment = 1;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    // -- SUBPASS --
-    VkSubpassDescription subpass {};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-    // -- RENDERPASS --
-    // Prepare attachments
-    array<VkAttachmentDescription, 2> attachments { colorAttachment, depthAttachment };
-    // Setup renderpass
-    VkRenderPassCreateInfo vkRenderPassCreateInfo {};
-    vkRenderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    // Connect the color attachment to the info
-    vkRenderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    vkRenderPassCreateInfo.pAttachments = attachments.data();
-    // Connect the subpass to the info
-    vkRenderPassCreateInfo.subpassCount = 1;
-    vkRenderPassCreateInfo.pSubpasses = &subpass;
-
-    VK_CHECK(vkCreateRenderPass(context.device, &vkRenderPassCreateInfo, nullptr, &renderPass));
-
-    // Cleanup callback
-    context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroyRenderPass(context.device, renderPass, nullptr);
-    });
-}
-
 void RendererBackEndVulkan::initFramebuffers() {
     // Create the framebuffers for the swapchain images.
     // This will connect the render-pass to the images for rendering
     VkFramebufferCreateInfo framebufferCreateInfo = {};
     framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferCreateInfo.pNext = nullptr;
-    framebufferCreateInfo.renderPass = renderPass;
+    framebufferCreateInfo.renderPass = renderPass.handle;
     framebufferCreateInfo.width = context.windowExtent.width;
     framebufferCreateInfo.height = context.windowExtent.height;
     framebufferCreateInfo.layers = 1;
@@ -227,60 +155,34 @@ bool RendererBackEndVulkan::beginFrame(u32 dt) {
     // Request image from the swapchain, one second timeout
     swapchain.acquireNextImage(1000000000, getCurrentFrame().presentSemaphore, nullptr, swapchain.imageIndex);
 
+    // Naming it cmd for shorter writing
+    CommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
+
     // Now that we are sure that the commands finished executing,
     // we can safely reset the command buffer to begin recording again.
-    VK_CHECK(vkResetCommandBuffer(getCurrentFrame().mainCommandBuffer, 0));
-
-    // Naming it cmd for shorter writing
-    VkCommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
+    cmd.reset();
 
     // Begin the command buffer recording. We will use this command buffer exactly once,
     // so we want to let Vulkan know that
-    VkCommandBufferBeginInfo cmdBeginInfo = render::vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+    cmd.begin(true, false, false);
 
-    // Make a clear-color from frame number. This will flash with a 120*pi frame period.
-    VkClearValue clearValue;
-    float flash = abs(sin(static_cast<float>(frameNumber) / 120.f));
-    clearValue.color = {{0.0f, 0.0f, flash, 1.0f}};
-
-    // Clear depth
-    VkClearValue depthClear;
-    depthClear.depthStencil.depth = 1.0f;
-
-    // Prepare clear values
-    array<VkClearValue, 2> clearValues { clearValue, depthClear };
-
-    // Start the main renderpass.
-    // We will use the clear color and depth from above, and the framebuffer of the index the swapchain gave us.
-    VkRenderPassBeginInfo renderPassBeginInfo {};
-    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = nullptr;
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.renderArea.offset.x = 0;
-    renderPassBeginInfo.renderArea.offset.y = 0;
-    renderPassBeginInfo.renderArea.extent = context.windowExtent;
-    renderPassBeginInfo.framebuffer = framebuffers[swapchain.imageIndex];
-    renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassBeginInfo.pClearValues = clearValues.data();
-    vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
+    renderPass.begin(cmd, framebuffers[swapchain.imageIndex]);
     return true;
 }
 
 void RendererBackEndVulkan::draw() {
     // -- DRAW HERE --
-    VkCommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
+    CommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
     drawObjects(cmd, renderables.data(), renderables.size());
 }
 
 bool RendererBackEndVulkan::endFrame(u32 dt) {
-    VkCommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
+    CommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
 
     // Finalize the render pass
-    vkCmdEndRenderPass(cmd);
+    renderPass.end(cmd);
     // Finalize the command buffer (we can no longer add commands, but it can now be executed)
-    VK_CHECK(vkEndCommandBuffer(cmd));
+    cmd.end();
 
     // Prepare the submission to the queue.
     // We want to wait on the presentSemaphore, as that semaphore is signaled when the swapchain is ready.
@@ -295,7 +197,7 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &getCurrentFrame().renderSemaphore;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &cmd;
+    submitInfo.pCommandBuffers = &cmd.handle;
 
     // Submit command buffer to the queue and execute it.
     // renderFence will now block until the graphic commands finish execution
@@ -610,7 +512,7 @@ void RendererBackEndVulkan::initPipelines() {
 
     // Build pipeline & material
     pipelineBuilder.pipelineLayout = texturedMeshPipelineLayout;
-    meshPipeline = pipelineBuilder.buildPipeline(context.device, renderPass);
+    meshPipeline = pipelineBuilder.buildPipeline(context.device, renderPass.handle);
     createMaterial(meshPipeline, texturedMeshPipelineLayout, "defaultMesh");
 
 
@@ -801,7 +703,9 @@ engine::render::vk::Mesh* RendererBackEndVulkan::getMesh(const string& name) {
     }
 }
 
-void RendererBackEndVulkan::drawObjects(VkCommandBuffer cmd, RenderObject* first, size_t count) {
+void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObject* first, size_t count) {
+    VkCommandBuffer cmd = commandBuffer.handle;
+
     // View and projection
     Vec3 camPos {0.f, -6.f, -10.f};
     Mat4 view = math::translate(Mat4{1.f}, camPos);
@@ -894,33 +798,14 @@ void RendererBackEndVulkan::drawObjects(VkCommandBuffer cmd, RenderObject* first
 }
 
 void RendererBackEndVulkan::immediateSubmit(std::function<void(VkCommandBuffer)>&& submittedFunc) {
-    VkCommandBufferAllocateInfo cmdAllocateInfo = render::vk::commandBufferAllocateInfo(uploadContext.commandPool, 1);
-    VkCommandBuffer cmd;
-    VK_CHECK(vkAllocateCommandBuffers(context.device, &cmdAllocateInfo, &cmd));
 
-    VkCommandBufferBeginInfo cmdBeginInfo = render::vk::commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VK_CHECK(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+    CommandBuffer cmd;
+    cmd.singleUseBegin(context, uploadContext.commandPool);
 
     // Execute function
-    submittedFunc(cmd);
-    VK_CHECK(vkEndCommandBuffer(cmd));
+    submittedFunc(cmd.handle);
 
-    VkSubmitInfo submitInfo {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = nullptr;
-    submitInfo.waitSemaphoreCount = 0;
-    submitInfo.pWaitSemaphores = nullptr;
-    submitInfo.pWaitDstStageMask = nullptr;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = nullptr;
-    submitInfo.pCommandBuffers = &cmd;
-
-    // Submit command buffer to the queue and execute it.
-    // uploadFence will now block until the graphic commands finish execution
-    VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, uploadContext.uploadFence));
-    vkWaitForFences(context.device, 1, &uploadContext.uploadFence, true, 9999999999);
-    vkResetFences(context.device, 1, &uploadContext.uploadFence);
+    cmd.singleUseEnd(context, uploadContext.commandPool, context.graphicsQueue, uploadContext.uploadFence);
 
     // Clear the command pool. This will free the command buffer too
     vkResetCommandPool(context.device, uploadContext.commandPool, 0);

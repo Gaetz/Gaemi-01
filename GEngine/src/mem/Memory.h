@@ -7,6 +7,7 @@
 
 #include "MemoryTag.h"
 
+// TODO Use allocator from Noel Llopis's book
 
 namespace engine::mem {
 
