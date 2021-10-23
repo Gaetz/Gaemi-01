@@ -2,8 +2,8 @@
 // Created by gaetz on 12/06/2021.
 //
 
-#ifndef VK_PIPELINEBUILDER_H
-#define VK_PIPELINEBUILDER_H
+#ifndef RENDERER_VK_PIPELINEBUILDER_H
+#define RENDERER_VK_PIPELINEBUILDER_H
 
 #include "vulkan/vulkan.h"
 
@@ -31,4 +31,4 @@ namespace engine::render::vk {
     };
 
 }
-#endif //VK_PIPELINEBUILDER_H
+#endif //RENDERER_VK_PIPELINEBUILDER_H

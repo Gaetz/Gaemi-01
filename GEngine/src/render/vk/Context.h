@@ -2,8 +2,8 @@
 // Created by gaetz on 10/10/2021.
 //
 
-#ifndef RENDER_VK_VKCONTEXT_H
-#define RENDER_VK_VKCONTEXT_H
+#ifndef RENDER_VK_CONTEXT_H
+#define RENDER_VK_CONTEXT_H
 
 #include <string>
 using std::string;
@@ -35,4 +35,4 @@ namespace engine::render::vk {
     engine::LogLevel vkSeverityToLogLevel(VkDebugUtilsMessageSeverityFlagBitsEXT severity);
 }
 
-#endif //RENDER_VK_VKCONTEXT_H
+#endif //RENDER_VK_CONTEXT_H

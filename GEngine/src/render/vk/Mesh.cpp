@@ -43,7 +43,7 @@ VertexInputDescription Vertex::getVertexDescription() {
     colorAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
     colorAttribute.offset = offsetof(Vertex, color);
 
-    // Color will be stored at Location 3
+    // UV will be stored at Location 3
     VkVertexInputAttributeDescription uvAttribute {};
     uvAttribute.binding = 0;
     uvAttribute.location = 3;

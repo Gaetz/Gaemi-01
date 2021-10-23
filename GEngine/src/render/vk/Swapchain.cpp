@@ -2,28 +2,28 @@
 // Created by gaetz on 10/10/2021.
 //
 
-#include "VkSwapchain.h"
+#include "Swapchain.h"
 #include "Init.h"
 #include "../../../../externals/vkbootstrap/VkBootstrap.h"
 
-using engine::render::vk::VkSwapchain;
+using engine::render::vk::Swapchain;
 using engine::render::vk::Context;
 
-VkSwapchain::VkSwapchain(Context &contextP) : context {contextP} {}
+Swapchain::Swapchain(Context &contextP) : context { contextP } {}
 
 
-void VkSwapchain::init() {
+void Swapchain::init() {
     create();
 }
 
-void engine::render::vk::VkSwapchain::reinit() {
+void engine::render::vk::Swapchain::reinit() {
     destroy();
     create();
 }
 
-void engine::render::vk::VkSwapchain::create() {
+void engine::render::vk::Swapchain::create() {
     // -- SWAPCHAIN INIT --
-    vkb::SwapchainBuilder swapchainBuilder {context.chosenGPU, context.device, context.surface};
+    vkb::SwapchainBuilder swapchainBuilder { context.chosenGPU, context.device, context.surface };
     vkb::Swapchain vkbSwapchain = swapchainBuilder.use_default_format_selection()
             .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
             .set_desired_extent(context.windowExtent.width, context.windowExtent.height)
@@ -60,7 +60,8 @@ void engine::render::vk::VkSwapchain::create() {
     depthImageAllocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     // Allocate and create the image
-    vmaCreateImage(context.allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation, nullptr);
+    vmaCreateImage(context.allocator, &depthImageInfo, &depthImageAllocInfo, &depthImage.image, &depthImage.allocation,
+                   nullptr);
 
     // Build an image-view for the depth image to use for rendering
     VkImageViewCreateInfo depthImageViewInfo = imageViewCreateInfo(depthFormat,
@@ -73,9 +74,9 @@ void engine::render::vk::VkSwapchain::create() {
     destroyDepthImages = [=]() { vmaDestroyImage(context.allocator, depthImage.image, depthImage.allocation); };
 
     // DELETION QUEUE REGISTERING
-    // If we reinit swapchain, the same function will be called with different function pointers.
+    // If we reInit swapchain, the same function will be called with different function pointers.
     // We do not need to add it again.
-    if(!deletionQueueRegistered) {
+    if (!deletionQueueRegistered) {
         context.mainDeletionQueue.pushFunction([=]() {
             destroy();
         });
@@ -83,17 +84,17 @@ void engine::render::vk::VkSwapchain::create() {
     }
 }
 
-void engine::render::vk::VkSwapchain::destroy() {
+void engine::render::vk::Swapchain::destroy() {
     destroyDepthImages();
     destroyDepthImageViews();
     destroyHandle();
 }
 
-void VkSwapchain::acquireNextImage(u64 timeout, VkSemaphore semaphore, VkFence fence, u32& outImageIndex) {
+void Swapchain::acquireNextImage(u64 timeout, VkSemaphore semaphore, VkFence fence, u32 &outImageIndex) {
     VK_SWAP_CHECK(vkAcquireNextImageKHR(context.device, handle, 1000000000, semaphore, fence, &outImageIndex));
 }
 
-void VkSwapchain::present(VkSemaphore renderCompleteSemaphore, u32& imageIndex) {
+void Swapchain::present(VkSemaphore renderCompleteSemaphore, u32 &imageIndex) {
     // This will put the image we just rendered into the visible window.
     // We want to wait on the renderSemaphore for that,
     // as it's necessary that drawing commands have finished before the image is displayed to the user.

@@ -22,7 +22,7 @@ using std::unordered_map;
 #include "../RendererBackEnd.h"
 #include "RenderObject.h"
 #include "DeletionQueue.h"
-#include "VkSwapchain.h"
+#include "Swapchain.h"
 #include "Context.h"
 
 namespace engine::render::vk {
@@ -54,7 +54,7 @@ namespace engine::render::vk {
 
     private:
         Context context;
-        VkSwapchain swapchain { context };
+        Swapchain swapchain { context };
 
         // Render pass and synchronisation
 

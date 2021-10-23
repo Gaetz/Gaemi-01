@@ -2,8 +2,8 @@
 // Created by gaetz on 10/10/2021.
 //
 
-#ifndef RENDER_VK_VKSWAPCHAIN_H
-#define RENDER_VK_VKSWAPCHAIN_H
+#ifndef RENDER_VK_SWAPCHAIN_H
+#define RENDER_VK_SWAPCHAIN_H
 
 #include <vector>
 using std::vector;
@@ -12,9 +12,9 @@ using std::vector;
 
 namespace engine::render::vk {
 
-    class VkSwapchain {
+    class Swapchain {
     public:
-        explicit VkSwapchain(Context& contextP);
+        explicit Swapchain(Context& contextP);
         void init();
         void reinit();
         void acquireNextImage(u64 timeout, VkSemaphore semaphore, VkFence fence, u32& outImageIndex);
@@ -43,4 +43,4 @@ namespace engine::render::vk {
     };
 }
 
-#endif //RENDER_VK_VKSWAPCHAIN_H
+#endif //RENDER_VK_SWAPCHAIN_H
