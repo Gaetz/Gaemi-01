@@ -16,6 +16,7 @@ using engine::render::vk::Context;
 using engine::render::vk::Swapchain;
 
 namespace engine::render::vk {
+    class Framebuffer;
 
     enum class RenderPassState {
         Ready,
@@ -34,7 +35,7 @@ namespace engine::render::vk {
         explicit RenderPass(Context& contextP, const Vec4& renderZoneP, const Vec4& clearColorP, f32 depthP, u32 stencilP);
         void init(const Swapchain& swapchain);
         void destroy();
-        void begin(CommandBuffer& commandBuffer, VkFramebuffer framebuffer);
+        void begin(CommandBuffer& commandBuffer, const Framebuffer& framebuffer);
         void end(CommandBuffer& commandBuffer);
 
     private:

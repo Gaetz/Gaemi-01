@@ -15,6 +15,7 @@
 #include "Swapchain.h"
 #include "Context.h"
 #include "RenderPass.h"
+#include "Framebuffer.h"
 
 using std::string;
 using std::vector;
@@ -54,7 +55,7 @@ namespace engine::render::vk {
         // Render pass and synchronisation
         RenderPass renderPass { context, { 0, 0, context.windowExtent.width, context.windowExtent.height },
                                 { 0, 0, 0, 0 }, 1.0f, 0 };
-        vector<VkFramebuffer> framebuffers;
+        vector<Framebuffer> framebuffers {};
         array<FrameData, FRAME_OVERLAP> frames;
 
         // Pipeline

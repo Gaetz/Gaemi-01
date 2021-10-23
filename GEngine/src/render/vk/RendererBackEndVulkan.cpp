@@ -68,7 +68,7 @@ void RendererBackEndVulkan::initCommands() {
         VK_CHECK(vkCreateCommandPool(context.device, &commandPoolInfo, nullptr, &frame.commandPool));
 
         // Command buffer
-        frame.mainCommandBuffer.allocate(context, frame.commandPool, true, true);
+        frame.mainCommandBuffer.allocate(context, frame.commandPool, true, false);
 
         // Cleanup callback
         context.mainDeletionQueue.pushFunction([=]() {
@@ -85,35 +85,15 @@ void RendererBackEndVulkan::initCommands() {
 }
 
 void RendererBackEndVulkan::initFramebuffers() {
-    // Create the framebuffers for the swapchain images.
-    // This will connect the render-pass to the images for rendering
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.pNext = nullptr;
-    framebufferCreateInfo.renderPass = renderPass.handle;
-    framebufferCreateInfo.width = context.windowExtent.width;
-    framebufferCreateInfo.height = context.windowExtent.height;
-    framebufferCreateInfo.layers = 1;
-
     // Grab how many images we have in the swapchain
     const uint32_t swapchainImageCount = swapchain.images.size();
-    framebuffers = vector<VkFramebuffer>(swapchainImageCount);
+    framebuffers.reserve(swapchainImageCount);
 
     // Create framebuffers for each of the swapchain image views
     for (size_t i = 0; i < swapchainImageCount; ++i) {
-        // Prepare attachments
-        array<VkImageView, 2> attachments { swapchain.imageViews[i], swapchain.depthImageView };
-
         // Create framebuffer
-        framebufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        framebufferCreateInfo.pAttachments = attachments.data();
-        VK_CHECK(vkCreateFramebuffer(context.device, &framebufferCreateInfo, nullptr, &framebuffers[i]));
-
-        // Cleanup callback
-        context.mainDeletionQueue.pushFunction([=]() {
-            vkDestroyFramebuffer(context.device, framebuffers[i], nullptr);
-            vkDestroyImageView(context.device, swapchain.imageViews[i], nullptr);
-        });
+        framebuffers.push_back(Framebuffer(context, renderPass));
+        framebuffers[i].init(swapchain.imageViews[i], swapchain.depthImageView);
     }
 }
 

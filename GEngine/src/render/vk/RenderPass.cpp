@@ -3,6 +3,7 @@
 //
 
 #include "RenderPass.h"
+#include "Framebuffer.h"
 
 #include <array>
 using std::array;
@@ -114,7 +115,7 @@ void RenderPass::destroy() {
     handle = nullptr;
 }
 
-void RenderPass::begin(CommandBuffer &commandBuffer, VkFramebuffer framebuffer) {
+void RenderPass::begin(CommandBuffer &commandBuffer, const Framebuffer& framebuffer) {
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
     VkClearValue clearValue;
     clearValue.color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
@@ -136,7 +137,7 @@ void RenderPass::begin(CommandBuffer &commandBuffer, VkFramebuffer framebuffer) 
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent = context.windowExtent;
-    renderPassBeginInfo.framebuffer = framebuffer;
+    renderPassBeginInfo.framebuffer = framebuffer.handle;
     renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassBeginInfo.pClearValues = clearValues.data();
     vkCmdBeginRenderPass(commandBuffer.handle, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);

@@ -29,14 +29,16 @@ void CommandBuffer::free(const Context &context, VkCommandPool pool) {
 }
 
 void CommandBuffer::begin(bool isSingleUse, bool isRenderPassContinue, bool isSimultaneousUse) {
-    u32 flags;
-    if (isSingleUse) flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    if (isRenderPassContinue) flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-    if (isSimultaneousUse) flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    auto isSingleUseValue = isSingleUse ? VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 0x00000000;
+    auto isRenderPassContinueValue = isRenderPassContinue ? VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT : 0x00000000;
+    auto isSimultaneousUseValue = isSimultaneousUse ? VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT : 0x00000000;
 
-    VkCommandBufferBeginInfo cmdBeginInfo = render::vk::commandBufferBeginInfo(
-            static_cast<VkCommandBufferUsageFlagBits>(flags)
-    );
+    VkCommandBufferUsageFlagBits flags;
+    flags = static_cast<VkCommandBufferUsageFlagBits>(isSingleUseValue | isRenderPassContinueValue |
+                                                      isSimultaneousUseValue);
+
+
+    VkCommandBufferBeginInfo cmdBeginInfo = render::vk::commandBufferBeginInfo(flags);
     VK_CHECK(vkBeginCommandBuffer(handle, &cmdBeginInfo));
     state = CommandBufferState::Recording;
 }
