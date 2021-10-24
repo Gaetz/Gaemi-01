@@ -10,6 +10,7 @@
 namespace engine::render::vk {
 
     class Context;
+    class Fence;
 
     enum class CommandBufferState {
         Ready,
@@ -41,7 +42,7 @@ namespace engine::render::vk {
         void reset();
         void singleUseBegin(Context& context, VkCommandPool pool);
         void singleUseEnd(const Context& context, VkCommandPool pool, VkQueue queue);
-        void singleUseEnd(const Context& context, VkCommandPool pool, VkQueue queue, VkFence fence);
+        void singleUseEnd(const Context& context, VkCommandPool pool, VkQueue queue, Fence& fence);
     };
 }
 

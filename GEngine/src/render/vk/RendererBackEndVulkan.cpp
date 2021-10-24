@@ -52,7 +52,7 @@ void RendererBackEndVulkan::resize() {
 void RendererBackEndVulkan::cleanupVulkan() {
     // Make sure the GPU has stopped before clearing
     --frameNumber;
-    vkWaitForFences(context.device, 1, &getCurrentFrame().renderFence, true, 1000000000);
+    getCurrentFrame().renderFence.wait(context, 1000000000);
     ++frameNumber;
 
     context.close();
@@ -103,11 +103,7 @@ void RendererBackEndVulkan::initSyncStructures() {
     VkSemaphoreCreateInfo semaphoreCreateInfo = render::vk::semaphoreCreateInfo();
 
     for (int i = 0; i < FRAME_OVERLAP; ++i) {
-        VK_CHECK(vkCreateFence(context.device, &fenceCreateInfo, nullptr, &frames[i].renderFence));
-        // Cleanup callback
-        context.mainDeletionQueue.pushFunction([=]() {
-            vkDestroyFence(context.device, frames[i].renderFence, nullptr);
-        });
+        frames[i].renderFence.init(context, true);
 
         VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore));
         VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore));
@@ -119,18 +115,14 @@ void RendererBackEndVulkan::initSyncStructures() {
     }
 
     // Upload fence
-    VkFenceCreateInfo uploadFenceCreateInfo = render::vk::fenceCreateInfo();
-    VK_CHECK(vkCreateFence(context.device, &uploadFenceCreateInfo, nullptr, &uploadContext.uploadFence));
-    context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroyFence(context.device, uploadContext.uploadFence, nullptr);
-    });
+    uploadContext.uploadFence.init(context, false);
 }
 
 
 bool RendererBackEndVulkan::beginFrame(u32 dt) {
     // Wait until the GPU has finished rendering the last frame. Timeout of 1 second
-    VK_CHECK(vkWaitForFences(context.device, 1, &getCurrentFrame().renderFence, true, 1000000000));
-    VK_CHECK(vkResetFences(context.device, 1, &getCurrentFrame().renderFence));
+    getCurrentFrame().renderFence.wait(context, 1000000000);
+    getCurrentFrame().renderFence.reset(context);
 
     // Request image from the swapchain, one second timeout
     swapchain.acquireNextImage(1000000000, getCurrentFrame().presentSemaphore, nullptr, swapchain.imageIndex);
@@ -181,7 +173,7 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
 
     // Submit command buffer to the queue and execute it.
     // renderFence will now block until the graphic commands finish execution
-    VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, getCurrentFrame().renderFence));
+    VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, getCurrentFrame().renderFence.handle));
 
     // Present the rendered image into the visible window
     swapchain.present(getCurrentFrame().renderSemaphore, swapchain.imageIndex);

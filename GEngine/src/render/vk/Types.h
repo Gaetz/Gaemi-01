@@ -10,6 +10,7 @@
 #include "../../math/Types.h"
 #include "DeletionQueue.h"
 #include "CommandBuffer.h"
+#include "Fence.h"
 
 using engine::math::Vec4;
 using engine::math::Mat4;
@@ -66,7 +67,7 @@ struct MeshPushConstants {
 
 struct FrameData {
     VkSemaphore presentSemaphore, renderSemaphore;
-    VkFence renderFence;
+    Fence renderFence;
 
     VkCommandPool commandPool;
     CommandBuffer mainCommandBuffer;
@@ -96,7 +97,7 @@ struct GPUObjectData {
 };
 
 struct UploadContext {
-    VkFence uploadFence;
+    Fence uploadFence;
     VkCommandPool commandPool;
 };
 

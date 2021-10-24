@@ -5,6 +5,7 @@
 #include "CommandBuffer.h"
 #include "Init.h"
 #include "Context.h"
+#include "Fence.h"
 
 using engine::render::vk::CommandBuffer;
 using engine::render::vk::Context;
@@ -85,7 +86,7 @@ void CommandBuffer::singleUseEnd(const engine::render::vk::Context &context, VkC
 }
 
 void CommandBuffer::singleUseEnd(const engine::render::vk::Context &context, VkCommandPool pool,
-                                                     VkQueue queue, VkFence fence) {
+                                                     VkQueue queue, Fence& fence) {
     end();
 
     VkSubmitInfo submitInfo {};
@@ -101,9 +102,9 @@ void CommandBuffer::singleUseEnd(const engine::render::vk::Context &context, VkC
 
     // Submit command buffer to the queue and execute it.
     // uploadFence will now block until the graphic commands finish execution
-    VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, fence));
-    VK_CHECK(vkWaitForFences(context.device, 1, &fence, true, 9999999999));
-    VK_CHECK(vkResetFences(context.device, 1, &fence));
+    VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, fence.handle));
+    fence.wait(context, 9999999999);
+    fence.reset(context);
 
     free(context, pool);
 }
