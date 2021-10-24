@@ -14,7 +14,7 @@
 #include "DeletionQueue.h"
 #include "Swapchain.h"
 #include "Context.h"
-#include "RenderPass.h"
+#include "Renderpass.h"
 #include "Framebuffer.h"
 
 using std::string;
@@ -53,7 +53,7 @@ namespace engine::render::vk {
         Swapchain swapchain { context };
 
         // Render pass and synchronisation
-        RenderPass renderPass { context, { 0, 0, context.windowExtent.width, context.windowExtent.height },
+        Renderpass renderpass { context, { 0, 0, context.windowExtent.width, context.windowExtent.height },
                                 { 0, 0, 0, 0 }, 1.0f, 0 };
         vector<Framebuffer> framebuffers {};
         array<FrameData, FRAME_OVERLAP> frames;
@@ -89,7 +89,7 @@ namespace engine::render::vk {
 
         void initCommands();
 
-        void initFramebuffers();
+        void regenerateFramebuffers();
 
         void initSyncStructures();
 

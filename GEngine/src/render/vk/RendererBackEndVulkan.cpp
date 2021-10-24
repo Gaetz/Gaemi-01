@@ -30,8 +30,8 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     context.init(appName);
     swapchain.init();
     initCommands();
-    renderPass.init(swapchain);
-    initFramebuffers();
+    renderpass.init(swapchain);
+    regenerateFramebuffers();
     initSyncStructures();
     initDescriptors();
     initPipelines();
@@ -84,7 +84,7 @@ void RendererBackEndVulkan::initCommands() {
     });
 }
 
-void RendererBackEndVulkan::initFramebuffers() {
+void RendererBackEndVulkan::regenerateFramebuffers() {
     // Grab how many images we have in the swapchain
     const uint32_t swapchainImageCount = swapchain.images.size();
     framebuffers.reserve(swapchainImageCount);
@@ -92,7 +92,7 @@ void RendererBackEndVulkan::initFramebuffers() {
     // Create framebuffers for each of the swapchain image views
     for (size_t i = 0; i < swapchainImageCount; ++i) {
         // Create framebuffer
-        framebuffers.push_back(Framebuffer(context, renderPass));
+        framebuffers.push_back(Framebuffer(context, renderpass));
         framebuffers[i].init(swapchain.imageViews[i], swapchain.depthImageView);
     }
 }
@@ -146,7 +146,7 @@ bool RendererBackEndVulkan::beginFrame(u32 dt) {
     // so we want to let Vulkan know that
     cmd.begin(true, false, false);
 
-    renderPass.begin(cmd, framebuffers[swapchain.imageIndex]);
+    renderpass.begin(cmd, framebuffers[swapchain.imageIndex]);
     return true;
 }
 
@@ -160,7 +160,7 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
     CommandBuffer cmd = getCurrentFrame().mainCommandBuffer;
 
     // Finalize the render pass
-    renderPass.end(cmd);
+    renderpass.end(cmd);
     // Finalize the command buffer (we can no longer add commands, but it can now be executed)
     cmd.end();
 
@@ -492,7 +492,7 @@ void RendererBackEndVulkan::initPipelines() {
 
     // Build pipeline & material
     pipelineBuilder.pipelineLayout = texturedMeshPipelineLayout;
-    meshPipeline = pipelineBuilder.buildPipeline(context.device, renderPass.handle);
+    meshPipeline = pipelineBuilder.buildPipeline(context.device, renderpass.handle);
     createMaterial(meshPipeline, texturedMeshPipelineLayout, "defaultMesh");
 
 

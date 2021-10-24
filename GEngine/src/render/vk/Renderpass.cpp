@@ -2,23 +2,23 @@
 // Created by gaetz on 23/10/2021.
 //
 
-#include "RenderPass.h"
+#include "Renderpass.h"
 #include "Framebuffer.h"
 
 #include <array>
 using std::array;
 
 
-using engine::render::vk::RenderPass;
+using engine::render::vk::Renderpass;
 
-RenderPass::RenderPass(Context &contextP, const Vec4 &renderZoneP, const Vec4 &clearColorP, f32 depthP, u32 stencilP) :
+Renderpass::Renderpass(Context &contextP, const Vec4 &renderZoneP, const Vec4 &clearColorP, f32 depthP, u32 stencilP) :
         context { contextP },
         renderZone { renderZoneP },
         clearColor { clearColorP },
         depth { depthP },
         stencil { stencilP } {}
 
-void RenderPass::init(const Swapchain& swapchain) {
+void Renderpass::init(const Swapchain& swapchain) {
     // -- COLOR ATTACHMENT --
     // The renderpass will use this color attachment.
     VkAttachmentDescription colorAttachment {};
@@ -110,12 +110,12 @@ void RenderPass::init(const Swapchain& swapchain) {
     });
 }
 
-void RenderPass::destroy() {
+void Renderpass::destroy() {
     vkDestroyRenderPass(context.device, handle, nullptr);
     handle = nullptr;
 }
 
-void RenderPass::begin(CommandBuffer &commandBuffer, const Framebuffer& framebuffer) {
+void Renderpass::begin(CommandBuffer &commandBuffer, const Framebuffer& framebuffer) {
     // Make a clear-color from frame number. This will flash with a 120*pi frame period.
     VkClearValue clearValue;
     clearValue.color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
@@ -144,7 +144,7 @@ void RenderPass::begin(CommandBuffer &commandBuffer, const Framebuffer& framebuf
     commandBuffer.state = CommandBufferState::InRenderPass;
 }
 
-void RenderPass::end(CommandBuffer &commandBuffer) {
+void Renderpass::end(CommandBuffer &commandBuffer) {
     vkCmdEndRenderPass(commandBuffer.handle);
     commandBuffer.state = CommandBufferState::Recording;
 }

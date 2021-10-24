@@ -13,11 +13,12 @@ using std::array;
 
 namespace engine::render::vk {
     class Context;
-    class RenderPass;
+    class Renderpass;
+    class Swapchain;
 
     class Framebuffer {
     public:
-        explicit Framebuffer(Context& contextP, RenderPass& renderpassP);
+        explicit Framebuffer(Context& contextP, Renderpass& renderpassP);
         void init(VkImageView imageView, VkImageView depthImageView);
         void destroy();
 
@@ -27,7 +28,7 @@ namespace engine::render::vk {
 
     private:
         Context& context;
-        RenderPass& renderpass;
+        Renderpass& renderpass;
         array<VkImageView, 2> attachments;
 
     };

@@ -3,11 +3,12 @@
 //
 
 #include "Framebuffer.h"
-#include "RenderPass.h"
+#include "Renderpass.h"
+#include "Swapchain.h"
 
 using engine::render::vk::Framebuffer;
 
-Framebuffer::Framebuffer(Context &contextP, RenderPass &renderpassP) : context { contextP }, renderpass { renderpassP }, attachments {} {
+Framebuffer::Framebuffer(Context &contextP, Renderpass &renderpassP) : context { contextP }, renderpass { renderpassP }, attachments {} {
 
 }
 
@@ -39,4 +40,5 @@ void Framebuffer::init(VkImageView imageView, VkImageView depthImageView) {
 void Framebuffer::destroy() {
     vkDestroyFramebuffer(context.device, handle, nullptr);
     vkDestroyImageView(context.device, attachments[0], nullptr);
+    handle = 0;
 }
