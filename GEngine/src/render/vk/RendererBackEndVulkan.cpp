@@ -173,6 +173,7 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
     // Submit command buffer to the queue and execute it.
     // renderFence will now block until the graphic commands finish execution
     VK_CHECK(vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, getCurrentFrame().renderFence.handle));
+    cmd.updateSubmitted();
 
     // Present the rendered image into the visible window
     swapchain.present(getCurrentFrame().renderSemaphore, swapchain.imageIndex);

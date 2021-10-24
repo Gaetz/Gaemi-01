@@ -30,7 +30,7 @@ namespace engine::render::vk {
         void free(const Context& context, VkCommandPool pool);
 
         /***
-         *
+         *  Begin to use the command buffer
          * @param isSingleUse
          * @param isRenderPassContinue
          * @param isSimultaneousUse

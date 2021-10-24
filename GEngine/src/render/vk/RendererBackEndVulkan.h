@@ -53,13 +53,15 @@ namespace engine::render::vk {
         Swapchain swapchain { context };
 
         // Render pass and synchronisation
-        Renderpass renderpass { context, { 0, 0, context.windowExtent.width, context.windowExtent.height },
-                                { 0, 0, 0, 0 }, 1.0f, 0 };
+        Renderpass renderpass { context,
+                                { 0, 0, context.windowExtent.width, context.windowExtent.height },
+                                { 0, 0, 0, 0 },
+                                1.0f,
+                                0 };
         vector<Framebuffer> framebuffers {};
         array<FrameData, FRAME_OVERLAP> frames;
 
         // Pipeline
-
         VkPipeline meshPipeline;
         VkPipelineLayout texturedMeshPipelineLayout;
 
