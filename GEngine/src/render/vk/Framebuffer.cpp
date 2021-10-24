@@ -39,6 +39,6 @@ void Framebuffer::init(VkImageView imageView, VkImageView depthImageView) {
 
 void Framebuffer::destroy() {
     vkDestroyFramebuffer(context.device, handle, nullptr);
-    vkDestroyImageView(context.device, attachments[0], nullptr);
     handle = 0;
+    // ImageView destruction is responsability of the swapchain
 }

@@ -99,7 +99,6 @@ void RendererBackEndVulkan::regenerateFramebuffers() {
 
 void RendererBackEndVulkan::initSyncStructures() {
     // Image fence and semaphores
-    VkFenceCreateInfo fenceCreateInfo = render::vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
     VkSemaphoreCreateInfo semaphoreCreateInfo = render::vk::semaphoreCreateInfo();
 
     for (int i = 0; i < FRAME_OVERLAP; ++i) {
@@ -157,7 +156,7 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
     cmd.end();
 
     // Prepare the submission to the queue.
-    // We want to wait on the presentSemaphore, as that semaphore is signaled when the swapchain is ready.
+    // We want to wait on the presentSemaphore, as that semaphore is isSignaled when the swapchain is ready.
     // We will signal the renderSemaphore, to signal that rendering has finished.
     VkSubmitInfo submitInfo {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

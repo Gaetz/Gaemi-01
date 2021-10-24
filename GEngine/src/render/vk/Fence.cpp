@@ -10,9 +10,9 @@ using engine::render::vk::Fence;
 using engine::render::vk::Context;
 
 void Fence::init(Context &context, bool isCreatedSignaled) {
-    signaled = isCreatedSignaled;
+    isSignaled = isCreatedSignaled;
     VkFenceCreateInfo fenceCreateInfo;
-    if (signaled) {
+    if (isSignaled) {
         fenceCreateInfo = render::vk::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
     } else {
         fenceCreateInfo = render::vk::fenceCreateInfo();
@@ -26,15 +26,15 @@ void Fence::init(Context &context, bool isCreatedSignaled) {
 
 void Fence::destroy(const Context& context) {
     vkDestroyFence(context.device, handle, nullptr);
-    signaled = false;
+    isSignaled = false;
 }
 
 bool Fence::wait(const Context &context, u64 timeout) {
-    if (!signaled) {
+    if (!isSignaled) {
         VkResult result = vkWaitForFences(context.device, 1, &handle, true, timeout);
         switch (result) {
             case VK_SUCCESS:
-                signaled = true;
+                isSignaled = true;
                 return true;
             case VK_TIMEOUT:
                 LOG(LogLevel::Warning) << "Fence wait - Timed out";
@@ -53,15 +53,15 @@ bool Fence::wait(const Context &context, u64 timeout) {
                 break;
         }
     } else {
-        // Already signaled, do not wait
+        // Already isSignaled, do not wait
         return true;
     }
     return false;
 }
 
 void Fence::reset(const Context &context) {
-    if(signaled) {
+    if(isSignaled) {
         VK_CHECK(vkResetFences(context.device, 1, &handle));
-        signaled = false;
+        isSignaled = false;
     }
 }

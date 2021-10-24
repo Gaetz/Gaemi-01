@@ -15,7 +15,7 @@ namespace engine::render::vk {
     class Fence {
     public:
         VkFence handle { nullptr };
-        bool signaled { false };
+        bool isSignaled { false };
 
         void init(Context& context, bool isCreatedSignaled);
         void destroy(const Context& context);

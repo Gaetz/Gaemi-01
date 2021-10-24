@@ -37,8 +37,12 @@ void engine::render::vk::Swapchain::create() {
     imageFormat = vkbSwapchain.image_format;
 
     // Cleanup callback
-    destroyHandle = [=]() { vkDestroySwapchainKHR(context.device, handle, nullptr); };
-
+    destroyHandle = [=]() {
+        for(auto& imageView : imageViews) {
+            vkDestroyImageView(context.device, imageView, nullptr);
+        }
+        vkDestroySwapchainKHR(context.device, handle, nullptr);
+    };
 
     // -- DEPTH BUFFER INIT --
     // Depth size matches window size

@@ -88,6 +88,8 @@ void engine::render::vk::Context::init(const string& appName) {
 }
 
 void engine::render::vk::Context::close() {
+    vkDeviceWaitIdle(device);
+
     mainDeletionQueue.flush();
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyDevice(device, nullptr);
