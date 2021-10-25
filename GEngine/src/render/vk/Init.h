@@ -16,6 +16,8 @@ class Engine;
 
 namespace engine::render::vk {
 
+    class Context;
+
     // Create a command pool for commands submitted to the graphics queue.
     VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex,
                                                   VkCommandPoolCreateFlags flags = 0);
@@ -78,6 +80,9 @@ namespace engine::render::vk {
 
     // Create descriptor write for Image
     VkWriteDescriptorSet writeDescriptorImage(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorImageInfo* imageInfo, uint32_t binding);
+
+    // Create semaphore
+    void initSemaphore(Context& context, VkSemaphore& semaphoreToCreate);
 }
 
 

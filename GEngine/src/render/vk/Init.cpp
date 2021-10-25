@@ -3,6 +3,7 @@
 //
 
 #include "Init.h"
+#include "Context.h"
 
 
 VkCommandPoolCreateInfo engine::render::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
@@ -258,4 +259,12 @@ VkWriteDescriptorSet engine::render::vk::writeDescriptorImage(VkDescriptorType t
     write.pImageInfo = imageInfo;
 
     return write;
+}
+
+void engine::render::vk::initSemaphore(Context& context, VkSemaphore& semaphoreToCreate) {
+    VkSemaphoreCreateInfo semaphoreCreateInfo = render::vk::semaphoreCreateInfo();
+    VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &semaphoreToCreate));
+    context.mainDeletionQueue.pushFunction([=]() {
+        vkDestroySemaphore(context.device, semaphoreToCreate, nullptr);
+    });
 }

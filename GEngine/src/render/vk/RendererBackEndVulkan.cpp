@@ -99,18 +99,10 @@ void RendererBackEndVulkan::regenerateFramebuffers() {
 
 void RendererBackEndVulkan::initSyncStructures() {
     // Image fence and semaphores
-    VkSemaphoreCreateInfo semaphoreCreateInfo = render::vk::semaphoreCreateInfo();
-
     for (int i = 0; i < FRAME_OVERLAP; ++i) {
         frames[i].renderFence.init(context, true);
-
-        VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &frames[i].presentSemaphore));
-        VK_CHECK(vkCreateSemaphore(context.device, &semaphoreCreateInfo, nullptr, &frames[i].renderSemaphore));
-        // Cleanup callbacks
-        context.mainDeletionQueue.pushFunction([=]() {
-            vkDestroySemaphore(context.device, frames[i].presentSemaphore, nullptr);
-            vkDestroySemaphore(context.device, frames[i].renderSemaphore, nullptr);
-        });
+        initSemaphore(context, frames[i].presentSemaphore);
+        initSemaphore(context, frames[i].renderSemaphore);
     }
 
     // Upload fence
