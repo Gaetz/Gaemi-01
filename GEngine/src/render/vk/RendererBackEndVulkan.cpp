@@ -389,25 +389,10 @@ void RendererBackEndVulkan::initDescriptors() {
 
 void RendererBackEndVulkan::initPipelines() {
     // -- SHADER MODULES --
-    VkShaderModule defaultLitFragShader;
-    if (!loadShaderModule("../../shaders/defaultLit.frag.spv", &defaultLitFragShader)) {
-        LOG(LogLevel::Error) << "Error when building the default textured fragment shader module";
-    } else {
-        LOG(LogLevel::Info) << "Default lit fragment shader successfully loaded";
-    }
-
-    VkShaderModule meshVertShader;
-    if (!loadShaderModule("../../shaders/triMesh.vert.spv", &meshVertShader)) {
-        LOG(LogLevel::Error) << "Error when building the triangle mesh vertex shader module";
-    } else {
-        LOG(LogLevel::Info) << "Mesh vertex shader successfully loaded";
-    }
-
+    defaultShader.init("default");
 
     // -- LAYOUT --
     // The pipeline layout that controls the inputs/outputs of the shader
-    // We are not using descriptor sets or other systems yet, so no need to use anything other than empty default
-    // Pipeline layout for push constants
     VkPipelineLayoutCreateInfo texturedMeshPipelineLayoutInfo = render::vk::pipelineLayoutCreateInfo();
 
     // Setup push constants
@@ -419,11 +404,12 @@ void RendererBackEndVulkan::initPipelines() {
     texturedMeshPipelineLayoutInfo.pushConstantRangeCount = 1;
     texturedMeshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
+    // Descriptor sets
     array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
     texturedMeshPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
     texturedMeshPipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
-    VK_CHECK(vkCreatePipelineLayout(context.device, &texturedMeshPipelineLayoutInfo, nullptr, &texturedMeshPipelineLayout));
+    VK_CHECK(vkCreatePipelineLayout(context.device, &texturedMeshPipelineLayoutInfo, nullptr, &meshPipeline.pipelineLayout));
 
 
     // -- BUILD PIPELINE --
@@ -431,18 +417,13 @@ void RendererBackEndVulkan::initPipelines() {
 
     // Clear the shader stages for the builder
     pipelineBuilder.shaderStages.clear();
-
-    // Shader stage
-    pipelineBuilder.shaderStages.push_back(
-            render::vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
-    pipelineBuilder.shaderStages.push_back(
-            render::vk::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, defaultLitFragShader));
+    pipelineBuilder.shaderStages = defaultShader.getStagesCreateInfo();
 
     // Vertex input controls how to read vertices from vertex buffers.
-    pipelineBuilder.vertexInputInfo = render::vk::vertexInputStateCreateInfo();
     render::vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
 
     // Connect the pipeline builder vertex input info to the one we get from Vertex
+    pipelineBuilder.vertexInputInfo = render::vk::vertexInputStateCreateInfo();
     pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
     pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
     pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
@@ -462,9 +443,6 @@ void RendererBackEndVulkan::initPipelines() {
     pipelineBuilder.scissor.offset = {0, 0};
     pipelineBuilder.scissor.extent = context.windowExtent;
 
-    // Configure the rasterizer to draw filled triangles
-    pipelineBuilder.rasterizer = render::vk::rasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
-
     // Multisampling
     pipelineBuilder.multisampling = render::vk::multisamplingStateCreateInfo();
 
@@ -475,19 +453,16 @@ void RendererBackEndVulkan::initPipelines() {
     pipelineBuilder.depthStencil = render::vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     // Build pipeline & material
-    pipelineBuilder.pipelineLayout = texturedMeshPipelineLayout;
-    meshPipeline = pipelineBuilder.buildPipeline(context.device, renderpass.handle);
-    createMaterial(meshPipeline, texturedMeshPipelineLayout, "defaultMesh");
+    pipelineBuilder.pipelineLayout = meshPipeline.pipelineLayout;
+    meshPipeline.init(pipelineBuilder, false);
+
+
+    // -- MATERIAL --
+    createMaterial(meshPipeline.handle, meshPipeline.pipelineLayout, "defaultMesh");
 
 
     // -- CLEANUP --
-    vkDestroyShaderModule(context.device, defaultLitFragShader, nullptr);
-    vkDestroyShaderModule(context.device, meshVertShader, nullptr);
-
-    context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroyPipeline(context.device, meshPipeline, nullptr);
-        vkDestroyPipelineLayout(context.device, texturedMeshPipelineLayout, nullptr);
-    });
+    defaultShader.destroy();
 }
 
 void RendererBackEndVulkan::initScene() {
@@ -717,7 +692,8 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObje
 
         // Bind pipeline if material is different
         if (object.material != lastMaterial) {
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipeline);
+            meshPipeline.bind(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
+            //vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipeline);
             lastMaterial = object.material;
 
             // -- CAMERA DESCRIPTOR --

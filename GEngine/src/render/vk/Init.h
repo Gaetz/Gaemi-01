@@ -29,7 +29,8 @@ namespace engine::render::vk {
 
     // Holds information about a single shader stage for the pipeline
     VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(VkShaderStageFlagBits shaderStage,
-                                                                  VkShaderModule shaderModule);
+                                                                  VkShaderModule shaderModule,
+                                                                  const char* name);
 
     // Contains the information for vertex buffers and vertex formats.
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo();

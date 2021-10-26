@@ -16,6 +16,7 @@
 #include "Context.h"
 #include "Renderpass.h"
 #include "Framebuffer.h"
+#include "Shader.h"
 
 using std::string;
 using std::vector;
@@ -62,8 +63,10 @@ namespace engine::render::vk {
         array<FrameData, FRAME_OVERLAP> frames;
 
         // Pipeline
-        VkPipeline meshPipeline;
-        VkPipelineLayout texturedMeshPipelineLayout;
+        Shader defaultShader { context };
+        Pipeline meshPipeline { context, renderpass };
+        //VkPipeline meshPipeline;
+        //VkPipelineLayout texturedMeshPipelineLayout;
 
         // Descriptor sets
 

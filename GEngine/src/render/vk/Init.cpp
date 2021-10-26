@@ -31,7 +31,8 @@ VkCommandBufferAllocateInfo engine::render::vk::commandBufferAllocateInfo(VkComm
 }
 
 VkPipelineShaderStageCreateInfo engine::render::vk::pipelineShaderStageCreateInfo(VkShaderStageFlagBits shaderStage,
-                                                                                  VkShaderModule shaderModule) {
+                                                                                  VkShaderModule shaderModule,
+                                                                                  const char* name) {
     VkPipelineShaderStageCreateInfo info {};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     info.pNext = nullptr;
@@ -39,7 +40,7 @@ VkPipelineShaderStageCreateInfo engine::render::vk::pipelineShaderStageCreateInf
     info.stage = shaderStage;
     info.module = shaderModule;
     // Entry point of the shader
-    info.pName = "main";
+    info.pName = name;
     return info;
 }
 
@@ -79,8 +80,8 @@ VkPipelineRasterizationStateCreateInfo engine::render::vk::rasterizationStateCre
     info.polygonMode = polygonMode;
     info.lineWidth = 1.0f;
     // No backface cull
-    info.cullMode = VK_CULL_MODE_NONE;
-    info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    info.cullMode = VK_CULL_MODE_BACK_BIT;
+    info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     // No depth bias
     info.depthBiasEnable = VK_FALSE;
     info.depthBiasConstantFactor = 0.0f;
@@ -110,7 +111,13 @@ VkPipelineColorBlendAttachmentState engine::render::vk::colorBlendAttachmentStat
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
+    colorBlendAttachment.blendEnable = VK_TRUE;
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
     return colorBlendAttachment;
 }
 

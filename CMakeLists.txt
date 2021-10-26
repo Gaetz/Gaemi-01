@@ -42,7 +42,7 @@ add_subdirectory( GTestBed )
 add_subdirectory( GGame )
 
 ## Vulkan validator
-find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
+find_program(GLSL_VALIDATOR glslc HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
 
 ## Find all the shader files under the shaders folder
 file(GLOB_RECURSE GLSL_SOURCE_FILES
