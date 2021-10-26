@@ -79,7 +79,7 @@ VkPipelineRasterizationStateCreateInfo engine::render::vk::rasterizationStateCre
     info.rasterizerDiscardEnable = VK_FALSE;
     info.polygonMode = polygonMode;
     info.lineWidth = 1.0f;
-    // No backface cull
+    // Backface cull
     info.cullMode = VK_CULL_MODE_BACK_BIT;
     info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     // No depth bias
