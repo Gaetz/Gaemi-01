@@ -172,40 +172,6 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
     return true;
 }
 
-bool RendererBackEndVulkan::loadShaderModule(const char* path, VkShaderModule* outShaderModule) {
-    // Open the file stream in binary mode and put cursor at end
-    std::ifstream file {path, std::ios::ate | std::ios::binary};
-    if (!file.is_open()) {
-        LOG(LogLevel::Error) << "Cannot read shader file " << path;
-        return false;
-    }
-    // Find what the size of the file is by looking up the location of the cursor, which is end of file.
-    auto fileSize = file.tellg();
-    // SpirV expects the buffer to be on uint32, so make sure to reserve an int vector big enough for the entire file.
-    vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
-    // Put file cursor at beginning.
-    file.seekg(0);
-    // Load the entire file into the buffer.
-    file.read((char*) buffer.data(), fileSize);
-    file.close();
-
-    // Create a new shader module, using the buffer we loaded
-    VkShaderModuleCreateInfo shaderModuleCreateInfo {};
-    shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderModuleCreateInfo.pNext = nullptr;
-    shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(uint32_t);
-    shaderModuleCreateInfo.pCode = buffer.data();
-
-    // Check that the creation goes well.
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(context.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        return false;
-    }
-    *outShaderModule = shaderModule;
-
-    return true;
-}
-
 AllocatedBuffer RendererBackEndVulkan::createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
     VkBufferCreateInfo bufferInfo {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -472,9 +438,9 @@ void RendererBackEndVulkan::initScene() {
     RenderObject monkey {};
     monkey.mesh = getMesh("monkey");
     monkey.material = getMaterial("defaultMesh");
-    monkey.transform = Mat4 {1.0f };
+    monkey.transform = math::translate(Mat4{1.0f}, Vec3{0, 0, -20});
     renderables.push_back(monkey);
-
+/*
     // Triangles
     for (int x = -20; x <= 20; ++x) {
         for (int y = -20; y <= 20; ++y) {
@@ -494,7 +460,7 @@ void RendererBackEndVulkan::initScene() {
     map.material = getMaterial("defaultMesh");
     map.transform = math::translate(Mat4{1.f}, Vec3{ 5,-10,0 });
     renderables.push_back(map);
-
+*/
     // Textures for lost empire
     VkSamplerCreateInfo samplerInfo = render::vk::samplerCreateInfo(VK_FILTER_NEAREST);
     VkSampler texSampler;
@@ -535,7 +501,7 @@ void RendererBackEndVulkan::loadMeshes() {
 
     // Load monkey from obj file
     Mesh monkeyMesh;
-    monkeyMesh.loadFromObj("../../assets/monkey_smooth.obj");
+    monkeyMesh.loadFromObj("../../assets/knot.obj");
 
     // Lost empire
     Mesh lostEmpire;

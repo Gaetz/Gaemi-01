@@ -45,9 +45,6 @@ namespace engine::render::vk {
         // Get the frame we are rendering right now
         render::vk::FrameData &getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
 
-        // Create a vulkan buffer
-        AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
-
 
     private:
         Context context;
@@ -104,9 +101,9 @@ namespace engine::render::vk {
 
         void initScene();
 
-        // Shaders and buffers
-
-        bool loadShaderModule(const char *path, VkShaderModule *outShaderModule);
+        // Buffers
+        // Create a vulkan buffer
+        AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 
         size_t padUniformBufferSize(size_t originalSize) const;
 
