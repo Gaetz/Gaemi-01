@@ -50,62 +50,56 @@ using engine::math::Mat4;
 
 namespace engine::render::vk {
 
-struct AllocatedBuffer {
-    VkBuffer buffer;
-    VmaAllocation allocation;
-};
+    struct AllocatedBuffer {
+        VkBuffer buffer;
+        VmaAllocation allocation;
+    };
 
-struct AllocatedImage {
-    VkImage image;
-    VmaAllocation allocation;
-};
+    struct AllocatedImage {
+        VkImage image;
+        VmaAllocation allocation;
+    };
 
-struct MeshPushConstants {
-    Vec4 data;
-    Mat4 renderMatrix;
-};
+    struct MeshPushConstants {
+        Vec4 data;
+        Mat4 renderMatrix;
+    };
 
-struct FrameData {
-    VkSemaphore presentSemaphore, renderSemaphore;
-    Fence renderFence;
+    struct FrameData {
+        VkSemaphore presentSemaphore, renderSemaphore;
+        Fence renderFence;
 
-    VkCommandPool commandPool;
-    CommandBuffer mainCommandBuffer;
-    AllocatedBuffer cameraBuffer;
-    VkDescriptorSet globalDescriptor;
+        VkCommandPool commandPool;
+        CommandBuffer mainCommandBuffer;
+        AllocatedBuffer cameraBuffer;
+        VkDescriptorSet globalDescriptor;
 
-    AllocatedBuffer objectBuffer;
-    VkDescriptorSet objectDescriptor;
-};
+        AllocatedBuffer objectBuffer;
+        VkDescriptorSet objectDescriptor;
+    };
 
-struct GPUCameraData {
-    Mat4 view;
-    Mat4 projection;
-    Mat4 viewProj;
-};
+    struct GPUCameraData {
+        Mat4 view;
+        Mat4 projection;
+        Mat4 viewProj;
+    };
 
-struct GPUSceneData {
-	Vec4 fogColor; // w is for exponent
-	Vec4 fogDistances; // x for min, y for max, zw unused.
-	Vec4 ambientColor;
-	Vec4 sunlightDirection; // w for sun power
-	Vec4 sunlightColor;
-};
+    struct GPUSceneData {
+        Vec4 fogColor; // w is for exponent
+        Vec4 fogDistances; // x for min, y for max, zw unused.
+        Vec4 ambientColor;
+        Vec4 sunlightDirection; // w for sun power
+        Vec4 sunlightColor;
+    };
 
-struct GPUObjectData {
-    Mat4 modelMatrix;
-};
+    struct GPUObjectData {
+        Mat4 modelMatrix;
+    };
 
-struct UploadContext {
-    Fence uploadFence;
-    VkCommandPool commandPool;
-};
-
-class Texture {
-public:
-    AllocatedImage image;
-    VkImageView imageView;
-};
+    struct UploadContext {
+        Fence uploadFence;
+        VkCommandPool commandPool;
+    };
 }
 
 #endif //RENDER_VK_TYPES_H

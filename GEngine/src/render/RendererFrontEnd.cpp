@@ -58,3 +58,15 @@ void RendererFrontEnd::onRezise(u16 width, u16 height) {
 
 }
 
+engine::render::vk::Texture RendererFrontEnd::loadTexture(const string &path) {
+    return backEnd->loadTexture(path);
+}
+
+void RendererFrontEnd::upload(engine::render::vk::Mesh &mesh) {
+    backEnd->uploadMesh(mesh);
+}
+
+void RendererFrontEnd::addToScene(engine::render::vk::GameObject &gameObject) {
+    backEnd->addToScene(gameObject);
+}
+

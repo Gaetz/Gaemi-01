@@ -18,25 +18,27 @@ using engine::math::Vec2;
 
 namespace engine::render::vk {
 
-struct VertexInputDescription {
-    vector<VkVertexInputBindingDescription> bindings;
-    vector<VkVertexInputAttributeDescription> attributes;
-};
+    struct VertexInputDescription {
+        vector<VkVertexInputBindingDescription> bindings;
+        vector<VkVertexInputAttributeDescription> attributes;
+    };
 
-struct Vertex {
-    Vec3 position;
-    Vec3 normal;
-    Vec3 color;
-    Vec2 uv;
-    static VertexInputDescription getVertexDescription();
-};
+    struct Vertex {
+        Vec3 position;
+        Vec3 normal;
+        Vec3 color;
+        Vec2 uv;
 
-struct Mesh {
-    vector<Vertex> vertices;
-    AllocatedBuffer vertexBuffer;
+        static VertexInputDescription getVertexDescription();
+    };
 
-    bool loadFromObj(const string& filename);
-};
+    class Mesh {
+    public:
+        vector<Vertex> vertices;
+        AllocatedBuffer vertexBuffer;
+
+        bool loadFromObj(const string &filename);
+    };
 
 }
 #endif //RENDER_VK_MESH_H

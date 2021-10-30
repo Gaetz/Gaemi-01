@@ -1,5 +1,5 @@
 #include "Timer.h"
-#include "Engine.h"
+#include "Locator.h"
 
 using engine::Timer;
 
@@ -23,7 +23,7 @@ void Timer::delayTime(const Engine& engine, u64 absoluteTime)
 {
     frameTime = static_cast<u32>(absoluteTime - frameStart);
     if (frameTime < frameDelay) {
-        engine.sleep(static_cast<u32>(frameDelay - frameTime));
+        Locator::platform().sleep(static_cast<u32>(frameDelay - frameTime));
     }
 }
 

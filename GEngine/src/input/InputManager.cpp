@@ -4,7 +4,6 @@
 
 #include "InputManager.h"
 #include "../math/Functions.h"
-#include "../Engine.h"
 #include "../Locator.h"
 
 using engine::input::InputManager;

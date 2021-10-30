@@ -10,13 +10,14 @@
 #include <vector>
 #include <unordered_map>
 #include "../RendererBackEnd.h"
-#include "RenderObject.h"
+#include "GameObject.h"
 #include "DeletionQueue.h"
 #include "Swapchain.h"
 #include "Context.h"
 #include "Renderpass.h"
 #include "Framebuffer.h"
 #include "Shader.h"
+#include "Texture.h"
 
 using std::string;
 using std::vector;
@@ -43,8 +44,11 @@ namespace engine::render::vk {
         void resize() override;
 
         // Get the frame we are rendering right now
-        render::vk::FrameData &getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
+        FrameData &getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
 
+        Texture loadTexture(const string& path) override;
+        void uploadMesh(Mesh &mesh) override;
+        void addToScene(vk::GameObject& gameObject) override;
 
     private:
         Context context;
@@ -74,9 +78,9 @@ namespace engine::render::vk {
 
         // Meshes
 
-        vector<RenderObject> renderables;
+        vector<GameObject> renderables;
         unordered_map<string, render::vk::Material> materials;
-        unordered_map<string, Mesh> meshes;
+        //unordered_map<string, Mesh> meshes;
 
         // Scene data
 
@@ -86,8 +90,10 @@ namespace engine::render::vk {
         // Transfer and textures
 
         render::vk::UploadContext uploadContext;
-        unordered_map<string, render::vk::Texture> textures;
 
+        bool loadTextureFromFile(const string &path, render::vk::AllocatedImage &outImage);
+
+        // Initialization
 
         void initCommands();
 
@@ -99,7 +105,7 @@ namespace engine::render::vk {
 
         void initPipelines();
 
-        void initScene();
+        void loadDefaultAssets();
 
         // Buffers
         // Create a vulkan buffer
@@ -107,26 +113,9 @@ namespace engine::render::vk {
 
         size_t padUniformBufferSize(size_t originalSize) const;
 
-        // Meshes
-
-        void loadMeshes();
-
-        void uploadMesh(Mesh &mesh);
-
-        render::vk::Material *
-        createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string &name);
-
-        render::vk::Material *getMaterial(const string &name);
-
-        Mesh *getMesh(const string &name);
-
-        void loadImages();
-
-        bool loadImageFromFile(const string &path, render::vk::AllocatedImage &outImage);
-
         // Draw & commands
 
-        void drawObjects(CommandBuffer& commandBuffer, RenderObject *first, size_t count);
+        void drawObjects(CommandBuffer& commandBuffer, GameObject *first, size_t count);
 
         void immediateSubmit(std::function<void(VkCommandBuffer cmd)> &&submittedFunc);
 

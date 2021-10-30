@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include <fstream>
 #include "Timer.h"
+#include "Locator.h"
 
 
 using engine::Engine;
@@ -8,6 +9,8 @@ using engine::input::InputState;
 using std::array;
 using engine::mem::MemoryManager;
 using engine::mem::MemoryTag;
+
+RendererFrontEnd Engine::renderer {};
 
 GAPI Engine::Engine(const EngineConfig& configP) :
     config { configP },
@@ -18,7 +21,7 @@ void Engine::run() {
     Timer timer;
     state.game->load();
     while (state.isRunning) {
-        u64 time = getAbsoluteTime();
+        u64 time = Locator::platform().getAbsoluteTimeMs();
         u32 dt = timer.computeDeltaTime(time);
 
         // Input
@@ -47,6 +50,11 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     state.memoryManager.init(state.platform);
     state.memoryManager.addAllocated(sizeOfGameClass, MemoryTag::Game);
 
+    bool assetsIgnited = assets.init();
+    if (assetsIgnited) {
+        LOG(LogLevel::Trace) << "Assets initialized";
+    }
+
     bool rendererIgnited = renderer.init(config.name, config.startWidth, config.startHeight);
     if (rendererIgnited) {
         LOG(LogLevel::Trace) << "Renderer initialized";
@@ -58,12 +66,12 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
     }
     state.eventManager.subscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
 
-    bool inputsIngnited = inputSystem.init();
-    if (inputsIngnited) {
+    bool inputsIgnited = inputSystem.init();
+    if (inputsIgnited) {
         LOG(LogLevel::Trace) << "Inputs initialized";
     }
 
-    state.isInitialized = platformIgnited && rendererIgnited && eventsIgnited && inputsIngnited;
+    state.isInitialized = platformIgnited && rendererIgnited && eventsIgnited && inputsIgnited && assetsIgnited;
 
     if(!state.isInitialized) {
         LOG(LogLevel::Fatal) << "Subsystem not initialized. Application will shut down.";
@@ -85,6 +93,7 @@ void Engine::close() {
         renderer.close();
         state.eventManager.unsubscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
         state.game->close();
+        assets.close();
         inputSystem.close();
         state.eventManager.close();
         state.platform->close();
@@ -109,23 +118,6 @@ void Engine::update(u32 dt) {
     state.game->update(dt);
 }
 
-u64 Engine::getAbsoluteTime() const {
-    return state.platform->getAbsoluteTimeMs();
-}
-
-f64 Engine::getAbsoluteTimeSeconds() const {
-    return state.platform->getAbsoluteTimeSeconds();
-}
-
-void Engine::sleep(u64 ms) const {
-    state.platform->sleep(ms);
-}
-
-
-std::array<char, 19> engine::Engine::getDate() {
-    return state.platform->getDate();
-}
-
 bool engine::Engine::handleEngineEvent(EventCode code, void* sender, void* listenerInstance, EventContext context) {
     switch (code) {
         case EventCode::ApplicationQuit:
@@ -145,4 +137,8 @@ void Engine::draw(u32 dt) {
     render::RenderPacket renderPacket;
     renderPacket.dt = dt;
     renderer.drawFrame(renderPacket);
+}
+
+void Engine::addToScene(engine::render::vk::GameObject &gameObject) {
+    renderer.addToScene(gameObject);
 }

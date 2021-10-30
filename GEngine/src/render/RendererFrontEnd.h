@@ -7,6 +7,9 @@
 
 #include "Types.h"
 #include "RendererBackEnd.h"
+#include "vk/Texture.h"
+#include "vk/Mesh.h"
+#include "vk/GameObject.h"
 
 using std::string;
 
@@ -23,6 +26,10 @@ namespace engine::render {
         bool beginFrame(u32 dt);
         bool endFrame(u32 dt);
         bool drawFrame(const engine::render::RenderPacket &packet);
+
+        vk::Texture loadTexture(const string& path);
+        void upload(vk::Mesh& mesh);
+        void addToScene(engine::render::vk::GameObject &gameObject);
 
     private:
         RendererBackEnd *backEnd;

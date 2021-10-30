@@ -14,6 +14,12 @@ constexpr unsigned int MAX_OBJECTS = 10000;
 
 namespace engine::render {
 
+    namespace vk {
+        class Texture;
+        class Mesh;
+        class GameObject;
+    }
+
     class RendererBackEnd {
     public:
         virtual ~RendererBackEnd() = default;
@@ -30,6 +36,11 @@ namespace engine::render {
 
         virtual void resize() = 0;
 
+        virtual vk::Texture loadTexture(const string& path) = 0;
+
+        virtual void uploadMesh(vk::Mesh &mesh) = 0;
+
+        virtual void addToScene(vk::GameObject& gameObject) = 0;
 
         void incrementFrame() { ++frameNumber; }
 

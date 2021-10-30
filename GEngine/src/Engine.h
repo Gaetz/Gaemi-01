@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <array>
 #include <functional>
+#include <GameObject.h>
 
 #include "Defines.h"
 #include "Game.h"
@@ -17,6 +18,7 @@
 #include "mem/MemoryManager.h"
 #include "EventManager.h"
 #include "render/RendererFrontEnd.h"
+#include "asset/AssetManager.h"
 
 using std::vector;
 using std::unordered_map;
@@ -31,6 +33,7 @@ using game::Game;
 using engine::mem::MemoryManager;
 using engine::EventManager;
 using engine::render::RendererFrontEnd;
+using engine::asset::AssetManager;
 
 namespace engine {
 
@@ -64,7 +67,8 @@ class Engine {
 private:
     EngineState state;
     EngineConfig config;
-    RendererFrontEnd renderer;
+    static RendererFrontEnd renderer;
+    AssetManager assets { renderer };
 
 public:
     GAPI explicit Engine(const EngineConfig& configP);
@@ -90,18 +94,10 @@ public:
     // Draw loop
     void draw(u32 dt);
 
-    // Get time since game started in milliseconds
-    GAPI u64 getAbsoluteTime() const;
+    // Add a game object in the scene
+    static GAPI void addToScene(engine::render::vk::GameObject& gameObject);
 
-    // Get time since game started in seconds
-    GAPI f64 getAbsoluteTimeSeconds() const;
-
-    // Make the engine sleep for a time in milliseconds
-    GAPI void sleep(u64 ms) const;
-
-    // Get a formatted date
-    GAPI std::array<char, 19> getDate();
-
+    // Events
     bool handleEngineEvent(EventCode code, void* sender, void* listenerInstance, EventContext context);
 
     EventCallback onEngineEvent = [this](EventCode code, void* sender, void* listInst, EventContext context) {

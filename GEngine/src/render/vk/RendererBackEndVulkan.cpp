@@ -5,9 +5,11 @@
 #include "RendererBackEndVulkan.h"
 
 #define VMA_IMPLEMENTATION
+
 #include <vk_mem_alloc.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 #include <SDL2/SDL_vulkan.h>
@@ -22,6 +24,7 @@
 using engine::render::vk::PipelineBuilder;
 using engine::render::vk::Vertex;
 using engine::render::vk::RendererBackEndVulkan;
+using engine::render::vk::Texture;
 
 bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     context.windowExtent.width = width;
@@ -35,9 +38,7 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     initSyncStructures();
     initDescriptors();
     initPipelines();
-    loadMeshes();
-    loadImages();
-    initScene();
+    loadDefaultAssets();
     return true;
 }
 
@@ -63,7 +64,7 @@ void RendererBackEndVulkan::initCommands() {
     auto commandPoolInfo = render::vk::commandPoolCreateInfo(context.graphicsQueueFamily,
                                                              VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-    for(int i = 0; i < FRAME_OVERLAP; ++i) {
+    for (int i = 0; i < FRAME_OVERLAP; ++i) {
         FrameData& frame = frames[i];
         VK_CHECK(vkCreateCommandPool(context.device, &commandPoolInfo, nullptr, &frame.commandPool));
 
@@ -92,7 +93,7 @@ void RendererBackEndVulkan::regenerateFramebuffers() {
     // Create framebuffers for each of the swapchain image views
     for (size_t i = 0; i < swapchainImageCount; ++i) {
         // Create framebuffer
-        framebuffers.push_back(Framebuffer(context, renderpass));
+        framebuffers.emplace_back(context, renderpass);
         framebuffers[i].init(swapchain.imageViews[i], swapchain.depthImageView);
     }
 }
@@ -172,7 +173,8 @@ bool RendererBackEndVulkan::endFrame(u32 dt) {
     return true;
 }
 
-AllocatedBuffer RendererBackEndVulkan::createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
+AllocatedBuffer
+RendererBackEndVulkan::createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
     VkBufferCreateInfo bufferInfo {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.pNext = nullptr;
@@ -191,7 +193,7 @@ AllocatedBuffer RendererBackEndVulkan::createBuffer(size_t allocSize, VkBufferUs
                              &allocatedBuffer.allocation,
                              nullptr));
 
-    context.mainDeletionQueue.pushFunction([=](){
+    context.mainDeletionQueue.pushFunction([=]() {
         vmaDestroyBuffer(context.allocator, allocatedBuffer.buffer, allocatedBuffer.allocation);
     });
     return allocatedBuffer;
@@ -212,9 +214,9 @@ size_t RendererBackEndVulkan::padUniformBufferSize(size_t originalSize) const {
 void RendererBackEndVulkan::initDescriptors() {
     // Create a descriptor pool that will hold 10 uniform buffers
     vector<VkDescriptorPoolSize> sizes {
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         10 },
             { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         10 },
             { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10 }
     };
     VkDescriptorPoolCreateInfo poolInfo {};
@@ -224,7 +226,7 @@ void RendererBackEndVulkan::initDescriptors() {
     poolInfo.poolSizeCount = static_cast<uint32_t>(sizes.size());
     poolInfo.pPoolSizes = sizes.data();
     VK_CHECK(vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &descriptorPool));
-    context.mainDeletionQueue.pushFunction([=](){
+    context.mainDeletionQueue.pushFunction([=]() {
         vkDestroyDescriptorPool(context.device, descriptorPool, nullptr);
     });
 
@@ -251,13 +253,14 @@ void RendererBackEndVulkan::initDescriptors() {
     setInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     setInfo.pBindings = bindings.data();
     VK_CHECK(vkCreateDescriptorSetLayout(context.device, &setInfo, nullptr, &globalSetLayout));
-    context.mainDeletionQueue.pushFunction([=](){
+    context.mainDeletionQueue.pushFunction([=]() {
         vkDestroyDescriptorSetLayout(context.device, globalSetLayout, nullptr);
     });
 
     // Uniform buffer for scene data: two scene params (one for each frame) in same buffer
     const size_t sceneParamBufferSize = FRAME_OVERLAP * padUniformBufferSize(sizeof(render::vk::GPUSceneData));
-    sceneParamsBuffer = createBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    sceneParamsBuffer = createBuffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                     VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     // -- STORAGE BUFFER for objects --
     VkDescriptorSetLayoutBinding objectBind = render::vk::descriptorSetLayoutBinding(
@@ -271,7 +274,7 @@ void RendererBackEndVulkan::initDescriptors() {
     set2Info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     set2Info.pBindings = &objectBind;
     VK_CHECK(vkCreateDescriptorSetLayout(context.device, &set2Info, nullptr, &objectSetLayout));
-    context.mainDeletionQueue.pushFunction([=](){
+    context.mainDeletionQueue.pushFunction([=]() {
         vkDestroyDescriptorSetLayout(context.device, objectSetLayout, nullptr);
     });
 
@@ -287,12 +290,12 @@ void RendererBackEndVulkan::initDescriptors() {
     set3info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     set3info.pBindings = &textureBind;
     VK_CHECK(vkCreateDescriptorSetLayout(context.device, &set3info, nullptr, &singleTextureSetLayout));
-    context.mainDeletionQueue.pushFunction([=](){
+    context.mainDeletionQueue.pushFunction([=]() {
         vkDestroyDescriptorSetLayout(context.device, singleTextureSetLayout, nullptr);
     });
 
     // -- CREATE BUFFERS FOR EACH FRAMES --
-    for(int i = 0; i < FRAME_OVERLAP; ++i) {
+    for (int i = 0; i < FRAME_OVERLAP; ++i) {
         frames[i].cameraBuffer = createBuffer(sizeof(render::vk::GPUCameraData),
                                               VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                               VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -342,15 +345,19 @@ void RendererBackEndVulkan::initDescriptors() {
         objectBufferInfo.range = sizeof(render::vk::GPUObjectData) * MAX_OBJECTS;
 
         // Writes
-        VkWriteDescriptorSet cameraWrite = render::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frames[i].globalDescriptor, &cameraInfo, 0);
-        VkWriteDescriptorSet sceneWrite = render::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, frames[i].globalDescriptor, &sceneInfo, 1);
-        VkWriteDescriptorSet objectWrite = render::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, frames[i].objectDescriptor, &objectBufferInfo, 0);
+        VkWriteDescriptorSet cameraWrite = render::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                                             frames[i].globalDescriptor, &cameraInfo,
+                                                                             0);
+        VkWriteDescriptorSet sceneWrite = render::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+                                                                            frames[i].globalDescriptor, &sceneInfo, 1);
+        VkWriteDescriptorSet objectWrite = render::vk::writeDescriptorBuffer(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                                                             frames[i].objectDescriptor,
+                                                                             &objectBufferInfo, 0);
         array<VkWriteDescriptorSet, 3> setWrites { cameraWrite, sceneWrite, objectWrite };
 
         vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(setWrites.size()), setWrites.data(), 0, nullptr);
     }
 }
-
 
 
 void RendererBackEndVulkan::initPipelines() {
@@ -375,7 +382,8 @@ void RendererBackEndVulkan::initPipelines() {
     texturedMeshPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
     texturedMeshPipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
-    VK_CHECK(vkCreatePipelineLayout(context.device, &texturedMeshPipelineLayoutInfo, nullptr, &meshPipeline.pipelineLayout));
+    VK_CHECK(vkCreatePipelineLayout(context.device, &texturedMeshPipelineLayoutInfo, nullptr,
+                                    &meshPipeline.pipelineLayout));
 
 
     // -- BUILD PIPELINE --
@@ -406,7 +414,7 @@ void RendererBackEndVulkan::initPipelines() {
     pipelineBuilder.viewport.minDepth = 0.0f;
     pipelineBuilder.viewport.maxDepth = 1.0f;
 
-    pipelineBuilder.scissor.offset = {0, 0};
+    pipelineBuilder.scissor.offset = { 0, 0 };
     pipelineBuilder.scissor.extent = context.windowExtent;
 
     // Multisampling
@@ -423,72 +431,16 @@ void RendererBackEndVulkan::initPipelines() {
     meshPipeline.init(pipelineBuilder, false);
 
 
-    // -- MATERIAL --
-    createMaterial(meshPipeline.handle, meshPipeline.pipelineLayout, "defaultMesh");
 
+    // -- MATERIAL --
+    Locator::assets().createMaterial(meshPipeline.handle, meshPipeline.pipelineLayout, "default");
 
     // -- CLEANUP --
     defaultShader.destroy();
 }
 
-void RendererBackEndVulkan::initScene() {
-    // Our scene will be composed of a monkey and triangles
-
-    // Monkey
-    RenderObject monkey {};
-    monkey.mesh = getMesh("monkey");
-    monkey.material = getMaterial("defaultMesh");
-    monkey.transform = math::translate(Mat4{1.0f}, Vec3{0, 0, -20});
-    renderables.push_back(monkey);
-/*
-    // Triangles
-    for (int x = -20; x <= 20; ++x) {
-        for (int y = -20; y <= 20; ++y) {
-            RenderObject triangle {};
-            triangle.mesh = getMesh("triangle");
-            triangle.material = getMaterial("defaultMesh");
-            Mat4 translation = math::translate(Mat4{1.0f}, Vec3{x, 0, y});
-            Mat4 scale = math::scale(Mat4{1.0f}, Vec3{0.2f, 0.2f, 0.2f});
-            triangle.transform = translation * scale;
-            renderables.push_back(triangle);
-        }
-    }
-
-    // Add lost empire
-    RenderObject map;
-    map.mesh = getMesh("lostEmpire");
-    map.material = getMaterial("defaultMesh");
-    map.transform = math::translate(Mat4{1.f}, Vec3{ 5,-10,0 });
-    renderables.push_back(map);
-*/
-    // Textures for lost empire
-    VkSamplerCreateInfo samplerInfo = render::vk::samplerCreateInfo(VK_FILTER_NEAREST);
-    VkSampler texSampler;
-    vkCreateSampler(context.device, &samplerInfo, nullptr, &texSampler);
-    context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroySampler(context.device, texSampler, nullptr);
-    });
-    render::vk::Material* texturedMat =	getMaterial("defaultMesh");
-
-    // Allocate the descriptor set for single-texture to use on the material
-    VkDescriptorSetAllocateInfo allocInfo {};
-    allocInfo.pNext = nullptr;
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &singleTextureSetLayout;
-    vkAllocateDescriptorSets(context.device, &allocInfo, &texturedMat->textureSet);
-
-    // Write to the descriptor set so that it points to our texture
-    VkDescriptorImageInfo imageBufferInfo;
-    imageBufferInfo.sampler = texSampler;
-    imageBufferInfo.imageView = textures["default"].imageView;
-    imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
-    vkUpdateDescriptorSets(context.device, 1, &texture1, 0, nullptr);
-}
-
-void RendererBackEndVulkan::loadMeshes() {
+void RendererBackEndVulkan::loadDefaultAssets() {
+        /*
     // Load triangle
     Mesh triangleMesh;
     triangleMesh.vertices.resize(3);
@@ -515,6 +467,70 @@ void RendererBackEndVulkan::loadMeshes() {
     meshes["triangle"] = triangleMesh;
     meshes["monkey"] = monkeyMesh;
     meshes["lostEmpire"] = lostEmpire;
+     */
+
+    // Our scene will be composed of a monkey and triangles
+
+    /*
+    GameObject monkey {};
+    monkey.mesh = getMesh("monkey");
+    monkey.material = getMaterial("defaultMesh");
+    monkey.transform = math::translate(Mat4{1.0f}, Vec3{0, 0, -20});
+    renderables.push_back(monkey);
+*/
+    /*
+    // Monkey
+    GameObject monkey {};
+    monkey.mesh = getMesh("monkey");
+    monkey.material = getMaterial("defaultMesh");
+    monkey.transform = math::translate(Mat4{1.0f}, Vec3{0, 0, -20});
+    renderables.push_back(monkey);
+     */
+/*
+    // Triangles
+    for (int x = -20; x <= 20; ++x) {
+        for (int y = -20; y <= 20; ++y) {
+            GameObject triangle {};
+            triangle.mesh = getMesh("triangle");
+            triangle.material = getMaterial("defaultMesh");
+            Mat4 translation = math::translate(Mat4{1.0f}, Vec3{x, 0, y});
+            Mat4 scale = math::scale(Mat4{1.0f}, Vec3{0.2f, 0.2f, 0.2f});
+            triangle.transform = translation * scale;
+            renderables.push_back(triangle);
+        }
+    }
+
+    // Add lost empire
+    GameObject map;
+    map.mesh = getMesh("lostEmpire");
+    map.material = getMaterial("defaultMesh");
+    map.transform = math::translate(Mat4{1.f}, Vec3{ 5,-10,0 });
+    renderables.push_back(map);
+*/
+
+    Locator::assets().loadTexture("../../assets/default.png", "default");
+
+    // Texture to shader
+
+    render::vk::Material* texturedMat = &Locator::assets().getMaterial("default");
+
+    // Allocate the descriptor set for single-texture to use on the material
+    VkDescriptorSetAllocateInfo allocInfo {};
+    allocInfo.pNext = nullptr;
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &singleTextureSetLayout;
+    vkAllocateDescriptorSets(context.device, &allocInfo, &texturedMat->textureSet);
+
+    // Write to the descriptor set so that it points to our texture
+    VkDescriptorImageInfo imageBufferInfo;
+    imageBufferInfo.sampler = Locator::assets().getTexture("default").sampler;;
+    imageBufferInfo.imageView = Locator::assets().getTexture("default").imageView;
+    imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                     texturedMat->textureSet, &imageBufferInfo, 0);
+    vkUpdateDescriptorSets(context.device, 1, &texture1, 0, nullptr);
 }
 
 void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
@@ -581,6 +597,7 @@ void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
     vmaDestroyBuffer(context.allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 }
 
+/*
 engine::render::vk::Material*
 RendererBackEndVulkan::createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) {
     engine::render::vk::Material material {};
@@ -607,17 +624,19 @@ engine::render::vk::Mesh* RendererBackEndVulkan::getMesh(const string& name) {
         return &(*it).second;
     }
 }
+*/
 
-void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObject* first, size_t count) {
+void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, GameObject* first, size_t count) {
     VkCommandBuffer cmd = commandBuffer.handle;
 
     // View and projection
-    Vec3 camPos {0.f, -6.f, -10.f};
-    Mat4 view = math::translate(Mat4{1.f}, camPos);
+    Vec3 camPos { 0.f, -6.f, -10.f };
+    Mat4 view = math::translate(Mat4 { 1.f }, camPos);
     Mat4 projection = math::perspective(math::toRad(70.f),
-                                        static_cast<float>(context.windowExtent.width) / static_cast<float>(context.windowExtent.height),
+                                        static_cast<float>(context.windowExtent.width) /
+                                        static_cast<float>(context.windowExtent.height),
                                         0.1f, 200.f);
-    projection[1][1] *= -1;
+    projection[1][1] *= -1; // Inverse vertical axis for Vulkan
 
     // Fill GPUCamera data struct and copy it to the buffer
     render::vk::GPUCameraData cameraData {};
@@ -631,10 +650,10 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObje
 
     // Fill GPUSceneData with random ambient color
     float framed = static_cast<float>(frameNumber) / 120.0f;
-    sceneParams.ambientColor = { math::sin(framed), 0, math::cos(framed), 1};
+    sceneParams.ambientColor = { math::sin(framed), 0, math::cos(framed), 1 };
 
     char* sceneData;
-    vmaMapMemory(context.allocator, sceneParamsBuffer.allocation, (void**)&sceneData);
+    vmaMapMemory(context.allocator, sceneParamsBuffer.allocation, (void**) &sceneData);
     unsigned int frameIndex = frameNumber % FRAME_OVERLAP;
     sceneData += padUniformBufferSize(sizeof(render::vk::GPUSceneData)) * frameIndex;
     memcpy(sceneData, &sceneParams, sizeof(render::vk::GPUSceneData));
@@ -643,9 +662,9 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObje
     // Fill storage buffer with object model matrices
     void* objectData;
     vmaMapMemory(context.allocator, getCurrentFrame().objectBuffer.allocation, &objectData);
-    render::vk::GPUObjectData* objectSSBO = (render::vk::GPUObjectData*)objectData;
+    render::vk::GPUObjectData* objectSSBO = (render::vk::GPUObjectData*) objectData;
     for (int i = 0; i < count; ++i) {
-        RenderObject& object = first[i];
+        GameObject& object = first[i];
         objectSSBO[i].modelMatrix = object.transform;
     }
     vmaUnmapMemory(context.allocator, getCurrentFrame().objectBuffer.allocation);
@@ -654,7 +673,7 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObje
     Mesh* lastMesh = nullptr;
     render::vk::Material* lastMaterial = nullptr;
     for (int i = 0; i < count; ++i) {
-        RenderObject& object = first[i];
+        GameObject& object = first[i];
 
         // Bind pipeline if material is different
         if (object.material != lastMaterial) {
@@ -666,10 +685,12 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, RenderObje
             // Offset for scene data dynamic buffer
             uint32_t uniformOffset = padUniformBufferSize(sizeof(render::vk::GPUSceneData)) * frameIndex;
             // Bind descriptor set when changing pipeline
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1, &getCurrentFrame().globalDescriptor, 1, &uniformOffset);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 0, 1,
+                                    &getCurrentFrame().globalDescriptor, 1, &uniformOffset);
 
             // -- OBJECT DATA DESCRIPTOR --
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 1, 1, &getCurrentFrame().objectDescriptor, 0, nullptr);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipelineLayout, 1, 1,
+                                    &getCurrentFrame().objectDescriptor, 0, nullptr);
 
             // -- TEXTURE --
             if (object.material->textureSet != VK_NULL_HANDLE) {
@@ -717,21 +738,29 @@ void RendererBackEndVulkan::immediateSubmit(std::function<void(VkCommandBuffer)>
     vkResetCommandPool(context.device, uploadContext.commandPool, 0);
 }
 
-void RendererBackEndVulkan::loadImages() {
-    render::vk::Texture defaultTexture {};
-    loadImageFromFile("../../assets/default.png", defaultTexture.image);
+Texture RendererBackEndVulkan::loadTexture(const string& path) {
+    render::vk::Texture texture {};
+    loadTextureFromFile(path, texture.image);
 
-    VkImageViewCreateInfo imageViewInfo = render::vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, defaultTexture.image.image, VK_IMAGE_ASPECT_COLOR_BIT);
-    vkCreateImageView(context.device, &imageViewInfo, nullptr, &defaultTexture.imageView);
+    // Image view
+    VkImageViewCreateInfo imageViewInfo = render::vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, texture.image.image,
+                                                                          VK_IMAGE_ASPECT_COLOR_BIT);
+    vkCreateImageView(context.device, &imageViewInfo, nullptr, &texture.imageView);
     context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroyImageView(context.device, defaultTexture.imageView, nullptr);
+        vkDestroyImageView(context.device, texture.imageView, nullptr);
     });
 
-    textures["default"] = defaultTexture;
+    // Sampler
+    VkSamplerCreateInfo samplerInfo = render::vk::samplerCreateInfo(VK_FILTER_NEAREST);
+    vkCreateSampler(context.device, &samplerInfo, nullptr, &texture.sampler);
+    context.mainDeletionQueue.pushFunction([=]() {
+        vkDestroySampler(context.device, texture.sampler, nullptr);
+    });
+
+    return texture;
 }
 
-bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::AllocatedImage& outImage)
-{
+bool RendererBackEndVulkan::loadTextureFromFile(const string& path, render::vk::AllocatedImage& outImage) {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     if (!pixels) {
@@ -742,7 +771,8 @@ bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::Al
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
-    AllocatedBuffer stagingBuffer = createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+    AllocatedBuffer stagingBuffer = createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                 VMA_MEMORY_USAGE_CPU_ONLY);
 
     void* data;
     vmaMapMemory(context.allocator, stagingBuffer.allocation, &data);
@@ -756,12 +786,16 @@ bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::Al
     imageExtent.depth = 1;
 
     render::vk::AllocatedImage newImage {};
-    VkImageCreateInfo imageCreateInfo = render::vk::imageCreateInfo(imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, imageExtent);
+    VkImageCreateInfo imageCreateInfo = render::vk::imageCreateInfo(imageFormat,
+                                                                    VK_IMAGE_USAGE_SAMPLED_BIT |
+                                                                    VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                                                    imageExtent);
     VmaAllocationCreateInfo imageAllocInfo {};
     imageAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     // Allocate and create the image
-    vmaCreateImage(context.allocator, &imageCreateInfo, &imageAllocInfo, &newImage.image, &newImage.allocation, nullptr);
+    vmaCreateImage(context.allocator, &imageCreateInfo, &imageAllocInfo, &newImage.image, &newImage.allocation,
+                   nullptr);
 
     // Transition image to transfer-receiver
     immediateSubmit([&](VkCommandBuffer cmd) {
@@ -782,7 +816,8 @@ bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::Al
         imageBarrierToTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
         // Barrier the image into the transfer-receive layout
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrierToTransfer);
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                             nullptr, 1, &imageBarrierToTransfer);
 
         VkBufferImageCopy copyRegion {};
         copyRegion.bufferOffset = 0;
@@ -796,7 +831,8 @@ bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::Al
         copyRegion.imageExtent = imageExtent;
 
         // Copy the buffer into the image
-        vkCmdCopyBufferToImage(cmd, stagingBuffer.buffer, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.buffer, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                               &copyRegion);
 
         VkImageMemoryBarrier imageBarrierToReadable = imageBarrierToTransfer;
         imageBarrierToReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -805,7 +841,8 @@ bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::Al
         imageBarrierToReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
         // Barrier the image into the shader readable layout
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrierToReadable);
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
+                             0, nullptr, 1, &imageBarrierToReadable);
     });
 
     context.mainDeletionQueue.pushFunction([=]() {
@@ -815,5 +852,9 @@ bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::Al
     LOG(LogLevel::Info) << "Texture loaded successfully " << path;
     outImage = newImage;
     return true;
+}
+
+void RendererBackEndVulkan::addToScene(engine::render::vk::GameObject& gameObject) {
+    renderables.push_back(gameObject);
 }
 
