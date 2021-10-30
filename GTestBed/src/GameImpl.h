@@ -7,6 +7,9 @@
 #ifndef GAMEIMPL_H
 #define GAMEIMPL_H
 
+#include <GameObject.h>
+using engine::render::vk::GameObject;
+
 namespace game {
 
     class GameImpl : public Game {
@@ -25,7 +28,7 @@ namespace game {
 
     private:
         GameImpl() = default;
-        u64 blop { 25 };
+        GameObject knot {};
     };
 
 }
