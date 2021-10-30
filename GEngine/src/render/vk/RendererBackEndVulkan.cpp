@@ -479,10 +479,10 @@ void RendererBackEndVulkan::initScene() {
     allocInfo.pSetLayouts = &singleTextureSetLayout;
     vkAllocateDescriptorSets(context.device, &allocInfo, &texturedMat->textureSet);
 
-    // Write to the descriptor set so that it points to our empire_diffuse texture
+    // Write to the descriptor set so that it points to our texture
     VkDescriptorImageInfo imageBufferInfo;
     imageBufferInfo.sampler = texSampler;
-    imageBufferInfo.imageView = textures["empire_diffuse"].imageView;
+    imageBufferInfo.imageView = textures["default"].imageView;
     imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
     vkUpdateDescriptorSets(context.device, 1, &texture1, 0, nullptr);
@@ -718,16 +718,16 @@ void RendererBackEndVulkan::immediateSubmit(std::function<void(VkCommandBuffer)>
 }
 
 void RendererBackEndVulkan::loadImages() {
-    render::vk::Texture lostEmpire {};
-    loadImageFromFile("../../assets/lost_empire-RGBA.png", lostEmpire.image);
+    render::vk::Texture defaultTexture {};
+    loadImageFromFile("../../assets/default.png", defaultTexture.image);
 
-    VkImageViewCreateInfo imageViewInfo = render::vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, lostEmpire.image.image, VK_IMAGE_ASPECT_COLOR_BIT);
-    vkCreateImageView(context.device, &imageViewInfo, nullptr, &lostEmpire.imageView);
+    VkImageViewCreateInfo imageViewInfo = render::vk::imageViewCreateInfo(VK_FORMAT_R8G8B8A8_SRGB, defaultTexture.image.image, VK_IMAGE_ASPECT_COLOR_BIT);
+    vkCreateImageView(context.device, &imageViewInfo, nullptr, &defaultTexture.imageView);
     context.mainDeletionQueue.pushFunction([=]() {
-        vkDestroyImageView(context.device, lostEmpire.imageView, nullptr);
+        vkDestroyImageView(context.device, defaultTexture.imageView, nullptr);
     });
 
-    textures["empire_diffuse"] = lostEmpire;
+    textures["default"] = defaultTexture;
 }
 
 bool RendererBackEndVulkan::loadImageFromFile(const string& path, render::vk::AllocatedImage& outImage)
