@@ -90,10 +90,13 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
 
 void Engine::close() {
     if (state.isInitialized) {
-        renderer.close();
-        state.eventManager.unsubscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
-        state.game->close();
+        // Assets should be closed before renderer, to free graphics assets memory
         assets.close();
+        // Then we can free the remaining graphics memory
+        renderer.close();
+        // And finally other managers
+        state.game->close();
+        state.eventManager.unsubscribe(EventCode::ApplicationQuit, nullptr, &onEngineEvent);
         inputSystem.close();
         state.eventManager.close();
         state.platform->close();

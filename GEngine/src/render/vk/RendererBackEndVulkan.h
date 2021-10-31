@@ -57,7 +57,7 @@ namespace engine::render::vk {
         // Render pass and synchronisation
         Renderpass renderpass { context,
                                 { 0, 0, context.windowExtent.width, context.windowExtent.height },
-                                { 0, 0, 0, 0 },
+                                { 0, 0, 0.2, 0 },
                                 1.0f,
                                 0 };
         vector<Framebuffer> framebuffers {};

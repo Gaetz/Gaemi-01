@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Types.h"
+#include "Buffer.h"
 
 using std::string;
 using std::vector;
@@ -34,8 +35,10 @@ namespace engine::render::vk {
 
     class Mesh {
     public:
+        ~Mesh();
+
         vector<Vertex> vertices;
-        AllocatedBuffer vertexBuffer;
+        Buffer vertexBuffer;
 
         bool loadFromObj(const string &filename);
     };

@@ -16,10 +16,10 @@
 
 #include "../../externals/vkbootstrap/VkBootstrap.h"
 #include "Init.h"
-#include "PipelineBuilder.h"
 #include "../../math/Transformations.h"
 #include "../../math/Functions.h"
 #include "../../Locator.h"
+#include "Buffer.h"
 
 using engine::render::vk::PipelineBuilder;
 using engine::render::vk::Vertex;
@@ -193,9 +193,12 @@ RendererBackEndVulkan::createBuffer(size_t allocSize, VkBufferUsageFlags usage, 
                              &allocatedBuffer.allocation,
                              nullptr));
 
+    // Cleanup
     context.mainDeletionQueue.pushFunction([=]() {
         vmaDestroyBuffer(context.allocator, allocatedBuffer.buffer, allocatedBuffer.allocation);
     });
+
+
     return allocatedBuffer;
 }
 
@@ -440,34 +443,34 @@ void RendererBackEndVulkan::initPipelines() {
 }
 
 void RendererBackEndVulkan::loadDefaultAssets() {
-        /*
-    // Load triangle
-    Mesh triangleMesh;
-    triangleMesh.vertices.resize(3);
-    triangleMesh.vertices[0].position = { 1.f, 1.f, 0.f };
-    triangleMesh.vertices[1].position = { -1.f, 1.f, 0.f };
-    triangleMesh.vertices[2].position = { 0.f, -1.f, 0.f };
-    triangleMesh.vertices[0].color = { 0.f, 1.f, 0.f };
-    triangleMesh.vertices[1].color = { 0.f, 1.f, 0.f };
-    triangleMesh.vertices[2].color = { 0.f, 1.f, 0.f };
+    /*
+// Load triangle
+Mesh triangleMesh;
+triangleMesh.vertices.resize(3);
+triangleMesh.vertices[0].position = { 1.f, 1.f, 0.f };
+triangleMesh.vertices[1].position = { -1.f, 1.f, 0.f };
+triangleMesh.vertices[2].position = { 0.f, -1.f, 0.f };
+triangleMesh.vertices[0].color = { 0.f, 1.f, 0.f };
+triangleMesh.vertices[1].color = { 0.f, 1.f, 0.f };
+triangleMesh.vertices[2].color = { 0.f, 1.f, 0.f };
 
-    // Load monkey from obj file
-    Mesh monkeyMesh;
-    monkeyMesh.loadFromObj("../../assets/knot.obj");
+// Load monkey from obj file
+Mesh monkeyMesh;
+monkeyMesh.loadFromObj("../../assets/knot.obj");
 
-    // Lost empire
-    Mesh lostEmpire;
-    lostEmpire.loadFromObj("../../assets/lost_empire.obj");
+// Lost empire
+Mesh lostEmpire;
+lostEmpire.loadFromObj("../../assets/lost_empire.obj");
 
-    uploadMesh(triangleMesh);
-    uploadMesh(monkeyMesh);
-    uploadMesh(lostEmpire);
+uploadMesh(triangleMesh);
+uploadMesh(monkeyMesh);
+uploadMesh(lostEmpire);
 
-    // Store (copy) meshes in lists
-    meshes["triangle"] = triangleMesh;
-    meshes["monkey"] = monkeyMesh;
-    meshes["lostEmpire"] = lostEmpire;
-     */
+// Store (copy) meshes in lists
+meshes["triangle"] = triangleMesh;
+meshes["monkey"] = monkeyMesh;
+meshes["lostEmpire"] = lostEmpire;
+ */
 
     // Our scene will be composed of a monkey and triangles
 
@@ -537,64 +540,16 @@ void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
     const size_t bufferSize = mesh.vertices.size() * sizeof(Vertex);
 
     // -- STAGING BUFFER to load mesh into CPU memory --
-    VkBufferCreateInfo stagingBufferInfo {};
-    stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    stagingBufferInfo.pNext = nullptr;
-    stagingBufferInfo.size = bufferSize;
-    stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    Buffer stagingBuffer;
+    stagingBuffer.init(context, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, bufferSize);
+    stagingBuffer.loadData(mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
 
-    // Let the VMA library know that this data should be writeable by CPU only
-    VmaAllocationCreateInfo vmaAllocInfo {};
-    vmaAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-    // Allocate memory
-    AllocatedBuffer stagingBuffer {};
-    VK_CHECK(vmaCreateBuffer(context.allocator,
-                             &stagingBufferInfo,
-                             &vmaAllocInfo,
-                             &stagingBuffer.buffer,
-                             &stagingBuffer.allocation,
-                             nullptr));
-
-    // Copy data into staging buffer
-    void* data;
-    vmaMapMemory(context.allocator, stagingBuffer.allocation, &data);
-    memcpy(data, mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
-    vmaUnmapMemory(context.allocator, stagingBuffer.allocation);
-
-    // -- VERTEX BUFFER --
-    // Transfer data from staging buffer to GPU vertex buffer
-    VkBufferCreateInfo vertexBufferInfo {};
-    vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    vertexBufferInfo.pNext = nullptr;
-    vertexBufferInfo.size = bufferSize;
-    vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-    // Let the VMA library know that this data should be GPU native
-    vmaAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-    // Allocate the buffer
-    VK_CHECK(vmaCreateBuffer(context.allocator,
-                             &vertexBufferInfo,
-                             &vmaAllocInfo,
-                             &mesh.vertexBuffer.buffer,
-                             &mesh.vertexBuffer.allocation,
-                             nullptr));
-
-    // -- EXECUTE ALLOC COMMAND --
-    immediateSubmit([=](VkCommandBuffer cmd) {
-        VkBufferCopy copy;
-        copy.srcOffset = 0;
-        copy.dstOffset = 0;
-        copy.size = bufferSize;
-        vkCmdCopyBuffer(cmd, stagingBuffer.buffer, mesh.vertexBuffer.buffer, 1, &copy);
-    });
-
-    // -- CLEAN --
-    context.mainDeletionQueue.pushFunction([=]() {
-        vmaDestroyBuffer(context.allocator, mesh.vertexBuffer.buffer, mesh.vertexBuffer.allocation);
-    });
-    vmaDestroyBuffer(context.allocator, stagingBuffer.buffer, stagingBuffer.allocation);
+    // -- VERTEX BUFFER, copy from staging to vertex buffer --
+    mesh.vertexBuffer.init(context,
+                           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                           VMA_MEMORY_USAGE_GPU_ONLY, bufferSize);
+    stagingBuffer.copyTo(uploadContext.commandPool, uploadContext.uploadFence.handle, context.graphicsQueue,
+                         mesh.vertexBuffer.handle, 0, 0, bufferSize);
 }
 
 /*
@@ -715,7 +670,7 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, GameObject
         // Bind mesh if mesh is different
         if (object.mesh != lastMesh) {
             VkDeviceSize offset = 0;
-            vkCmdBindVertexBuffers(cmd, 0, 1, &object.mesh->vertexBuffer.buffer, &offset);
+            vkCmdBindVertexBuffers(cmd, 0, 1, &object.mesh->vertexBuffer.handle, &offset);
             lastMesh = object.mesh;
         }
 
@@ -769,15 +724,12 @@ bool RendererBackEndVulkan::loadTextureFromFile(const string& path, render::vk::
     }
     void* pixel_ptr = pixels;
     VkDeviceSize imageSize = texWidth * texHeight * 4;
-
     VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
-    AllocatedBuffer stagingBuffer = createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                                 VMA_MEMORY_USAGE_CPU_ONLY);
 
-    void* data;
-    vmaMapMemory(context.allocator, stagingBuffer.allocation, &data);
-    memcpy(data, pixel_ptr, static_cast<size_t>(imageSize));
-    vmaUnmapMemory(context.allocator, stagingBuffer.allocation);
+    Buffer stagingBuffer;
+    stagingBuffer.init(context, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, imageSize);
+    stagingBuffer.loadData(pixel_ptr, static_cast<size_t>(imageSize));
+
     stbi_image_free(pixels);
 
     VkExtent3D imageExtent;
@@ -831,7 +783,7 @@ bool RendererBackEndVulkan::loadTextureFromFile(const string& path, render::vk::
         copyRegion.imageExtent = imageExtent;
 
         // Copy the buffer into the image
-        vkCmdCopyBufferToImage(cmd, stagingBuffer.buffer, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.handle, newImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
                                &copyRegion);
 
         VkImageMemoryBarrier imageBarrierToReadable = imageBarrierToTransfer;

@@ -147,3 +147,8 @@ bool Mesh::loadFromObj(const string& filename) {
     LOG(LogLevel::Info) << "TinyObjReader: successfully loaded " << filename << reader.Error();
     return true;
 }
+
+Mesh::~Mesh() {
+    vertexBuffer.destroy();
+    vertices.clear();
+}
