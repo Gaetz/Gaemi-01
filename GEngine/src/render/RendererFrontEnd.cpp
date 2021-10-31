@@ -70,3 +70,7 @@ void RendererFrontEnd::addToScene(engine::render::vk::GameObject &gameObject) {
     backEnd->addToScene(gameObject);
 }
 
+void engine::render::RendererFrontEnd::waitIdle() {
+    backEnd->waitIdle();
+}
+

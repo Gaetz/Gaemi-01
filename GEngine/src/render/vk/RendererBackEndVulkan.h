@@ -49,6 +49,7 @@ namespace engine::render::vk {
         Texture loadTexture(const string& path) override;
         void uploadMesh(Mesh &mesh) override;
         void addToScene(vk::GameObject& gameObject) override;
+        void waitIdle() override;
 
     private:
         Context context;

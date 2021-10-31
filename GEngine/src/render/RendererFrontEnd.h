@@ -30,6 +30,7 @@ namespace engine::render {
         vk::Texture loadTexture(const string& path);
         void upload(vk::Mesh& mesh);
         void addToScene(engine::render::vk::GameObject &gameObject);
+        void waitIdle();
 
     private:
         RendererBackEnd *backEnd;

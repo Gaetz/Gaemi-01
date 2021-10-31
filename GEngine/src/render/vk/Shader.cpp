@@ -81,3 +81,7 @@ vector<VkPipelineShaderStageCreateInfo> Shader::getStagesCreateInfo() {
     return shaderStages;
 }
 
+void Shader::use() {
+
+}
+

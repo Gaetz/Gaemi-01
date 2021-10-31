@@ -66,7 +66,7 @@ bool Buffer::resize(u64 newSize, VkQueue queue, VkCommandPool cmdPool) {
                              nullptr));
 
     // Copy old data to new data then destroy old data
-    copyTo(cmdPool, 0, queue, newBufferHandle, 0, 0, size);
+    copyTo(newBufferHandle, 0, 0, size, cmdPool, 0, queue);
     vkDeviceWaitIdle(context->device);
     vmaDestroyBuffer(context->allocator, handle, allocation);
 
@@ -114,8 +114,8 @@ void Buffer::unlockMemory() {
     state = BufferState::Allocated;
 }
 
-void Buffer::copyTo(VkCommandPool cmdPool, VkFence fence, VkQueue queue, VkBuffer dst, u64 srcOffset, u64 dstOffset,
-                    u64 size) {
+void Buffer::copyTo(VkBuffer dst, u64 srcOffset, u64 dstOffset, u64 sizeP, VkCommandPool cmdPool, VkFence fence,
+                    VkQueue queue) {
     vkQueueWaitIdle(queue);
     CommandBuffer cmd;
     cmd.singleUseBegin(*context, cmdPool);
@@ -124,7 +124,7 @@ void Buffer::copyTo(VkCommandPool cmdPool, VkFence fence, VkQueue queue, VkBuffe
     VkBufferCopy copyRegion;
     copyRegion.srcOffset = srcOffset;
     copyRegion.dstOffset = dstOffset;
-    copyRegion.size = size;
+    copyRegion.size = sizeP;
     vkCmdCopyBuffer(cmd.handle, handle, dst, 1, &copyRegion);
 
     cmd.singleUseEnd(*context, cmdPool, queue);

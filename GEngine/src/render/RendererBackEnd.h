@@ -42,6 +42,8 @@ namespace engine::render {
 
         virtual void addToScene(vk::GameObject& gameObject) = 0;
 
+        virtual void waitIdle() = 0;
+
         void incrementFrame() { ++frameNumber; }
 
     protected:

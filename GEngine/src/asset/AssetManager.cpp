@@ -26,6 +26,7 @@ void AssetManager::loadTexture(const string& file, const string& name) {
 }
 
 void AssetManager::close() {
+    renderer.waitIdle();
     textures.clear();
     meshes.clear();
 }

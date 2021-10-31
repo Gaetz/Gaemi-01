@@ -33,7 +33,7 @@ namespace engine::render::vk {
         //void* lockMemory(u64 offset, u64 size, u32 flags); // Offset is managed by VMA
         void unlockMemory();
         void loadData(const void* data, u64 size);
-        void copyTo(VkCommandPool cmdPool, VkFence fence, VkQueue queue, VkBuffer dst, u64 srcOffset, u64 dstOffset, u64 size);
+        void copyTo(VkBuffer dst, u64 srcOffset, u64 dstOffset, u64 size, VkCommandPool cmdPool, VkFence fence, VkQueue queue);
 
         u64 size { 0 };
         VkBuffer handle { nullptr };

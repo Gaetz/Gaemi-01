@@ -548,8 +548,8 @@ void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
     mesh.vertexBuffer.init(context,
                            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                            VMA_MEMORY_USAGE_GPU_ONLY, bufferSize);
-    stagingBuffer.copyTo(uploadContext.commandPool, uploadContext.uploadFence.handle, context.graphicsQueue,
-                         mesh.vertexBuffer.handle, 0, 0, bufferSize);
+    stagingBuffer.copyTo(mesh.vertexBuffer.handle, 0, 0, bufferSize,
+                         uploadContext.commandPool, uploadContext.uploadFence.handle, context.graphicsQueue);
 }
 
 /*
@@ -808,5 +808,9 @@ bool RendererBackEndVulkan::loadTextureFromFile(const string& path, render::vk::
 
 void RendererBackEndVulkan::addToScene(engine::render::vk::GameObject& gameObject) {
     renderables.push_back(gameObject);
+}
+
+void engine::render::vk::RendererBackEndVulkan::waitIdle() {
+    vkDeviceWaitIdle(context.device);
 }
 

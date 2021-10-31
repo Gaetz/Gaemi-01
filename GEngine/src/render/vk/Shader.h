@@ -26,7 +26,6 @@ namespace engine::render::vk {
         VkShaderModule moduleHandle;
         VkShaderModuleCreateInfo moduleCreateInfo {};
         VkPipelineShaderStageCreateInfo stageCreateInfo {};
-
     };
 
     class Shader {
