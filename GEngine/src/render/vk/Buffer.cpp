@@ -67,7 +67,7 @@ bool Buffer::resize(u64 newSize, VkQueue queue, VkCommandPool cmdPool) {
 
     // Copy old data to new data then destroy old data
     copyTo(newBufferHandle, 0, 0, size, cmdPool, 0, queue);
-    vkDeviceWaitIdle(context->device);
+    context->waitIdle();
     vmaDestroyBuffer(context->allocator, handle, allocation);
 
     // Set new data back in buffer

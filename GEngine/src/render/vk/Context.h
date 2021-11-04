@@ -16,6 +16,7 @@ namespace engine::render::vk {
     public:
         void init(const string& appName);
         void close();
+        void waitIdle() const;
 
         VkExtent2D windowExtent;
         VkInstance instance;

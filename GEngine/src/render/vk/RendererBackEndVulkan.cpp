@@ -811,6 +811,6 @@ void RendererBackEndVulkan::addToScene(engine::render::vk::GameObject& gameObjec
 }
 
 void engine::render::vk::RendererBackEndVulkan::waitIdle() {
-    vkDeviceWaitIdle(context.device);
+    context.waitIdle();
 }
 

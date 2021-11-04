@@ -88,7 +88,7 @@ void engine::render::vk::Context::init(const string& appName) {
 }
 
 void engine::render::vk::Context::close() {
-    vkDeviceWaitIdle(device);
+    waitIdle();
 
     mainDeletionQueue.flush();
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -97,6 +97,10 @@ void engine::render::vk::Context::close() {
     vkb::destroy_debug_utils_messenger(instance, debugMessenger);
 #endif
     vkDestroyInstance(instance, nullptr);
+}
+
+void engine::render::vk::Context::waitIdle() const {
+    vkDeviceWaitIdle(device);
 }
 
 LogLevel engine::render::vk::vkSeverityToLogLevel(VkDebugUtilsMessageSeverityFlagBitsEXT severity) {
