@@ -108,6 +108,8 @@ namespace engine::render::vk {
 
         void loadDefaultAssets();
 
+        void createMaterial(const string& name) override;
+
         // Buffers
         // Create a vulkan buffer
         AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);

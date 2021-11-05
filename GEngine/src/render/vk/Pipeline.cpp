@@ -95,9 +95,9 @@ void Pipeline::init(PipelineBuilder &builder, bool isWireframe) {
 
 void engine::render::vk::Pipeline::destroy() {
     vkDestroyPipeline(context.device, handle, nullptr);
-    vkDestroyPipelineLayout(context.device, pipelineLayout, nullptr);
+    vkDestroyPipelineLayout(context.device, layoutHandle, nullptr);
     handle = nullptr;
-    pipelineLayout = nullptr;
+    layoutHandle = nullptr;
 }
 
 void Pipeline::bind(const CommandBuffer &commandBuffer, VkPipelineBindPoint bindPoint) const {

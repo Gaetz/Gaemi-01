@@ -18,6 +18,7 @@ namespace engine::render {
         class Texture;
         class Mesh;
         class GameObject;
+        class Shader;
     }
 
     class RendererBackEnd {
@@ -36,13 +37,15 @@ namespace engine::render {
 
         virtual void resize() = 0;
 
-        virtual vk::Texture loadTexture(const string& path) = 0;
-
         virtual void uploadMesh(vk::Mesh &mesh) = 0;
 
         virtual void addToScene(vk::GameObject& gameObject) = 0;
 
         virtual void waitIdle() = 0;
+
+        virtual vk::Texture loadTexture(const string& path) = 0;
+
+        virtual void createMaterial(const string& name) = 0;
 
         void incrementFrame() { ++frameNumber; }
 

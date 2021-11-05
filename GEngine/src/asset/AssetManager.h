@@ -35,10 +35,15 @@ namespace engine::asset {
         void loadMesh(const string& file, const string& name) override;
 
         // Create a material
-        void createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) override;
+        void createMaterial(const string& name) override;
 
         // Retrieves a stored material
         engine::render::vk::Material& getMaterial(const string& name) override;
+
+        engine::render::vk::Shader& getShader(const string& name) override;
+
+        void setMaterial(engine::render::vk::Material& material, engine::render::vk::Shader& shader,
+                         const string& name) override;
 
         // Properly de-allocates all loaded resources
         void close();
@@ -50,6 +55,8 @@ namespace engine::asset {
         map<string, render::vk::Mesh> meshes;
         // Store vulkan materials
         map<string, render::vk::Material> materials;
+        // Store vulkan shaders
+        map<string, render::vk::Shader> shaders;
 
         render::RendererFrontEnd& renderer;
     };

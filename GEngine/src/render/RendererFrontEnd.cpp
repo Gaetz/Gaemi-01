@@ -74,3 +74,7 @@ void engine::render::RendererFrontEnd::waitIdle() {
     backEnd->waitIdle();
 }
 
+void engine::render::RendererFrontEnd::createMaterial(const string& name) {
+    backEnd->createMaterial(name);
+}
+

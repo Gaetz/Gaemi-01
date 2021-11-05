@@ -386,7 +386,7 @@ void RendererBackEndVulkan::initPipelines() {
     texturedMeshPipelineLayoutInfo.pSetLayouts = setLayouts.data();
 
     VK_CHECK(vkCreatePipelineLayout(context.device, &texturedMeshPipelineLayoutInfo, nullptr,
-                                    &meshPipeline.pipelineLayout));
+                                    &meshPipeline.layoutHandle));
 
 
     // -- BUILD PIPELINE --
@@ -430,13 +430,13 @@ void RendererBackEndVulkan::initPipelines() {
     pipelineBuilder.depthStencil = render::vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 
     // Build pipeline & material
-    pipelineBuilder.pipelineLayout = meshPipeline.pipelineLayout;
+    pipelineBuilder.pipelineLayout = meshPipeline.layoutHandle;
     meshPipeline.init(pipelineBuilder, false);
 
 
 
     // -- MATERIAL --
-    Locator::assets().createMaterial(meshPipeline.handle, meshPipeline.pipelineLayout, "default");
+    Locator::assets().createMaterial(meshPipeline.handle, meshPipeline.layoutHandle, "default");
 
     // -- CLEANUP --
     defaultShader.destroy();
@@ -557,7 +557,7 @@ engine::render::vk::Material*
 RendererBackEndVulkan::createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) {
     engine::render::vk::Material material {};
     material.pipeline = pipelineP;
-    material.pipelineLayout = pipelineLayoutP;
+    material.layoutHandle = pipelineLayoutP;
     materials[name] = material;
     return &materials[name];
 }
@@ -810,7 +810,16 @@ void RendererBackEndVulkan::addToScene(engine::render::vk::GameObject& gameObjec
     renderables.push_back(gameObject);
 }
 
-void engine::render::vk::RendererBackEndVulkan::waitIdle() {
+void RendererBackEndVulkan::waitIdle() {
     context.waitIdle();
 }
+
+void RendererBackEndVulkan::createMaterial(const string& name) {
+    Shader shader { context, renderpass };
+    shader.init(name);
+    Material material;
+
+    Locator::assets().setMaterial(material, shader, name);
+}
+
 

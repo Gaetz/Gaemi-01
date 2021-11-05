@@ -36,7 +36,7 @@ namespace engine::render::vk {
     public:
         explicit Pipeline(Context& context, const Renderpass& renderpass);
         VkPipeline handle;
-        VkPipelineLayout pipelineLayout;
+        VkPipelineLayout layoutHandle;
 
         void init(PipelineBuilder& builder, bool isWireframe);
         void destroy();

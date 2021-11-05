@@ -10,9 +10,12 @@
 using engine::render::vk::Shader;
 using std::vector;
 
-Shader::Shader(Context &contextP) : context { contextP } {}
+Shader::Shader(Context& contextP, Renderpass& renderpassP) :
+        context { contextP },
+        renderpass { renderpassP } {}
 
-void Shader::init(const string &shaderName) {
+void Shader::init(const string& shaderName) {
+    name = shaderName;
     // Shader module and stages
     array<string, SHADER_STAGE_COUNT> typeStrings { "vert", "frag" };
     array<VkShaderStageFlagBits, SHADER_STAGE_COUNT> types { VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT };
@@ -29,14 +32,14 @@ void Shader::init(const string &shaderName) {
 
 }
 
-bool Shader::load(const string &shaderName, const string &typeString,
+bool Shader::load(const string& shaderName, const string& typeString,
                   VkShaderStageFlagBits shaderStageFlagBit,
-                  ShaderStage &shaderStage) {
+                  ShaderStage& shaderStage) {
 
     string path { "../../shaders/" + shaderName + "." + typeString + ".spv" };
 
     // Open the file stream in binary mode and put cursor at end
-    std::ifstream file {path, std::ios::ate | std::ios::binary};
+    std::ifstream file { path, std::ios::ate | std::ios::binary };
     if (!file.is_open()) {
         LOG(LogLevel::Error) << "Cannot read shader file " << path;
         return false;
@@ -58,11 +61,13 @@ bool Shader::load(const string &shaderName, const string &typeString,
     shaderStage.moduleCreateInfo.pCode = buffer.data();
 
     // Check that the creation goes well.
-    if (vkCreateShaderModule(context.device, &shaderStage.moduleCreateInfo, nullptr, &shaderStage.moduleHandle) != VK_SUCCESS) {
+    if (vkCreateShaderModule(context.device, &shaderStage.moduleCreateInfo, nullptr, &shaderStage.moduleHandle) !=
+        VK_SUCCESS) {
         return false;
     }
 
-    shaderStage.stageCreateInfo = render::vk::pipelineShaderStageCreateInfo(shaderStageFlagBit, shaderStage.moduleHandle, "main");
+    shaderStage.stageCreateInfo = render::vk::pipelineShaderStageCreateInfo(shaderStageFlagBit,
+                                                                            shaderStage.moduleHandle, "main");
 
     return true;
 }

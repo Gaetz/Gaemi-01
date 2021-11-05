@@ -19,6 +19,8 @@ namespace engine::render::vk {
     class Material;
 
     class Context;
+
+    class Shader;
 }
 
 namespace engine::asset {
@@ -41,8 +43,12 @@ namespace engine::asset {
 
         GAPI virtual engine::render::vk::Material& getMaterial(const string& name) = 0;
 
-        virtual void
-        createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) = 0;
+        virtual void setMaterial(render::vk::Material& material, render::vk::Shader& shader, const string& name) = 0;
+
+        GAPI virtual void createMaterial(const string& name) = 0;
+
+        // Retrieves a stored Vulkan shader
+        GAPI virtual engine::render::vk::Shader& getShader(const string& name) = 0;
     };
 
     class NullAssets : public Assets {
@@ -57,7 +63,11 @@ namespace engine::asset {
 
         engine::render::vk::Material& getMaterial(const string& name) override;
 
-        void createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) override;
+        void setMaterial(render::vk::Material& material, render::vk::Shader& shader, const string& name) override;
+
+        void createMaterial(const string& name) override;
+
+        engine::render::vk::Shader& getShader(const string& name) override;
 
     private:
         void placeholderMessage();

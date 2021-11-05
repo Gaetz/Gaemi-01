@@ -30,7 +30,7 @@ namespace engine::render::vk {
 
     class Shader {
     public:
-        explicit Shader(Context& context);
+        explicit Shader(Context& context, Renderpass& renderpass);
 
         void init(const string& shaderName);
 
@@ -40,11 +40,15 @@ namespace engine::render::vk {
 
         vector<VkPipelineShaderStageCreateInfo> getStagesCreateInfo();
 
+        // Shader name
+        string name;
+
 
     private:
         array<ShaderStage, SHADER_STAGE_COUNT> stages;
-        //Pipeline pipeline;
         Context& context;
+        Renderpass& renderpass;
+        Pipeline pipeline { context, renderpass };
 
         bool load(const string& shaderName, const string& typeStrings, VkShaderStageFlagBits shaderStageFlagBit, ShaderStage& shaderStage);
 

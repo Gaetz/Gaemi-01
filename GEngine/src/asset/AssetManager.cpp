@@ -6,6 +6,7 @@
 #include "../render/vk/Texture.h"
 #include "../render/RendererFrontEnd.h"
 #include "../render/vk/Init.h"
+#include "../render/vk/Shader.h"
 #include "../Locator.h"
 
 using engine::asset::AssetManager;
@@ -46,11 +47,19 @@ engine::render::vk::Material& AssetManager::getMaterial(const string& name) {
     return materials[name];
 }
 
+engine::render::vk::Shader& AssetManager::getShader(const string& name) {
+    return shaders[name];
+}
+
+void AssetManager::createMaterial(const string& name) {
+    renderer.createMaterial(name);
+}
+
 void
-AssetManager::createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) {
-    engine::render::vk::Material material {};
-    material.pipeline = pipelineP;
-    material.pipelineLayout = pipelineLayoutP;
+engine::asset::AssetManager::setMaterial(engine::render::vk::Material& material, engine::render::vk::Shader& shader,
+                                         const string& name) {
+    shaders[name] = shader;
+    material.shader = &shaders[name];
     materials[name] = material;
 }
 
