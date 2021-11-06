@@ -35,7 +35,7 @@ void NullAssets::loadMesh(const string& file, const string& name) {
     placeholderMessage();
 }
 
-void NullAssets::createMaterial(const string& name) {
+void NullAssets::createMaterial(const string& name, const string& textureName) {
     placeholderMessage();
 }
 
@@ -51,8 +51,16 @@ engine::render::vk::Shader& engine::asset::NullAssets::getShader(const string& n
     return *nullShader;
 }
 
-void engine::asset::NullAssets::setMaterial(engine::render::vk::Material& material, engine::render::vk::Shader& shader,
-                                            const string& name) {
+engine::render::vk::Material* engine::asset::NullAssets::setMaterial(engine::render::vk::Material& material, const string& name) {
     placeholderMessage();
+    engine::render::vk::Material* nullMaterial { nullptr };
+    return nullMaterial;
+}
+
+engine::render::vk::Shader*
+engine::asset::NullAssets::setShader(engine::render::vk::Shader&& shader, const string& name) {
+    placeholderMessage();
+    engine::render::vk::Shader* nullShader { nullptr };
+    return nullShader;
 }
 

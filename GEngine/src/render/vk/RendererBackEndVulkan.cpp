@@ -37,7 +37,6 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     regenerateFramebuffers();
     initSyncStructures();
     initDescriptors();
-    initPipelines();
     loadDefaultAssets();
     return true;
 }
@@ -362,87 +361,8 @@ void RendererBackEndVulkan::initDescriptors() {
     }
 }
 
-
-void RendererBackEndVulkan::initPipelines() {
-    // -- SHADER MODULES --
-    defaultShader.init("default");
-
-    // -- LAYOUT --
-    // The pipeline layout that controls the inputs/outputs of the shader
-    VkPipelineLayoutCreateInfo texturedMeshPipelineLayoutInfo = render::vk::pipelineLayoutCreateInfo();
-
-    // Setup push constants
-    VkPushConstantRange pushConstant;
-    pushConstant.offset = 0;
-    pushConstant.size = sizeof(render::vk::MeshPushConstants);
-    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    texturedMeshPipelineLayoutInfo.pushConstantRangeCount = 1;
-    texturedMeshPipelineLayoutInfo.pPushConstantRanges = &pushConstant;
-
-    // Descriptor sets
-    array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
-    texturedMeshPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-    texturedMeshPipelineLayoutInfo.pSetLayouts = setLayouts.data();
-
-    VK_CHECK(vkCreatePipelineLayout(context.device, &texturedMeshPipelineLayoutInfo, nullptr,
-                                    &meshPipeline.layoutHandle));
-
-
-    // -- BUILD PIPELINE --
-    PipelineBuilder pipelineBuilder;
-
-    // Clear the shader stages for the builder
-    pipelineBuilder.shaderStages.clear();
-    pipelineBuilder.shaderStages = defaultShader.getStagesCreateInfo();
-
-    // Vertex input controls how to read vertices from vertex buffers.
-    render::vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
-
-    // Connect the pipeline builder vertex input info to the one we get from Vertex
-    pipelineBuilder.vertexInputInfo = render::vk::vertexInputStateCreateInfo();
-    pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
-    pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
-    pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
-    pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
-
-    // Input assembly is the configuration for drawing triangle lists, strips, or individual points.
-    pipelineBuilder.inputAssembly = render::vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-
-    // Build viewport and scissor from the swapchain extents
-    pipelineBuilder.viewport.x = 0.0f;
-    pipelineBuilder.viewport.y = 0.0f;
-    pipelineBuilder.viewport.width = (float) context.windowExtent.width;
-    pipelineBuilder.viewport.height = (float) context.windowExtent.height;
-    pipelineBuilder.viewport.minDepth = 0.0f;
-    pipelineBuilder.viewport.maxDepth = 1.0f;
-
-    pipelineBuilder.scissor.offset = { 0, 0 };
-    pipelineBuilder.scissor.extent = context.windowExtent;
-
-    // Multisampling
-    pipelineBuilder.multisampling = render::vk::multisamplingStateCreateInfo();
-
-    // Blend attachments
-    pipelineBuilder.colorBlendAttachment = render::vk::colorBlendAttachmentState();
-
-    // Depth Stencil
-    pipelineBuilder.depthStencil = render::vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
-
-    // Build pipeline & material
-    pipelineBuilder.pipelineLayout = meshPipeline.layoutHandle;
-    meshPipeline.init(pipelineBuilder, false);
-
-
-
-    // -- MATERIAL --
-    Locator::assets().createMaterial(meshPipeline.handle, meshPipeline.layoutHandle, "default");
-
-    // -- CLEANUP --
-    defaultShader.destroy();
-}
-
 void RendererBackEndVulkan::loadDefaultAssets() {
+
     /*
 // Load triangle
 Mesh triangleMesh;
@@ -512,28 +432,7 @@ meshes["lostEmpire"] = lostEmpire;
 */
 
     Locator::assets().loadTexture("../../assets/default.png", "default");
-
-    // Texture to shader
-
-    render::vk::Material* texturedMat = &Locator::assets().getMaterial("default");
-
-    // Allocate the descriptor set for single-texture to use on the material
-    VkDescriptorSetAllocateInfo allocInfo {};
-    allocInfo.pNext = nullptr;
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &singleTextureSetLayout;
-    vkAllocateDescriptorSets(context.device, &allocInfo, &texturedMat->textureSet);
-
-    // Write to the descriptor set so that it points to our texture
-    VkDescriptorImageInfo imageBufferInfo;
-    imageBufferInfo.sampler = Locator::assets().getTexture("default").sampler;;
-    imageBufferInfo.imageView = Locator::assets().getTexture("default").imageView;
-    imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                                     texturedMat->textureSet, &imageBufferInfo, 0);
-    vkUpdateDescriptorSets(context.device, 1, &texture1, 0, nullptr);
+    createMaterial("default", "default");
 }
 
 void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
@@ -632,7 +531,7 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, GameObject
 
         // Bind pipeline if material is different
         if (object.material != lastMaterial) {
-            meshPipeline.bind(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
+            object.material->shader->use(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
             //vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, object.material->pipeline);
             lastMaterial = object.material;
 
@@ -814,12 +713,46 @@ void RendererBackEndVulkan::waitIdle() {
     context.waitIdle();
 }
 
-void RendererBackEndVulkan::createMaterial(const string& name) {
-    Shader shader { context, renderpass };
-    shader.init(name);
-    Material material;
+void RendererBackEndVulkan::createMaterial(const string& name, const string& textureName) {
 
-    Locator::assets().setMaterial(material, shader, name);
+    // TODO should shader with difference texture be a different material ?
+
+
+    // Set shader and store in asset manager. Shader name used to load shader files.
+    Shader shader;
+    array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
+    shader.init(context, name, setLayouts, renderpass);
+
+    auto& assets { Locator::assets() };
+    Shader* shaderAddress = assets.setShader(std::move(shader), name);
+
+
+    // Set material and store in asset manager
+    Material material;
+    material.shader = shaderAddress;
+    material.pipelineLayout = shaderAddress->pipeline.layoutHandle;
+    material.pipeline = shaderAddress->pipeline.handle;
+    Material* materialAddress = assets.setMaterial(material, name);
+
+    // Texture to material
+
+    // Allocate the descriptor set for single-texture to use on the material
+    VkDescriptorSetAllocateInfo allocInfo {};
+    allocInfo.pNext = nullptr;
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &singleTextureSetLayout;
+    vkAllocateDescriptorSets(context.device, &allocInfo, &materialAddress->textureSet);
+
+    // Write to the descriptor set so that it points to our texture <textureName>
+    VkDescriptorImageInfo imageBufferInfo;
+    imageBufferInfo.sampler = Locator::assets().getTexture(textureName).sampler;;
+    imageBufferInfo.imageView = Locator::assets().getTexture(textureName).imageView;
+    imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                                     materialAddress->textureSet, &imageBufferInfo, 0);
+    vkUpdateDescriptorSets(context.device, 1, &texture1, 0, nullptr);
 }
 
 

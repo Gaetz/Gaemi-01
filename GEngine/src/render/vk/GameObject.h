@@ -6,16 +6,9 @@
 #define RENDER_VK_RENDEROBJECT_H
 
 #include "Mesh.h"
-#include "Shader.h"
+#include "Material.h"
 
 namespace engine::render::vk {
-
-    struct Material {
-        Shader* shader { nullptr };
-        VkPipeline pipeline;
-        VkPipelineLayout pipelineLayout;
-        VkDescriptorSet textureSet { VK_NULL_HANDLE };
-    };
 
     struct GameObject {
         Mesh *mesh;

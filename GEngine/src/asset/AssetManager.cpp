@@ -30,6 +30,11 @@ void AssetManager::close() {
     renderer.waitIdle();
     textures.clear();
     meshes.clear();
+    materials.clear();
+    for(auto& shader : shaders) {
+        shader.second.destroy();
+    }
+    shaders.clear();
 }
 
 engine::render::vk::Mesh& AssetManager::getMesh(const string& name) {
@@ -43,23 +48,27 @@ void AssetManager::loadMesh(const string& file, const string& name) {
     renderer.upload(meshes[name]);
 }
 
-engine::render::vk::Material& AssetManager::getMaterial(const string& name) {
-    return materials[name];
+engine::render::vk::Shader* AssetManager::setShader(engine::render::vk::Shader&& shader, const string& name) {
+    shaders[name] = shader;
+    return &shaders[name];
 }
 
 engine::render::vk::Shader& AssetManager::getShader(const string& name) {
     return shaders[name];
 }
 
-void AssetManager::createMaterial(const string& name) {
-    renderer.createMaterial(name);
+engine::render::vk::Material& AssetManager::getMaterial(const string& name) {
+    return materials[name];
 }
 
-void
-engine::asset::AssetManager::setMaterial(engine::render::vk::Material& material, engine::render::vk::Shader& shader,
+void AssetManager::createMaterial(const string& name, const string& textureName) {
+    renderer.createMaterial(name, textureName);
+}
+
+engine::render::vk::Material*
+engine::asset::AssetManager::setMaterial(engine::render::vk::Material& material,
                                          const string& name) {
-    shaders[name] = shader;
-    material.shader = &shaders[name];
     materials[name] = material;
+    return &materials[name];
 }
 

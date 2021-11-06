@@ -34,17 +34,21 @@ namespace engine::render::vk {
 
     class Pipeline {
     public:
-        explicit Pipeline(Context& context, const Renderpass& renderpass);
         VkPipeline handle;
         VkPipelineLayout layoutHandle;
 
-        void init(PipelineBuilder& builder, bool isWireframe);
+        // Initialize pipeline
+        void init(PipelineBuilder& builder, Context& context, const Renderpass& renderpass, bool isWireframe);
+
+        // Destruction is handled by shader
         void destroy();
+
+        // Bind pipeline
         void bind(const CommandBuffer& commandBuffer, VkPipelineBindPoint bindPoint) const;
 
     private:
-        Context& context;
-        const Renderpass& renderpass;
+        // Save context device pointer
+        VkDevice contextDevice;
     };
 }
 

@@ -65,8 +65,8 @@ namespace engine::render::vk {
         array<FrameData, FRAME_OVERLAP> frames;
 
         // Pipeline
-        Shader defaultShader { context };
-        Pipeline meshPipeline { context, renderpass };
+        //Shader defaultShader { context, renderpass };
+        //Pipeline meshPipeline { context, renderpass };
         //VkPipeline meshPipeline;
         //VkPipelineLayout texturedMeshPipelineLayout;
 
@@ -104,11 +104,9 @@ namespace engine::render::vk {
 
         void initDescriptors();
 
-        void initPipelines();
-
         void loadDefaultAssets();
 
-        void createMaterial(const string& name) override;
+        void createMaterial(const string& name, const string& textureName) override;
 
         // Buffers
         // Create a vulkan buffer

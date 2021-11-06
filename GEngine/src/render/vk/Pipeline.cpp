@@ -5,7 +5,6 @@
 #include "Pipeline.h"
 #include "Context.h"
 #include "Renderpass.h"
-#include "../../Log.h"
 #include "Init.h"
 #include <array>
 
@@ -80,22 +79,16 @@ VkPipeline PipelineBuilder::buildPipeline(const Context &context, const Renderpa
     }
 }
 
-Pipeline::Pipeline(Context &contextP, const Renderpass &renderpassP) :
-        context { contextP }, renderpass { renderpassP } {
-
-}
-
-void Pipeline::init(PipelineBuilder &builder, bool isWireframe) {
+void Pipeline::init(PipelineBuilder &builder, Context& context, const Renderpass& renderpass, bool isWireframe) {
+    contextDevice = context.device;
     handle = builder.buildPipeline(context, renderpass, isWireframe);
-    // Clean
-    context.mainDeletionQueue.pushFunction([=]() {
-        destroy();
-    });
+    layoutHandle = builder.pipelineLayout;
+
 }
 
 void engine::render::vk::Pipeline::destroy() {
-    vkDestroyPipeline(context.device, handle, nullptr);
-    vkDestroyPipelineLayout(context.device, layoutHandle, nullptr);
+    vkDestroyPipeline(contextDevice, handle, nullptr);
+    vkDestroyPipelineLayout(contextDevice, layoutHandle, nullptr);
     handle = nullptr;
     layoutHandle = nullptr;
 }
@@ -103,3 +96,4 @@ void engine::render::vk::Pipeline::destroy() {
 void Pipeline::bind(const CommandBuffer &commandBuffer, VkPipelineBindPoint bindPoint) const {
     vkCmdBindPipeline(commandBuffer.handle, bindPoint, handle);
 }
+

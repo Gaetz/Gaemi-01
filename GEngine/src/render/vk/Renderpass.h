@@ -29,8 +29,8 @@ namespace engine::render::vk {
 
     class Renderpass {
     public:
-        RenderPassState state;
-        VkRenderPass handle;
+        RenderPassState state { RenderPassState::NotAllocated };
+        VkRenderPass handle { VK_NULL_HANDLE };
 
         explicit Renderpass(Context& contextP, const Vec4& renderZoneP, const Vec4& clearColorP, f32 depthP, u32 stencilP);
         void init(const Swapchain& swapchain);

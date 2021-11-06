@@ -45,7 +45,7 @@ namespace engine::render {
 
         virtual vk::Texture loadTexture(const string& path) = 0;
 
-        virtual void createMaterial(const string& name) = 0;
+        virtual void createMaterial(const string& name, const string& textureName) = 0;
 
         void incrementFrame() { ++frameNumber; }
 

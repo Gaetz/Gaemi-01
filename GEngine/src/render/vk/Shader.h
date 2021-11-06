@@ -30,28 +30,26 @@ namespace engine::render::vk {
 
     class Shader {
     public:
-        explicit Shader(Context& context, Renderpass& renderpass);
-
-        void init(const string& shaderName);
+        void init(Context& context, const string& shaderName, const array<VkDescriptorSetLayout, 3>& setLayouts,
+                  const Renderpass& renderpass);
 
         void destroy();
 
-        void use();
+        void use(const CommandBuffer& cmd, VkPipelineBindPoint bindPoint) const;
 
         vector<VkPipelineShaderStageCreateInfo> getStagesCreateInfo();
 
         // Shader name
         string name;
 
+        // Shader associated pipeline
+        Pipeline pipeline;
 
     private:
         array<ShaderStage, SHADER_STAGE_COUNT> stages;
-        Context& context;
-        Renderpass& renderpass;
-        Pipeline pipeline { context, renderpass };
+        VkDevice contextDevice;
 
-        bool load(const string& shaderName, const string& typeStrings, VkShaderStageFlagBits shaderStageFlagBit, ShaderStage& shaderStage);
-
+        bool load(Context& context, const string& shaderName, const string& typeStrings, VkShaderStageFlagBits shaderStageFlagBit, ShaderStage& shaderStage);
     };
 
 }
