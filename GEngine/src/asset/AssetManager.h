@@ -35,18 +35,22 @@ namespace engine::asset {
         void loadMesh(const string& file, const string& name) override;
 
         // Create a material with a texture
-        void createMaterial(const string& name, const string& textureName) override;
+        void createMaterial(const string& name, const string& shaderName, const string& textureName) override;
 
         // Retrieves a stored material
         engine::render::vk::Material& getMaterial(const string& name) override;
 
         engine::render::vk::Shader& getShader(const string& name) override;
 
-        engine::render::vk::Shader* setShader(engine::render::vk::Shader&& shader,
+        engine::render::vk::Shader* setShader(engine::render::vk::Shader& shader,
                                                   const string& name) override;
+
+        bool shaderExists(const string& name) const override;
 
         engine::render::vk::Material* setMaterial(engine::render::vk::Material& material,
                                           const string& name) override;
+
+        bool materialExists(const string& name) const override;
 
         // Properly de-allocates all loaded resources
         void close();

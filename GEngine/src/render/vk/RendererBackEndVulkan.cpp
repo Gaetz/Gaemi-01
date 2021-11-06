@@ -432,7 +432,7 @@ meshes["lostEmpire"] = lostEmpire;
 */
 
     Locator::assets().loadTexture("../../assets/default.png", "default");
-    createMaterial("default", "default");
+    createMaterial("default", "default", "default");
 }
 
 void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
@@ -713,19 +713,21 @@ void RendererBackEndVulkan::waitIdle() {
     context.waitIdle();
 }
 
-void RendererBackEndVulkan::createMaterial(const string& name, const string& textureName) {
+void RendererBackEndVulkan::createMaterial(const string& name, const string& shaderName, const string& textureName) {
 
     // TODO should shader with difference texture be a different material ?
 
-
-    // Set shader and store in asset manager. Shader name used to load shader files.
-    Shader shader;
-    array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
-    shader.init(context, setLayouts, renderpass, name);
-
     auto& assets { Locator::assets() };
-    Shader* shaderAddress = assets.setShader(std::move(shader), name);
-
+    Shader* shaderAddress { nullptr };
+    if (assets.shaderExists(shaderName)) {
+        shaderAddress = &assets.getShader(shaderName);
+    } else {
+        // Set shader and store in asset manager. Shader name used to load shader files.
+        Shader shader;
+        array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
+        shader.init(context, setLayouts, renderpass, name);
+        shaderAddress = assets.setShader(shader, name);
+    }
 
     // Set material and store in asset manager
     Material material;
@@ -746,9 +748,10 @@ void RendererBackEndVulkan::createMaterial(const string& name, const string& tex
     vkAllocateDescriptorSets(context.device, &allocInfo, &materialAddress->textureSet);
 
     // Write to the descriptor set so that it points to our texture <textureName>
+    const Texture& texture = Locator::assets().getTexture(textureName);
     VkDescriptorImageInfo imageBufferInfo;
-    imageBufferInfo.sampler = Locator::assets().getTexture(textureName).sampler;;
-    imageBufferInfo.imageView = Locator::assets().getTexture(textureName).imageView;
+    imageBufferInfo.sampler = texture.sampler;;
+    imageBufferInfo.imageView = texture.imageView;
     imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                                                      materialAddress->textureSet, &imageBufferInfo, 0);

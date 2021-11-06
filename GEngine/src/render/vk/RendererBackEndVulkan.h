@@ -106,7 +106,7 @@ namespace engine::render::vk {
 
         void loadDefaultAssets();
 
-        void createMaterial(const string& name, const string& textureName) override;
+        void createMaterial(const string& name, const string& shaderName, const string& textureName) override;
 
         // Buffers
         // Create a vulkan buffer

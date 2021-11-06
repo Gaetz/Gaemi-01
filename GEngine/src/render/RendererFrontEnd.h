@@ -31,7 +31,7 @@ namespace engine::render {
         void upload(vk::Mesh& mesh);
         void addToScene(engine::render::vk::GameObject &gameObject);
         void waitIdle();
-        void createMaterial(const string& name, const string& textureName);
+        void createMaterial(const string& name, const string& shaderName, const string& textureName);
 
     private:
         RendererBackEnd *backEnd;

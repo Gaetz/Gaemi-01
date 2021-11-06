@@ -48,7 +48,10 @@ void AssetManager::loadMesh(const string& file, const string& name) {
     renderer.upload(meshes[name]);
 }
 
-engine::render::vk::Shader* AssetManager::setShader(engine::render::vk::Shader&& shader, const string& name) {
+engine::render::vk::Shader* AssetManager::setShader(engine::render::vk::Shader& shader, const string& name) {
+    if(shaderExists(name)) {
+        LOG(LogLevel::Warning) << "Shader asset " << name << " replaced by a new shader";
+    }
     shaders[name] = shader;
     return &shaders[name];
 }
@@ -61,14 +64,29 @@ engine::render::vk::Material& AssetManager::getMaterial(const string& name) {
     return materials[name];
 }
 
-void AssetManager::createMaterial(const string& name, const string& textureName) {
-    renderer.createMaterial(name, textureName);
+void AssetManager::createMaterial(const string& name, const string& shaderName, const string& textureName) {
+    renderer.createMaterial(name, shaderName, textureName);
 }
 
 engine::render::vk::Material*
 engine::asset::AssetManager::setMaterial(engine::render::vk::Material& material,
                                          const string& name) {
+    if(materialExists(name)) {
+        LOG(LogLevel::Warning) << "Material asset " << name << " replaced by a new material";
+    }
     materials[name] = material;
     return &materials[name];
+}
+
+bool engine::asset::AssetManager::shaderExists(const string& name) const {
+    auto it = shaders.find(name);
+    if (it != shaders.end()) return true;
+    return false;
+}
+
+bool engine::asset::AssetManager::materialExists(const string& name) const {
+    auto it = materials.find(name);
+    if (it != materials.end()) return true;
+    return false;
 }
 

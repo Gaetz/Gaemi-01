@@ -11,7 +11,7 @@
 
 using engine::asset::NullAssets;
 
-void NullAssets::placeholderMessage() {
+void NullAssets::placeholderMessage() const {
     LOG(LogLevel::Warning) << "Usage of placeholder assets service.";
 }
 
@@ -35,7 +35,7 @@ void NullAssets::loadMesh(const string& file, const string& name) {
     placeholderMessage();
 }
 
-void NullAssets::createMaterial(const string& name, const string& textureName) {
+void NullAssets::createMaterial(const string& name, const string& shaderName, const string& textureName) {
     placeholderMessage();
 }
 
@@ -58,9 +58,19 @@ engine::render::vk::Material* engine::asset::NullAssets::setMaterial(engine::ren
 }
 
 engine::render::vk::Shader*
-engine::asset::NullAssets::setShader(engine::render::vk::Shader&& shader, const string& name) {
+engine::asset::NullAssets::setShader(engine::render::vk::Shader& shader, const string& name) {
     placeholderMessage();
     engine::render::vk::Shader* nullShader { nullptr };
     return nullShader;
+}
+
+bool engine::asset::NullAssets::shaderExists(const string& name) const {
+    placeholderMessage();
+    return  false;
+}
+
+bool engine::asset::NullAssets::materialExists(const string& name) const {
+    placeholderMessage();
+    return false;
 }
 

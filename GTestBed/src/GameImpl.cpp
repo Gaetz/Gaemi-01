@@ -18,10 +18,16 @@ void GameImpl::load() {
     knot.material = &Locator::assets().getMaterial("default");
     knot.transform = engine::math::translate(Mat4{1.0f}, Vec3{0, 0, -20});
     Engine::addToScene(knot);
+
+    Locator::assets().loadTexture("../../assets/default1.png", "default1");
+    Locator::assets().createMaterial("green", "default", "default1");
 }
 
 void GameImpl::update(u32 dt) {
-
+    timeMs += dt;
+    if(timeMs > 1000) {
+        knot.material = &Locator::assets().getMaterial("green");
+    }
 }
 
 void GameImpl::draw() {

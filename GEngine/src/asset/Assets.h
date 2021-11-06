@@ -46,14 +46,20 @@ namespace engine::asset {
 
         // Push a shader into the asset manager.
         // Shader is loaded through the createMaterial method.
-        virtual engine::render::vk::Shader* setShader(engine::render::vk::Shader&& shader, const string& name) = 0;
+        virtual engine::render::vk::Shader* setShader(engine::render::vk::Shader& shader, const string& name) = 0;
+
+        // Check if a shader exists
+        virtual bool shaderExists(const string& name) const = 0;
 
         GAPI virtual engine::render::vk::Material& getMaterial(const string& name) = 0;
 
         virtual engine::render::vk::Material* setMaterial(render::vk::Material& material, const string& name) = 0;
 
         // Create a material with a texture
-        GAPI virtual void createMaterial(const string& name, const string& textureName) = 0;
+        GAPI virtual void createMaterial(const string& name, const string& shaderName, const string& textureName) = 0;
+
+        // Check if a material exists
+        virtual bool materialExists(const string& name) const = 0;
     };
 
 
@@ -69,17 +75,20 @@ namespace engine::asset {
 
         engine::render::vk::Shader& getShader(const string& name) override;
 
-        engine::render::vk::Shader* setShader(engine::render::vk::Shader&& shader, const string& name) override;
+        engine::render::vk::Shader* setShader(engine::render::vk::Shader& shader, const string& name) override;
+
+        bool shaderExists(const string& name) const override;
 
         engine::render::vk::Material& getMaterial(const string& name) override;
 
         engine::render::vk::Material* setMaterial(render::vk::Material& material, const string& name) override;
 
-        void createMaterial(const string& name, const string& textureName) override;
+        void createMaterial(const string& name, const string& shaderName, const string& textureName) override;
 
+        bool materialExists(const string& name) const override;
 
     private:
-        void placeholderMessage();
+        void placeholderMessage() const;
     };
 
 }

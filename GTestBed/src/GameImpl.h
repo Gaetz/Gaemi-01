@@ -29,6 +29,7 @@ namespace game {
     private:
         GameImpl() = default;
         GameObject knot {};
+        int timeMs { 0 };
     };
 
 }
