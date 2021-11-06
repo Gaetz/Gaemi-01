@@ -721,7 +721,7 @@ void RendererBackEndVulkan::createMaterial(const string& name, const string& tex
     // Set shader and store in asset manager. Shader name used to load shader files.
     Shader shader;
     array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
-    shader.init(context, name, setLayouts, renderpass);
+    shader.init(context, setLayouts, renderpass, name);
 
     auto& assets { Locator::assets() };
     Shader* shaderAddress = assets.setShader(std::move(shader), name);

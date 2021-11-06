@@ -12,10 +12,10 @@
 using engine::render::vk::Shader;
 using std::vector;
 
-void Shader::init(Context& context,
-                  const string& shaderName,
+void Shader::init(const Context& context,
                   const array<VkDescriptorSetLayout, 3>& setLayouts,
-                  const Renderpass& renderpass) {
+                  const Renderpass& renderpass,
+                  const string& shaderName) {
     name = shaderName;
     contextDevice = context.device;
 
@@ -25,84 +25,23 @@ void Shader::init(Context& context,
 
     for (u32 i = 0; i < SHADER_STAGE_COUNT; ++i) {
         if (!load(context, shaderName, typeStrings[i], types[i], stages[i])) {
-            LOG(LogLevel::Error) << "Error when building shader " << shaderName;
+            LOG(LogLevel::Error) << "Error when building shader " << shaderName << " at stage " << i;
         } else {
             LOG(LogLevel::Info) << "Shader " << shaderName << " successfully loaded";
         }
     }
 
-    // -- PIPELINE --
+    // Pipeline layout
+    initPipelineLayout(context, setLayouts);
 
-    // -- PIPELINE LAYOUT --
-    // The pipeline layout that controls the inputs/outputs of the shader
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo = render::vk::pipelineLayoutCreateInfo();
-
-    // Setup push constants
-    VkPushConstantRange pushConstant;
-    pushConstant.offset = 0;
-    pushConstant.size = sizeof(render::vk::MeshPushConstants);
-    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
-
-    // Descriptor sets
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
-
-    VK_CHECK(vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipeline.layoutHandle));
-
-
-
-    // -- BUILD PIPELINE --
-    PipelineBuilder pipelineBuilder;
-
-    // Clear the shader stages for the builder
-    pipelineBuilder.shaderStages.clear();
-    pipelineBuilder.shaderStages = getStagesCreateInfo();
-
-    // Vertex input controls how to read vertices from vertex buffers.
-    render::vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
-
-    // Connect the pipeline builder vertex input info to the one we get from Vertex
-    pipelineBuilder.vertexInputInfo = render::vk::vertexInputStateCreateInfo();
-    pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
-    pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
-    pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
-    pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
-
-    // Input assembly is the configuration for drawing triangle lists, strips, or individual points.
-    pipelineBuilder.inputAssembly = render::vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-
-    // Build viewport and scissor from the swapchain extents
-    pipelineBuilder.viewport.x = 0.0f;
-    pipelineBuilder.viewport.y = 0.0f;
-    pipelineBuilder.viewport.width = (float) context.windowExtent.width;
-    pipelineBuilder.viewport.height = (float) context.windowExtent.height;
-    pipelineBuilder.viewport.minDepth = 0.0f;
-    pipelineBuilder.viewport.maxDepth = 1.0f;
-
-    pipelineBuilder.scissor.offset = { 0, 0 };
-    pipelineBuilder.scissor.extent = context.windowExtent;
-
-    // Multisampling
-    pipelineBuilder.multisampling = render::vk::multisamplingStateCreateInfo();
-
-    // Blend attachments
-    pipelineBuilder.colorBlendAttachment = render::vk::colorBlendAttachmentState();
-
-    // Depth Stencil
-    pipelineBuilder.depthStencil = render::vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
-
-    // Build pipeline & material
-    pipelineBuilder.pipelineLayout = pipeline.layoutHandle;
-    pipeline.init(pipelineBuilder, context, renderpass, false);
+    // Pipeline
+    initPipeline(context, renderpass);
 
     // Descriptors
 
 }
 
-bool Shader::load(Context& context, const string& shaderName, const string& typeString,
+bool Shader::load(const Context& context, const string& shaderName, const string& typeString,
                   VkShaderStageFlagBits shaderStageFlagBit,
                   ShaderStage& shaderStage) {
 
@@ -164,5 +103,70 @@ vector<VkPipelineShaderStageCreateInfo> Shader::getStagesCreateInfo() {
 
 void Shader::use(const CommandBuffer& cmd, VkPipelineBindPoint bindPoint) const {
     pipeline.bind(cmd, bindPoint);
+}
+
+void Shader::initPipelineLayout(const Context& context, const array<VkDescriptorSetLayout, 3>& setLayouts) {
+    // The pipeline layout that controls the inputs/outputs of the shader
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = render::vk::pipelineLayoutCreateInfo();
+
+    // Setup push constants
+    VkPushConstantRange pushConstant;
+    pushConstant.offset = 0;
+    pushConstant.size = sizeof(render::vk::MeshPushConstants);
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+
+    // Descriptor sets
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+
+    VK_CHECK(vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipeline.layoutHandle));
+}
+
+void engine::render::vk::Shader::initPipeline(const Context& context, const Renderpass& renderpass) {
+    PipelineBuilder pipelineBuilder;
+
+    // Clear the shader stages for the builder
+    pipelineBuilder.shaderStages.clear();
+    pipelineBuilder.shaderStages = getStagesCreateInfo();
+
+    // Vertex input controls how to read vertices from vertex buffers.
+    render::vk::VertexInputDescription vertexDescription = Vertex::getVertexDescription();
+
+    // Connect the pipeline builder vertex input info to the one we get from Vertex
+    pipelineBuilder.vertexInputInfo = render::vk::vertexInputStateCreateInfo();
+    pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
+    pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
+    pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
+    pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
+
+    // Input assembly is the configuration for drawing triangle lists, strips, or individual points.
+    pipelineBuilder.inputAssembly = render::vk::inputAssemblyCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+    // Build viewport and scissor from the swapchain extents
+    pipelineBuilder.viewport.x = 0.0f;
+    pipelineBuilder.viewport.y = 0.0f;
+    pipelineBuilder.viewport.width = (float) context.windowExtent.width;
+    pipelineBuilder.viewport.height = (float) context.windowExtent.height;
+    pipelineBuilder.viewport.minDepth = 0.0f;
+    pipelineBuilder.viewport.maxDepth = 1.0f;
+
+    pipelineBuilder.scissor.offset = { 0, 0 };
+    pipelineBuilder.scissor.extent = context.windowExtent;
+
+    // Multisampling
+    pipelineBuilder.multisampling = render::vk::multisamplingStateCreateInfo();
+
+    // Blend attachments
+    pipelineBuilder.colorBlendAttachment = render::vk::colorBlendAttachmentState();
+
+    // Depth Stencil
+    pipelineBuilder.depthStencil = render::vk::depthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
+
+    // Build pipeline & material
+    pipelineBuilder.pipelineLayout = pipeline.layoutHandle;
+    pipeline.init(pipelineBuilder, context, renderpass, false);
 }
 

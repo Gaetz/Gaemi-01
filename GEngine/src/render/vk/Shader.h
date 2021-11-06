@@ -30,8 +30,8 @@ namespace engine::render::vk {
 
     class Shader {
     public:
-        void init(Context& context, const string& shaderName, const array<VkDescriptorSetLayout, 3>& setLayouts,
-                  const Renderpass& renderpass);
+        void init(const Context& context, const array<VkDescriptorSetLayout, 3>& setLayouts,
+                  const Renderpass& renderpass, const string& shaderName);
 
         void destroy();
 
@@ -49,7 +49,9 @@ namespace engine::render::vk {
         array<ShaderStage, SHADER_STAGE_COUNT> stages;
         VkDevice contextDevice;
 
-        bool load(Context& context, const string& shaderName, const string& typeStrings, VkShaderStageFlagBits shaderStageFlagBit, ShaderStage& shaderStage);
+        bool load(const Context& context, const string& shaderName, const string& typeStrings, VkShaderStageFlagBits shaderStageFlagBit, ShaderStage& shaderStage);
+        void initPipelineLayout(const Context& context, const array<VkDescriptorSetLayout, 3>& setLayouts);
+        void initPipeline(const Context& context, const Renderpass& renderpass);
     };
 
 }

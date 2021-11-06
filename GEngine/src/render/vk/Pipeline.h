@@ -38,7 +38,7 @@ namespace engine::render::vk {
         VkPipelineLayout layoutHandle;
 
         // Initialize pipeline
-        void init(PipelineBuilder& builder, Context& context, const Renderpass& renderpass, bool isWireframe);
+        void init(PipelineBuilder& builder, const Context& context, const Renderpass& renderpass, bool isWireframe);
 
         // Destruction is handled by shader
         void destroy();

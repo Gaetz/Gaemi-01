@@ -79,7 +79,7 @@ VkPipeline PipelineBuilder::buildPipeline(const Context &context, const Renderpa
     }
 }
 
-void Pipeline::init(PipelineBuilder &builder, Context& context, const Renderpass& renderpass, bool isWireframe) {
+void Pipeline::init(PipelineBuilder &builder, const Context& context, const Renderpass& renderpass, bool isWireframe) {
     contextDevice = context.device;
     handle = builder.buildPipeline(context, renderpass, isWireframe);
     layoutHandle = builder.pipelineLayout;
