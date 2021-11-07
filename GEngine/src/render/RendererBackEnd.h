@@ -7,10 +7,13 @@
 
 #include "Types.h"
 #include "../platforms/Platform.h"
+#include "../math/Types.h"
 
 // Buffer this number of frames when rendering
-constexpr unsigned int FRAME_OVERLAP = 2;
-constexpr unsigned int MAX_OBJECTS = 10000;
+constexpr u32 FRAME_OVERLAP = 2;
+constexpr u32 MAX_OBJECTS = 10000;
+
+using namespace engine::math;
 
 namespace engine::render {
 
@@ -30,6 +33,8 @@ namespace engine::render {
         virtual void close() = 0;
 
         virtual bool beginFrame(u32 dt) = 0;
+
+        virtual void updateGlobalState(Mat4 projection, Mat4 view) = 0;
 
         virtual void draw() = 0;
 

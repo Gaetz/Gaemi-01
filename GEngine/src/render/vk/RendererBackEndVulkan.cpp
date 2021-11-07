@@ -725,7 +725,7 @@ void RendererBackEndVulkan::createMaterial(const string& name, const string& sha
         // Set shader and store in asset manager. Shader name used to load shader files.
         Shader shader;
         array<VkDescriptorSetLayout, 3> setLayouts { globalSetLayout, objectSetLayout, singleTextureSetLayout };
-        shader.init(context, setLayouts, renderpass, name);
+        shader.init(context, setLayouts, renderpass, descriptorPool, name);
         shaderAddress = assets.setShader(shader, name);
     }
 
@@ -756,6 +756,10 @@ void RendererBackEndVulkan::createMaterial(const string& name, const string& sha
     VkWriteDescriptorSet texture1 = render::vk::writeDescriptorImage(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                                                      materialAddress->textureSet, &imageBufferInfo, 0);
     vkUpdateDescriptorSets(context.device, 1, &texture1, 0, nullptr);
+}
+
+void engine::render::vk::RendererBackEndVulkan::updateGlobalState(Mat4 projection, Mat4 view) {
+
 }
 
 

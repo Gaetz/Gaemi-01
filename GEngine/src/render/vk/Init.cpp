@@ -5,6 +5,15 @@
 #include "Init.h"
 #include "Context.h"
 
+size_t engine::render::vk::padUniformBufferSize(Context& context, size_t originalSize) {
+    // Calculate required alignment based on minimum device offset alignment
+    size_t minUboAlignment = context.gpuProperties.limits.minUniformBufferOffsetAlignment;
+    size_t alignedSize = originalSize;
+    if (minUboAlignment > 0) {
+        alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+    return alignedSize;
+}
 
 VkCommandPoolCreateInfo engine::render::vk::commandPoolCreateInfo(uint32_t queueFamilyIndex,
                                                                   VkCommandPoolCreateFlags flags) {

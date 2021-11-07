@@ -18,6 +18,9 @@ namespace engine::render::vk {
 
     class Context;
 
+    // Pad a buffer
+    size_t padUniformBufferSize(Context& context, size_t originalSize);
+
     // Create a command pool for commands submitted to the graphics queue.
     VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex,
                                                   VkCommandPoolCreateFlags flags = 0);

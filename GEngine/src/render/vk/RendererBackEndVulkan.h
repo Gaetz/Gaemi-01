@@ -46,6 +46,8 @@ namespace engine::render::vk {
         // Get the frame we are rendering right now
         FrameData &getCurrentFrame() { return frames[frameNumber % FRAME_OVERLAP]; }
 
+        void updateGlobalState(Mat4 projection, Mat4 view) override;
+
         Texture loadTexture(const string& path) override;
         void uploadMesh(Mesh &mesh) override;
         void addToScene(vk::GameObject& gameObject) override;

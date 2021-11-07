@@ -5,17 +5,21 @@
 #include "RendererFrontEnd.h"
 #include "vk/RendererBackEndVulkan.h"
 #include "../Locator.h"
+#include "../math/Transformations.h"
+#include "../math/Functions.h"
 
 
 using engine::render::RendererFrontEnd;
 using engine::mem::MemoryTag;
 
-bool RendererFrontEnd::init(const string &appName, u16 width, u16 height) {
+bool RendererFrontEnd::init(const string &appName, u16 widthP, u16 heightP) {
     // TODO Make the renderer type configurable
     //backEnd = static_cast<RendererBackEndVulkan*>(Locator::memory().allocate(sizeof(RendererBackEndVulkan), MemoryTag::Renderer));
     backEnd = static_cast<RendererBackEnd *>(new vk::RendererBackEndVulkan());
+    width = widthP;
+    height = heightP;
 
-    if (!backEnd->init(appName, width, height)) {
+    if (!backEnd->init(appName, widthP, heightP)) {
         LOG(engine::LogLevel::Fatal) << "Renderer backend failed to initialize, shutting down.";
         return false;
     }
@@ -43,6 +47,14 @@ bool RendererFrontEnd::drawFrame(const RenderPacket &packet) {
     // If begin frame return successfully, mid-frame operations can continue
     if (backEnd->beginFrame(packet.dt)) {
 
+        Vec3 camPos { 0.f, -6.f, -10.f };
+        Mat4 view = math::translate(Mat4 { 1.f }, camPos);
+        Mat4 projection = math::perspective(math::toRad(70.f),
+                                            static_cast<float>(width) /
+                                            static_cast<float>(height),
+                                            0.1f, 200.f);
+
+        backEnd->updateGlobalState(projection, view);
         backEnd->draw();
 
         bool frameResult = backEnd->endFrame(packet.dt);
