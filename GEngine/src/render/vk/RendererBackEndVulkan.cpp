@@ -20,6 +20,7 @@
 #include "../../math/Functions.h"
 #include "../../Locator.h"
 #include "Buffer.h"
+#include "../../../../externals/imgui/imgui_impl_vulkan.h"
 
 using engine::render::vk::PipelineBuilder;
 using engine::render::vk::Vertex;
@@ -37,6 +38,7 @@ bool RendererBackEndVulkan::init(const string& appName, u16 width, u16 height) {
     regenerateFramebuffers();
     initSyncStructures();
     initDescriptors();
+    initImgui();
     loadDefaultAssets();
     return true;
 }
@@ -451,35 +453,6 @@ void RendererBackEndVulkan::uploadMesh(Mesh& mesh) {
                          uploadContext.commandPool, uploadContext.uploadFence.handle, context.graphicsQueue);
 }
 
-/*
-engine::render::vk::Material*
-RendererBackEndVulkan::createMaterial(VkPipeline pipelineP, VkPipelineLayout pipelineLayoutP, const string& name) {
-    engine::render::vk::Material material {};
-    material.pipeline = pipelineP;
-    material.layoutHandle = pipelineLayoutP;
-    materials[name] = material;
-    return &materials[name];
-}
-
-engine::render::vk::Material* RendererBackEndVulkan::getMaterial(const string& name) {
-    auto it = materials.find(name);
-    if (it == end(materials)) {
-        return nullptr;
-    } else {
-        return &(*it).second;
-    }
-}
-
-engine::render::vk::Mesh* RendererBackEndVulkan::getMesh(const string& name) {
-    auto it = meshes.find(name);
-    if (it == end(meshes)) {
-        return nullptr;
-    } else {
-        return &(*it).second;
-    }
-}
-*/
-
 void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, GameObject* first, size_t count) {
     VkCommandBuffer cmd = commandBuffer.handle;
 
@@ -575,6 +548,9 @@ void RendererBackEndVulkan::drawObjects(CommandBuffer& commandBuffer, GameObject
 
         // Draw
         vkCmdDraw(cmd, object.mesh->vertices.size(), 1, 0, i);
+
+        // Draw ImGui
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
     }
 }
 
@@ -760,6 +736,71 @@ void RendererBackEndVulkan::createMaterial(const string& name, const string& sha
 
 void engine::render::vk::RendererBackEndVulkan::updateGlobalState(Mat4 projection, Mat4 view) {
 
+}
+
+void engine::render::vk::RendererBackEndVulkan::initImgui() {
+    // Create descriptor pool for IMGUI
+    // The size of the pool is very oversize, but it's copied from imgui demo itself.
+    VkDescriptorPoolSize poolSizes[] =
+            {
+                    { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+                    { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+                    { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+                    { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+                    { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+                    { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+                    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+                    { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+                    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+                    { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+                    { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+            };
+
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    poolInfo.maxSets = 1000;
+    poolInfo.poolSizeCount = std::size(poolSizes);
+    poolInfo.pPoolSizes = poolSizes;
+
+    VkDescriptorPool imguiPool;
+    VK_CHECK(vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &imguiPool));
+
+
+    // Initialize imgui library
+
+    // This initializes the core structures of imgui
+    ImGui::CreateContext();
+
+    // This initializes imgui for SDL
+    Locator::platform().rendererSetupVulkanImGui();
+
+    // This initializes imgui for Vulkan
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = context.instance;
+    init_info.PhysicalDevice = context.chosenGPU;
+    init_info.Device = context.device;
+    init_info.Queue = context.graphicsQueue;
+    init_info.DescriptorPool = imguiPool;
+    init_info.MinImageCount = 3;
+    init_info.ImageCount = 3;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init(&init_info, renderpass.handle);
+
+    //execute a gpu command to upload imgui font textures
+    immediateSubmit([&](VkCommandBuffer cmd) {
+        ImGui_ImplVulkan_CreateFontsTexture(cmd);
+    });
+
+    //clear font textures from cpu data
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+    //add the destroy the imgui created structures
+    context.mainDeletionQueue.pushFunction([=]() {
+        vkDestroyDescriptorPool(context.device, imguiPool, nullptr);
+        ImGui_ImplVulkan_Shutdown();
+    });
 }
 
 

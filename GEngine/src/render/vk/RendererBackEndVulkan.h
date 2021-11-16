@@ -6,7 +6,6 @@
 #define RENDER_VK_RENDERERBACKENDVULKAN_H
 
 #include <vk_mem_alloc.h>
-#include <string>
 #include <vector>
 #include <unordered_map>
 #include "../RendererBackEnd.h"
@@ -19,7 +18,6 @@
 #include "Shader.h"
 #include "Texture.h"
 
-using std::string;
 using std::vector;
 using std::unordered_map;
 
@@ -105,6 +103,8 @@ namespace engine::render::vk {
         void initSyncStructures();
 
         void initDescriptors();
+
+        void initImgui();
 
         void loadDefaultAssets();
 

@@ -6,6 +6,7 @@
 #define MEMORY_H
 
 #include "MemoryTag.h"
+#include "../Log.h"
 
 // TODO Use allocator from Noel Llopis's book
 
@@ -58,7 +59,7 @@ namespace engine::mem {
 
     private:
         void placeholderMessage() {
-            LOG(Warning) << "Usage of placeholder memory service.";
+            LOG(LogLevel::Warning) << "Usage of placeholder memory service.";
         }
     };
 }

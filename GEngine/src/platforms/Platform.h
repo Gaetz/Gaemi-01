@@ -6,15 +6,14 @@
 #define VK_PLATFORM_H
 
 #include <string>
-using std::string;
-
 #include <array>
 #include <vulkan/vulkan_core.h>
-
-using std::array;
-
 #include "../Defines.h"
 #include "../Log.h"
+#include <SDL2/SDL_events.h>
+
+using std::string;
+using std::array;
 
 namespace engine::input {
     enum class ControllerAxis;
@@ -59,6 +58,10 @@ namespace engine::platforms {
         virtual void inputMouseSetRelativeMode(bool show) = 0;
 
         virtual void rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR* surface) = 0;
+        virtual void rendererSetupVulkanImGui() = 0;
+
+        virtual void imGuiProcessEvent(SDL_Event* event) = 0;
+        virtual void imGuiNewFrame() = 0;
     };
 
     class NullPlatform : public Platform {
@@ -95,9 +98,13 @@ namespace engine::platforms {
         void inputMouseSetRelativeMode(bool show) override { placeholderMessage(); }
 
         void rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR *surface) override { placeholderMessage(); }
+        void rendererSetupVulkanImGui() override { placeholderMessage(); }
+
+        void imGuiProcessEvent(SDL_Event* event) override { placeholderMessage(); }
+        void imGuiNewFrame() override { placeholderMessage(); }
 
     private:
-        void placeholderMessage() {
+        static void placeholderMessage() {
             LOG(LogLevel::Warning) << "Usage of placeholder memory service.";
         }
     };

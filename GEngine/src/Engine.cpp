@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include <fstream>
+#include <imgui.h>
 #include "Timer.h"
 #include "Locator.h"
 
@@ -109,6 +110,7 @@ InputState engine::Engine::processInputs() {
     inputSystem.preUpdate();
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+        Locator::platform().imGuiProcessEvent(&event);
         inputSystem.processEvent(event);
     }
     inputSystem.update();
@@ -134,10 +136,20 @@ bool engine::Engine::handleEngineEvent(EventCode code, void* sender, void* liste
 }
 
 void Engine::draw(u32 dt) {
-    // Game update
+    // ImGUI
+    Locator::platform().imGuiNewFrame();
+    ImGui::NewFrame();
+    // vvvvv ImGui code should go here vvvvv
+    {
+        //ImGui::ShowDemoWindow();
+    }
+    // ^^^^^ ImGui code should go there ^^^^^
+    ImGui::Render();
+
+    // Game draw
     state.game->draw();
 
-    render::RenderPacket renderPacket;
+    render::RenderPacket renderPacket {};
     renderPacket.dt = dt;
     renderer.drawFrame(renderPacket);
 }

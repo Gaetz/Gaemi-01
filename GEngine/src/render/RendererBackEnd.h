@@ -6,8 +6,10 @@
 #define RENDERER_RENDERERBACKEND_H
 
 #include "Types.h"
-#include "../platforms/Platform.h"
 #include "../math/Types.h"
+#include <string>
+
+using std::string;
 
 // Buffer this number of frames when rendering
 constexpr u32 FRAME_OVERLAP = 2;
@@ -15,6 +17,9 @@ constexpr u32 MAX_OBJECTS = 10000;
 
 using namespace engine::math;
 
+namespace engine::platforms {
+    class Platform;
+}
 namespace engine::render {
 
     namespace vk {

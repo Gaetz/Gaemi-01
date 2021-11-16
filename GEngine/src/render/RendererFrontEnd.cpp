@@ -4,13 +4,12 @@
 
 #include "RendererFrontEnd.h"
 #include "vk/RendererBackEndVulkan.h"
-#include "../Locator.h"
 #include "../math/Transformations.h"
 #include "../math/Functions.h"
+#include "../../../externals/imgui/imgui.h"
 
 
 using engine::render::RendererFrontEnd;
-using engine::mem::MemoryTag;
 
 bool RendererFrontEnd::init(const string &appName, u16 widthP, u16 heightP) {
     // TODO Make the renderer type configurable

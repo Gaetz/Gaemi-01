@@ -1,9 +1,10 @@
 #include "PlatformWin.h"
 #include "../input/ControllerState.h"
 #include "../Locator.h"
+#include "../../../externals/imgui/imgui_impl_sdl.h"
+#include "../../../externals/imgui/imgui_impl_vulkan.h"
 #include <array>
 #include <time.h>
-#include <SDL2/SDL_vulkan.h>
 
 using std::array;
 
@@ -157,5 +158,18 @@ void engine::platforms::PlatformWin::inputMouseSetRelativeMode(bool isRelative) 
 
 void engine::platforms::PlatformWin::rendererSetupVulkanSurface(const VkInstance& instance, VkSurfaceKHR *surface) {
     SDL_Vulkan_CreateSurface((SDL_Window*)getScreenSurface(), instance, surface);
+}
+
+void engine::platforms::PlatformWin::rendererSetupVulkanImGui() {
+    ImGui_ImplSDL2_InitForVulkan(window.get());
+}
+
+void engine::platforms::PlatformWin::imGuiProcessEvent(SDL_Event* event) {
+    ImGui_ImplSDL2_ProcessEvent(event);
+}
+
+void engine::platforms::PlatformWin::imGuiNewFrame() {
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window.get());
 }
 

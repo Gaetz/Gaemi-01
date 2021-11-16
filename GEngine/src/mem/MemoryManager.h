@@ -8,10 +8,14 @@
 #include <array>
 using std::array;
 
-#include "../platforms/Platform.h"
 #include "../Defines.h"
 #include "MemoryTag.h"
 #include "Memory.h"
+
+
+namespace engine::platforms {
+    class Platform;
+}
 
 // TODO Replace with C++ custom allocator and heap management system
 
