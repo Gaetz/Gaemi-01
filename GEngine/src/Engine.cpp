@@ -144,11 +144,12 @@ void Engine::draw(u32 dt) {
         //ImGui::ShowDemoWindow();
     }
     // ^^^^^ ImGui code should go there ^^^^^
-    ImGui::Render();
 
     // Game draw
     state.game->draw();
 
+    // Engine draw
+    ImGui::Render();
     render::RenderPacket renderPacket {};
     renderPacket.dt = dt;
     renderer.drawFrame(renderPacket);
