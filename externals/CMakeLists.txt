@@ -62,35 +62,7 @@ target_link_libraries(imgui PUBLIC Vulkan::Vulkan SDL2)
 target_include_directories(stb_image INTERFACE stb_image)
 
 ## Easy profiler
-#add_library(easy_profiler INTERFACE)
-
 set(easy_profiler_DIR "${CMAKE_SOURCE_DIR}/externals/easy_profiler/lib/cmake/easy_profiler")
 set(EASY_PROFILER_NO_GUI ON CACHE BOOL "")
 set(EASY_PROFILER_NO_SAMPLES ON CACHE BOOL "")
-set(easy_profiler_LIBRARIES "${CMAKE_SOURCE_DIR}/externals/easy_profiler/lib/easy_profiler.lib")
-#[[
-target_sources(easy_profiler PRIVATE
-        easy_profiler/include/easy/arbitrary_value.h
-        easy_profiler/include/easy/easy_net.h
-        easy_profiler/include/easy/easy_protocol.h
-        easy_profiler/include/easy/easy_socket.h
-        easy_profiler/include/easy/profiler.h
-        easy_profiler/include/easy/reader.h
-        easy_profiler/include/easy/serialized_block.h
-        easy_profiler/include/easy/utility.h
-        easy_profiler/include/easy/writer.h
-
-        easy_profiler/include/easy/details/arbitrary_value_aux.h
-        easy_profiler/include/easy/details/arbitrary_value_public_types.h
-        easy_profiler/include/easy/details/easy_compiler_support.h
-        easy_profiler/include/easy/details/profiler_aux.h
-        easy_profiler/include/easy/details/profiler_colors.h
-        easy_profiler/include/easy/details/profiler_in_use.h
-        easy_profiler/include/easy/details/profiler_public_types.h
-        )
-]]
 find_package(easy_profiler REQUIRED)
-#target_include_directories(easy_profiler PUBLIC easy_profiler/include)
-#target_link_directories(easy_profiler INTERFACE ${CMAKE_SOURCE_DIR}/externals/easy_profiler/lib/cmake)
-#target_link_libraries(easy_profiler PUBLIC ${easy_profiler_LIBRARIES})
-
