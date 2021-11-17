@@ -29,7 +29,7 @@ engine::render::vk::Texture& AssetManager::getTexture(const string& name) {
 
 void AssetManager::loadTexture(const string& file, const string& name) {
     textures[name] = renderer.loadTexture(file);
-    const aiScene* scene = aiImportFile( "data/rubber_duck/scene.gltf", aiProcess_Triangulate );
+    //const aiScene* scene = aiImportFile( "data/rubber_duck/scene.gltf", aiProcess_Triangulate );
 
 }
 
