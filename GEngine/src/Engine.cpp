@@ -5,7 +5,6 @@
 #include "Timer.h"
 #include "Locator.h"
 
-
 using engine::Engine;
 using engine::input::InputState;
 using std::array;
@@ -140,7 +139,7 @@ bool engine::Engine::handleEngineEvent(EventCode code, void* sender, void* liste
 }
 
 void Engine::draw(u32 dt) {
-    EASY_BLOCK("Create resources");
+    EASY_BLOCK("Draw");
 
 
     // ImGUI

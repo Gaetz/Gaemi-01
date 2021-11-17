@@ -9,6 +9,11 @@
 #include "../render/vk/Shader.h"
 #include "../Locator.h"
 
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/cimport.h>
+#include <assimp/version.h>
+
 using engine::asset::AssetManager;
 
 engine::asset::AssetManager::AssetManager(render::RendererFrontEnd& renderer) : renderer(renderer) {}
@@ -24,6 +29,8 @@ engine::render::vk::Texture& AssetManager::getTexture(const string& name) {
 
 void AssetManager::loadTexture(const string& file, const string& name) {
     textures[name] = renderer.loadTexture(file);
+    const aiScene* scene = aiImportFile( "data/rubber_duck/scene.gltf", aiProcess_Triangulate );
+
 }
 
 void AssetManager::close() {

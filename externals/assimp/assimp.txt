@@ -1,0 +1,13 @@
+version: 5.0.1
+
+Download assimp archive
+
+Copy include folder into this externals/assimp/include/assimp folder
+
+Configure cmake with:
+cmake -DCMAKE_BUILD_TYPE=Release -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_TESTS=OFF -DASSIMP_INSTALL_PDB=OFF -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF -DASSIMP_BUILD_OBJ_IMPORTER=ON -DASSIMP_BUILD_GLTF_IMPORTER=ON .\CMakeLists.txt
+
+Build with:
+cmake --build .
+
+Copy the dll in this folder

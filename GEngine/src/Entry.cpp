@@ -9,7 +9,7 @@ using engine::Entry;
 
 int Entry::start(EngineConfig& config, game::Game& game, u64 sizeOfGameClass) {
 
-    // Init profiler
+    // Init CPU profiler
     EASY_MAIN_THREAD;
     EASY_PROFILER_ENABLE;
 

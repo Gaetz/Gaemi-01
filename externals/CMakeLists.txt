@@ -66,3 +66,12 @@ set(easy_profiler_DIR "${CMAKE_SOURCE_DIR}/externals/easy_profiler/lib/cmake/eas
 set(EASY_PROFILER_NO_GUI ON CACHE BOOL "")
 set(EASY_PROFILER_NO_SAMPLES ON CACHE BOOL "")
 find_package(easy_profiler REQUIRED)
+file(COPY "${CMAKE_SOURCE_DIR}/externals/easy_profiler/lib/easy_profiler.lib" DESTINATION ${CMAKE_BINARY_DIR})
+
+## Assimp
+message("-- Linking Assimp ")
+add_library(assimp assimp/assimp-vc142-mtd.dll)
+target_include_directories(assimp PUBLIC assimp/include)
+target_link_directories(assimp PUBLIC assimp/lib)
+set_target_properties(assimp PROPERTIES LINKER_LANGUAGE C)
+file(COPY "${CMAKE_SOURCE_DIR}/externals/assimp/lib/assimp.lib" DESTINATION ${CMAKE_BINARY_DIR}/external)
