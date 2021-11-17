@@ -23,3 +23,5 @@ bin/
 ## Exceptions for 3d obj files
 !assets/*.obj
 !assets/**/*.obj
+!externals/easy_profiler/bin
+!externals/easy_profiler/bin/*.exe

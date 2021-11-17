@@ -5,3 +5,4 @@ tinyobjloader   latest(git) https://github.com/tinyobjloader
 VkBootstrap     0.4         https://github.com/charles-lunarg/vk-bootstrap/releases
 vma             2.3         https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/releases
 SDL             2.0.14 VC   https://www.libsdl.org/download-2.0.php
+easy_profiler               https://github.com/yse/easy_profiler
