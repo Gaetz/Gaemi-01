@@ -12,4 +12,4 @@ file( GLOB GEngine_SOURCES src/*.cpp )
 add_library( GEngine SHARED ${GEngine_SOURCES})
 target_include_directories(GEngine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-target_link_libraries(GEngine input mem render vma vkbootstrap math platforms asset Vulkan::Vulkan SDL2 easy_profiler assimp)
+target_link_libraries(GEngine input mem render vma vkbootstrap math platforms asset Vulkan::Vulkan SDL2 easy_profiler assimp EtcLib)

@@ -8,11 +8,17 @@
 #include "../render/vk/Init.h"
 #include "../render/vk/Shader.h"
 #include "../Locator.h"
+#include "../../../externals/etc2comp/EtcLib/Etc/EtcImage.h"
+#include "../../../externals/etc2comp/EtcLib/EtcCodec/EtcErrorMetric.h"
+#include "../../../externals/etc2comp/EtcTool/EtcFile.h"
+#include "../../../externals/etc2comp/EtcLib/Etc/Etc.h"
 
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/cimport.h>
 #include <assimp/version.h>
+#include <stb_image.h>
+#include <thread>
 
 using engine::asset::AssetManager;
 
@@ -29,8 +35,44 @@ engine::render::vk::Texture& AssetManager::getTexture(const string& name) {
 
 void AssetManager::loadTexture(const string& file, const string& name) {
     textures[name] = renderer.loadTexture(file);
+    // Assimp test
     //const aiScene* scene = aiImportFile( "data/rubber_duck/scene.gltf", aiProcess_Triangulate );
 
+    // ETC test
+    /*
+    int w, h, comp;
+    const uint8_t* img = stbi_load( "../../assets/default.png", &w, &h, &comp, 4 );
+
+    std::vector<float> rgbaf;
+
+    for ( int i = 0; i != w * h * 4; i+=4 )
+    {
+        rgbaf.push_back( img[i+0] / 255.0f );
+        rgbaf.push_back( img[i+1] / 255.0f );
+        rgbaf.push_back( img[i+2] / 255.0f );
+        rgbaf.push_back( img[i+3] / 255.0f );
+    }
+
+    const auto etcFormat = Etc::Image::Format::RGB8;
+    const auto errorMetric = Etc::ErrorMetric::BT709;
+
+    Etc::Image image( rgbaf.data(), w, h, errorMetric );
+
+    image.Encode( etcFormat, errorMetric, ETCCOMP_DEFAULT_EFFORT_LEVEL, std::thread::hardware_concurrency(), 1024 );
+
+    Etc::File etcFile(
+            "image.ktx",
+            Etc::File::Format::KTX,
+            etcFormat,
+            image.GetEncodingBits(),
+            image.GetEncodingBitsBytes(),
+            image.GetSourceWidth(),
+            image.GetSourceHeight(),
+            image.GetExtendedWidth(),
+            image.GetExtendedHeight()
+    );
+    etcFile.Write();
+     */
 }
 
 void AssetManager::close() {

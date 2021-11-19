@@ -91,3 +91,12 @@ target_include_directories(assimp PUBLIC assimp/include)
 target_link_directories(assimp PUBLIC assimp/lib)
 set_target_properties(assimp PROPERTIES LINKER_LANGUAGE C)
 file(COPY "${CMAKE_SOURCE_DIR}/externals/assimp/lib/assimp.lib" DESTINATION ${CMAKE_BINARY_DIR}/externals)
+
+## Etc2Comp
+message("---- Linking ETC2Comp")
+add_subdirectory(etc2comp)
+set(EtcLib_DIR "${CMAKE_SOURCE_DIR}/externals/etc2comp")
+find_package(EtcLib REQUIRED)
+set(BUILD_DIR_CLANG "${CMAKE_SOURCE_DIR}/cmake-build-debug-clang")
+target_include_directories(EtcLib PUBLIC ${ETCLIB_INCLUDE_DIRS})
+target_link_directories(EtcLib PUBLIC ${ETCLIB_LIBRARIES})
