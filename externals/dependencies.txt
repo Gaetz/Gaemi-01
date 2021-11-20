@@ -6,3 +6,6 @@ VkBootstrap     0.4         https://github.com/charles-lunarg/vk-bootstrap/relea
 vma             2.3         https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/releases
 SDL             2.0.14 VC   https://www.libsdl.org/download-2.0.php
 easy_profiler               https://github.com/yse/easy_profiler
+taskflow        git latest  https://github.com/taskflow/taskflow
+assimp          5.0.1       https://www.assimp.org/index.php/downloads
+etc2comp                    https://github.com/google/etc2comp

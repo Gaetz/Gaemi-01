@@ -100,3 +100,8 @@ find_package(EtcLib REQUIRED)
 set(BUILD_DIR_CLANG "${CMAKE_SOURCE_DIR}/cmake-build-debug-clang")
 target_include_directories(EtcLib PUBLIC ${ETCLIB_INCLUDE_DIRS})
 target_link_directories(EtcLib PUBLIC ${ETCLIB_LIBRARIES})
+
+## taskflow
+message("---- Linking taskflow")
+add_library(taskflow INTERFACE)
+target_include_directories(taskflow INTERFACE taskflow)
