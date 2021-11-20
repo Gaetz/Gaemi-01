@@ -65,6 +65,7 @@ namespace engine::render::vk {
         vector<VkPipelineShaderStageCreateInfo> getStagesCreateInfo();
 
 
+        //void compileShader(const string& src, const string& dst);
 
     private:
         // Shader stages
@@ -76,6 +77,9 @@ namespace engine::render::vk {
         bool load(const Context& context, const string& shaderName, const string& typeStrings, VkShaderStageFlagBits shaderStageFlagBit, ShaderStage& shaderStage);
         void initPipelineLayout(const array<VkDescriptorSetLayout, 3>& setLayouts);
         void initPipeline(const Context& context, const Renderpass& renderpass);
+
+        //bool compileShaderFile(const string& src);
+        //void saveCompiledShader(const string& dst);
     };
 
 }
