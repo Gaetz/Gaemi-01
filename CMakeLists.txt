@@ -51,6 +51,8 @@ if (NOT vma_FOUND)
 endif()
 add_library(vma INTERFACE)
 
+
+
 ## Debug definitions
 
 ## Debug fix for VsCode
@@ -89,7 +91,6 @@ target_include_directories(GEngine
         PRIVATE ${glm_SOURCE_DIR}
         PRIVATE ${vma_SOURCE_DIR}
 )
-
 
 ## Vulkan validator
 find_program(GLSL_VALIDATOR glslc HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
