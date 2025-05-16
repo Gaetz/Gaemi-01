@@ -5,7 +5,7 @@
 #ifndef RENDER_VK_RENDERERBACKENDVULKAN_H
 #define RENDER_VK_RENDERERBACKENDVULKAN_H
 
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vector>
 #include <unordered_map>
 #include "../RendererBackEnd.h"

@@ -6,7 +6,7 @@
 #define RENDER_VK_BUFFER_H
 
 #include <vulkan/vulkan_core.h>
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include "../../Defines.h"
 #include "Context.h"
 

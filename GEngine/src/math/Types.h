@@ -5,10 +5,12 @@
 #ifndef MATHS_TYPES_H
 #define MATHS_TYPES_H
 
-#include "../../../externals/glm/glm/vec2.hpp"
-#include "../../../externals/glm/glm/vec3.hpp"
-#include "../../../externals/glm/glm/vec4.hpp"
-#include "../../../externals/glm/glm/mat4x4.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
+#include "glm/mat4x4.hpp"
 
 namespace engine::math {
 

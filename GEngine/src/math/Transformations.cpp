@@ -3,7 +3,7 @@
 //
 
 #include "Transformations.h"
-#include "../../../externals/glm/glm/gtx/transform.hpp"
+#include "glm/gtx/transform.hpp"
 
 Mat4 engine::math::translate(const Mat4& transform, const Vec3& translation) {
     return glm::translate(transform, translation);

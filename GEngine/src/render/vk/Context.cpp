@@ -2,7 +2,7 @@
 // Created by gaetz on 10/10/2021.
 //
 #include "Context.h"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 #include "Init.h"
 #include "../../externals/vkbootstrap/VkBootstrap.h"

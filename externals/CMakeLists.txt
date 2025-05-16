@@ -5,14 +5,14 @@ message("-- Integrating external libraries")
 # Both vma, glm and sbt_image are header only libs so we only need the include path
 
 ## GLM
-message("---- Linking GLM")
-add_library(glm INTERFACE)
-target_include_directories(glm INTERFACE glm)
+#message("---- Linking GLM")
+#add_library(glm INTERFACE)
+#target_include_directories(glm INTERFACE glm)
 
 ## Vulkan Memory Allocator
-message("---- Linking VMA")
-add_library(vma INTERFACE)
-target_include_directories(vma INTERFACE vma)
+#message("---- Linking VMA")
+#add_library(vma INTERFACE)
+#target_include_directories(vma INTERFACE vma)
 
 ## SBT image
 message("---- Linking SBT Image")

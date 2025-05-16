@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.8)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 #if (WIN32)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -9,8 +9,47 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(Gaemi VERSION 0.1.0)
 
+# External libraries
+message("-- Integrating external libraries")
+include(FetchContent)
+cmake_policy(SET CMP0135 NEW)
+
 ## Vulkan
+message("---- Finding Vulkan")
 find_package(Vulkan REQUIRED)
+
+## GLM
+message("---- Finding GLM")
+set(GLM_VERSION 1.0.1)
+find_package(glm ${GLM_VERSION} QUIET)
+if (NOT glm_FOUND)
+    FetchContent_Declare(
+            glm
+            GIT_REPOSITORY https://github.com/g-truc/glm.git
+            GIT_TAG ${GLM_VERSION}
+    )
+    FetchContent_MakeAvailable(glm)
+endif()
+
+## VMA
+message("---- Finding VMA")
+set(VMA_VERSION 3.3.0)
+find_package(vma ${VMA_VERSION} QUIET)
+if (NOT vma_FOUND)
+    if (UNIX)
+        FetchContent_Declare(
+            vma
+            URL https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v${VMA_VERSION}.tar.gz
+        )
+    elseif (WIN32)
+        FetchContent_Declare(
+            vma
+            URL https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v${VMA_VERSION}.zip
+        )
+    endif()
+    FetchContent_MakeAvailable(vma)
+endif()
+add_library(vma INTERFACE)
 
 ## Debug definitions
 
@@ -44,6 +83,13 @@ add_subdirectory( externals )
 add_subdirectory( GEngine )
 add_subdirectory( GTestBed )
 add_subdirectory( GGame )
+
+target_include_directories(GEngine
+        #PRIVATE SDL3::SDL3
+        PRIVATE ${glm_SOURCE_DIR}
+        PRIVATE ${vma_SOURCE_DIR}
+)
+
 
 ## Vulkan validator
 find_program(GLSL_VALIDATOR glslc HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
