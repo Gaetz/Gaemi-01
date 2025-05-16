@@ -43,7 +43,7 @@ The Apache License, Version 2.0 (the "License");
 #ifndef EASY_NET_H
 #define EASY_NET_H
 
-#include "details/easy_compiler_support.h"
+#include <easy/details/easy_compiler_support.h>
 #include <stdint.h>
 
 namespace profiler { namespace net {

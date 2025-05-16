@@ -44,7 +44,7 @@ The Apache License, Version 2.0 (the "License");
 #define EASY_PROFILER_COLORS_H
 
 #include <cstdint>
-#include "easy_compiler_support.h"
+#include <easy/details/easy_compiler_support.h>
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

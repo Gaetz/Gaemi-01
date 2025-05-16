@@ -3,7 +3,7 @@
 #ifndef EASY_PROFILER_UTILITY_H
 #define EASY_PROFILER_UTILITY_H
 
-#include "details/easy_compiler_support.h"
+#include <easy/details/easy_compiler_support.h>
 #include <algorithm>
 #include <utility>
 #include <math.h>

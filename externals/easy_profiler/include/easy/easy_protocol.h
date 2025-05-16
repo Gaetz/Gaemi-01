@@ -6,7 +6,7 @@
 #include <memory>
 
 ///this
-#include "serialized_block.h"
+#include <easy/serialized_block.h>
 //#include <easy/profiler.h>
 
 ///for actual version vistit https://github.com/yse/easy_profiler/wiki/.prof-file-format-v1.3.0

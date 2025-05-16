@@ -1,7 +1,7 @@
 #include "Engine.h"
 #include <fstream>
 #include <imgui.h>
-#include "../../externals/easy_profiler/include/easy/profiler.h"
+//#include "../../externals/easy_profiler/include/easy/profiler.h"
 #include "Timer.h"
 #include "Locator.h"
 
@@ -90,9 +90,11 @@ void Engine::init(Game& game, u64 sizeOfGameClass) {
 }
 
 void Engine::close() {
+/*
 #ifdef GDEBUG
     profiler::dumpBlocksToFile( "profiler_dump.prof" );
 #endif
+*/
     if (state.isInitialized) {
         // Assets should be closed before renderer, to free graphics assets memory
         assets.close();
@@ -139,7 +141,7 @@ bool engine::Engine::handleEngineEvent(EventCode code, void* sender, void* liste
 }
 
 void Engine::draw(u32 dt) {
-    EASY_BLOCK("Draw");
+    //EASY_BLOCK("Draw");
 
 
     // ImGUI
@@ -160,7 +162,7 @@ void Engine::draw(u32 dt) {
     renderPacket.dt = dt;
     renderer.drawFrame(renderPacket);
 
-    EASY_END_BLOCK;
+    //EASY_END_BLOCK;
 }
 
 void Engine::addToScene(engine::render::vk::GameObject &gameObject) {

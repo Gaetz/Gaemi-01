@@ -43,7 +43,7 @@ The Apache License, Version 2.0 (the "License");
 #define EASY_PROFILER_SOCKET_H
 
 #include <stdint.h>
-#include "details/easy_compiler_support.h"
+#include <easy/details/easy_compiler_support.h>
 
 #ifndef _WIN32
 

@@ -43,8 +43,8 @@ The Apache License, Version 2.0 (the "License");
 #ifndef EASY_PROFILER_ARBITRARY_VALUE_PUBLIC_TYPES_H
 #define EASY_PROFILER_ARBITRARY_VALUE_PUBLIC_TYPES_H
 
-#include "arbitrary_value_aux.h"
-#include "profiler_public_types.h"
+#include <easy/details/arbitrary_value_aux.h>
+#include <easy/details/profiler_public_types.h>
 #include <string.h>
 
 namespace profiler

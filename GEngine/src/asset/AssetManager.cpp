@@ -13,10 +13,12 @@
 #include "../../../externals/etc2comp/EtcTool/EtcFile.h"
 #include "../../../externals/etc2comp/EtcLib/Etc/Etc.h"
 
+/*
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/cimport.h>
 #include <assimp/version.h>
+*/
 #include <stb_image.h>
 #include <thread>
 

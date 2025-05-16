@@ -43,8 +43,8 @@ The Apache License, Version 2.0 (the "License");
 #ifndef EASY_PROFILER_SERIALIZED_BLOCK_H
 #define EASY_PROFILER_SERIALIZED_BLOCK_H
 
-#include "details/profiler_public_types.h"
-#include "details/arbitrary_value_public_types.h"
+#include <easy/details/profiler_public_types.h>
+#include <easy/details/arbitrary_value_public_types.h>
 
 class CSwitchBlock;
 

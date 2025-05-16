@@ -43,7 +43,7 @@ The Apache License, Version 2.0 (the "License");
 #ifndef EASY_PROFILER_H
 #define EASY_PROFILER_H
 
-#include "details/profiler_public_types.h"
+#include <easy/details/profiler_public_types.h>
 
 #define MAX_DYNAMIC_BLOCK_NAME_SIZE_ESTIMATED MAX_BLOCK_DATA_SIZE
 

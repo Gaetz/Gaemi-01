@@ -52,9 +52,9 @@ The Apache License, Version 2.0 (the "License");
 #include <string>
 #include <vector>
 
-#include "serialized_block.h"
-#include "details/arbitrary_value_public_types.h"
-#include "utility.h"
+#include <easy/serialized_block.h>
+#include <easy/details/arbitrary_value_public_types.h>
+#include <easy/utility.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

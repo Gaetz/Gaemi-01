@@ -46,7 +46,7 @@ The Apache License, Version 2.0 (the "License");
 #include <stdint.h>
 #include <type_traits>
 
-#include "easy_compiler_support.h"
+#include <easy/details/easy_compiler_support.h>
 
 struct ThreadStorage;
 

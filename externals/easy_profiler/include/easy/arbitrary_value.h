@@ -43,7 +43,7 @@ The Apache License, Version 2.0 (the "License");
 #ifndef EASY_PROFILER_ARBITRARY_VALUE_H
 #define EASY_PROFILER_ARBITRARY_VALUE_H
 
-#include "details/arbitrary_value_public_types.h"
+#include <easy/details/arbitrary_value_public_types.h>
 
 //
 // USING_EASY_PROFILER is defined in details/profiler_in_use.h
