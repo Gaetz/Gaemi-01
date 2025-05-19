@@ -1,7 +1,44 @@
-find_package(Vulkan REQUIRED)
+# External libraries
+message("-- Integrating external libraries")
+include(FetchContent)
+cmake_policy(SET CMP0135 NEW)
+
+## GLM
+message("---- Finding GLM")
+set(GLM_VERSION 1.0.1)
+find_package(glm ${GLM_VERSION} QUIET)
+if (NOT glm_FOUND)
+    FetchContent_Declare(
+            glm
+            GIT_REPOSITORY https://github.com/g-truc/glm.git
+            GIT_TAG ${GLM_VERSION}
+    )
+    FetchContent_MakeAvailable(glm)
+endif()
+target_include_directories(glm INTERFACE glm)
+
+## VMA
+message("---- Finding VMA")
+set(VMA_VERSION 3.3.0)
+find_package(vma ${VMA_VERSION} QUIET)
+if (NOT vma_FOUND)
+    if (UNIX)
+        FetchContent_Declare(
+                vma
+                URL https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v${VMA_VERSION}.tar.gz
+        )
+    elseif (WIN32)
+        FetchContent_Declare(
+                vma
+                URL https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v${VMA_VERSION}.zip
+        )
+    endif()
+    FetchContent_MakeAvailable(vma)
+endif()
+add_library(vma INTERFACE)
+target_include_directories(vma INTERFACE vma)
 
 message("-- Integrating external libraries")
-
 # Both vma, glm and sbt_image are header only libs so we only need the include path
 
 ## GLM
